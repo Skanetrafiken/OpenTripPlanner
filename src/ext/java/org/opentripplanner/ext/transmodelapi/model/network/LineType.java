@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static org.opentripplanner.ext.transmodelapi.model.EnumTypes.TRANSPORT_MODE;
 
+// TODO: 2022-02-23 documentation
 public class LineType {
   private static final String NAME = "Line";
   public static final GraphQLTypeReference REF = new GraphQLTypeReference(NAME);
@@ -38,7 +39,8 @@ public class LineType {
       GraphQLOutputType journeyPatternType,
       GraphQLOutputType serviceJourneyType,
       GraphQLOutputType ptSituationElementType,
-      GraphQLOutputType brandingType
+      GraphQLOutputType brandingType,
+      GraphQLOutputType groupOfLinesType
   ) {
     return GraphQLObjectType.newObject()
             .name(NAME)
@@ -180,6 +182,12 @@ public class LineType {
                 .deprecate("BookingArrangements are defined per stop, and can be found under `passingTimes` or `estimatedCalls`")
                 .dataFetcher(environment -> null)
                 .build())
+            .field(GraphQLFieldDefinition.newFieldDefinition()
+                    .name("groupOfLines")
+                    .description("Groups of lines that line is a part of.")
+                    .type(new GraphQLNonNull(new GraphQLList(groupOfLinesType)))
+                    .dataFetcher(environment -> ((Route) environment.getSource()).getGroupsOfLines())
+                    .build())
             .build();
   }
 }

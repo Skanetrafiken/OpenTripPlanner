@@ -1,5 +1,9 @@
 package org.opentripplanner.netex.mapping;
 
+import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
@@ -7,6 +11,8 @@ import org.opentripplanner.common.model.T2;
 import org.opentripplanner.graph_builder.DataImportIssueStore;
 import org.opentripplanner.model.Agency;
 import org.opentripplanner.model.BikeAccess;
+import org.opentripplanner.model.FeedScopedId;
+import org.opentripplanner.model.GroupOfLines;
 import org.opentripplanner.model.Operator;
 import org.opentripplanner.model.TransitMode;
 import org.opentripplanner.model.Branding;
@@ -34,6 +40,8 @@ class RouteMapper {
     private final EntityById<Agency> agenciesById;
     private final EntityById<Operator> operatorsById;
     private final EntityById<Branding> brandingsById;
+    private final Multimap<FeedScopedId, GroupOfLines> groupsOfLinesByRouteId;
+    private final EntityById<GroupOfLines> groupOfLinesById;
     private final NetexEntityIndexReadOnlyView netexIndex;
     private final AuthorityToAgencyMapper authorityMapper;
     private final Set<String> ferryIdsNotAllowedForBicycle;
@@ -44,6 +52,8 @@ class RouteMapper {
             EntityById<Agency> agenciesById,
             EntityById<Operator> operatorsById,
             EntityById<Branding> brandingsById,
+            Multimap<FeedScopedId, GroupOfLines> groupsOfLinesByRouteId,
+            EntityById<GroupOfLines> groupOfLinesById,
             NetexEntityIndexReadOnlyView netexIndex,
             String timeZone,
             Set<String> ferryIdsNotAllowedForBicycle
@@ -53,6 +63,8 @@ class RouteMapper {
         this.agenciesById = agenciesById;
         this.operatorsById = operatorsById;
         this.brandingsById = brandingsById;
+        this.groupsOfLinesByRouteId = groupsOfLinesByRouteId;
+        this.groupOfLinesById = groupOfLinesById;
         this.netexIndex = netexIndex;
         this.authorityMapper = new AuthorityToAgencyMapper(idFactory, timeZone);
         this.ferryIdsNotAllowedForBicycle = ferryIdsNotAllowedForBicycle;
@@ -62,6 +74,9 @@ class RouteMapper {
         org.opentripplanner.model.Route otpRoute = new org.opentripplanner.model.Route(
             idFactory.createId(line.getId())
         );
+
+        otpRoute.addGroupOfLines(getGroupOfLines(line));
+
         otpRoute.setAgency(findOrCreateAuthority(line));
         otpRoute.setOperator(findOperator(line));
         otpRoute.setBranding(findBranding(line));
@@ -106,6 +121,22 @@ class RouteMapper {
         }
 
         return otpRoute;
+    }
+
+    private List<GroupOfLines> getGroupOfLines(Line_VersionStructure line) {
+        // Relation can be set both on Line or on GroupLines
+        // Look on both indexes so that nothing is omitted
+
+        FeedScopedId lineId = idFactory.createId(line.getId());
+        // Use set in case ref is set on both sides
+        Set<GroupOfLines> groupsOfLines = new HashSet<>(groupsOfLinesByRouteId.get(lineId));
+
+        FeedScopedId groupOfLinesId = idFactory.createId(line.getRepresentedByGroupRef().getRef());
+        if (this.groupOfLinesById.containsKey(groupOfLinesId)) {
+            groupsOfLines.add(groupOfLinesById.get(groupOfLinesId));
+        }
+
+        return new ArrayList<>(groupsOfLines);
     }
 
     /**

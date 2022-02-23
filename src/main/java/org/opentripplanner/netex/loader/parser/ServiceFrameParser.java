@@ -74,9 +74,11 @@ class ServiceFrameParser extends NetexParser<Service_VersionFrameStructure> {
 
     @Override
     void parse(Service_VersionFrameStructure frame) {
+        LOG.info("parse Service_VersionFrameStructure");
         parseStopAssignments(frame.getStopAssignments());
         parseRoutes(frame.getRoutes());
         parseNetwork(frame.getNetwork());
+        parseGroupOfLines(frame.getGroupsOfLines());
         parseAdditionalNetworks(frame.getAdditionalNetworks());
         noticeParser.parseNotices(frame.getNotices());
         noticeParser.parseNoticeAssignments(frame.getNoticeAssignments());
@@ -226,6 +228,16 @@ class ServiceFrameParser extends NetexParser<Service_VersionFrameStructure> {
             networkIdByGroupOfLineId.put(group.getId(), network.getId());
             this.groupOfLines.add(group);
         }
+    }
+
+    private void parseGroupOfLines(GroupsOfLinesInFrame_RelStructure groupsOfLines) {
+        if (groupsOfLines == null) {
+            return;
+        }
+
+        LOG.info("Adding {} groupsOfLines", groupsOfLines.getGroupOfLines().size());
+
+        this.groupOfLines.addAll(groupsOfLines.getGroupOfLines());
     }
 
     private void parseLines(LinesInFrame_RelStructure lines) {

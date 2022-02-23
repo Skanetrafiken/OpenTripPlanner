@@ -19,6 +19,7 @@ import org.opentripplanner.model.FeedScopedId;
 import org.opentripplanner.model.FlexLocationGroup;
 import org.opentripplanner.model.FlexStopLocation;
 import org.opentripplanner.model.Frequency;
+import org.opentripplanner.model.GroupOfLines;
 import org.opentripplanner.model.GroupOfStations;
 import org.opentripplanner.model.MultiModalStation;
 import org.opentripplanner.model.Notice;
@@ -109,6 +110,10 @@ public class OtpTransitServiceBuilder {
     private final EntityById<FlexTrip> flexTripsById = new EntityById<>();
 
     private final EntityById<Branding> brandingsById = new EntityById<>();
+
+    private final Multimap<FeedScopedId, GroupOfLines> groupsOfLinesByRouteId = ArrayListMultimap.create();
+
+    private final EntityById<GroupOfLines> groupOfLinesById = new EntityById<>();
 
     public OtpTransitServiceBuilder() {
     }
@@ -227,6 +232,14 @@ public class OtpTransitServiceBuilder {
 
     public EntityById<Branding> getBrandingsById() {
         return brandingsById;
+    }
+
+    public Multimap<FeedScopedId, GroupOfLines> getGroupsOfLinesByRouteId() {
+        return groupsOfLinesByRouteId;
+    }
+
+    public EntityById<GroupOfLines> getGroupOfLinesById() {
+        return groupOfLinesById;
     }
 
     /**
