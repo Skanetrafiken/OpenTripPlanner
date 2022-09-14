@@ -263,14 +263,35 @@ public class SiriTimetableSnapshotSource implements TimetableSnapshotProvider {
     }
 
     /**
+     * Check if VehicleJourney is an replacement departure according to SIRI-ET requirements.
+     */
+    private boolean isReplacementDeparture(EstimatedVehicleJourney vehicleJourney) {
+
+        // Replacement departure only if ExtraJourney is true
+        if (!Optional.ofNullable(vehicleJourney.isExtraJourney()).orElse(false)) {
+            return false;
+        }
+
+        // If Trip exists by DatedServiceJourney then this is not replacement departure
+        return Optional.ofNullable(
+                        siriFuzzyTripMatcher.findTripByDatedVehicleJourneyRef(vehicleJourney))
+                .isEmpty();
+    }
+
+    /**
      * Method to apply a trip update list to the most recent version of the timetable snapshot.
      *
-     *  @param graph graph to update (needed for adding/changing stop patterns)
+     * @param graph       graph to update (needed for adding/changing stop patterns)
      * @param fullDataset true iff the list with updates represent all updates that are active right
-     *        now, i.e. all previous updates should be disregarded
-     * @param updates SIRI VehicleMonitoringDeliveries that should be applied atomically
+     *                    now, i.e. all previous updates should be disregarded
+     * @param updates     SIRI VehicleMonitoringDeliveries that should be applied atomically
      */
-    public void applyEstimatedTimetable(final Graph graph, final String feedId, final boolean fullDataset, final List<EstimatedTimetableDeliveryStructure> updates) {
+    public void applyEstimatedTimetable(
+            final Graph graph,
+            final String feedId,
+            final boolean fullDataset,
+            final List<EstimatedTimetableDeliveryStructure> updates
+    ) {
         if (updates == null) {
             LOG.warn("updates is null");
             return;
@@ -298,7 +319,7 @@ public class SiriTimetableSnapshotSource implements TimetableSnapshotProvider {
                         int addedCounter = 0;
                         int notMonitoredCounter = 0;
                         for (EstimatedVehicleJourney journey : journeys) {
-                            if (journey.isExtraJourney() != null && journey.isExtraJourney()) {
+                            if (isReplacementDeparture(journey)) {
                                 // Added trip
                                 try {
                                     if (handleAddedTrip(graph, feedId, journey)) {
@@ -308,7 +329,10 @@ public class SiriTimetableSnapshotSource implements TimetableSnapshotProvider {
                                     }
                                 } catch (Throwable t) {
                                     // Since this is work in progress - catch everything to continue processing updates
-                                    LOG.warn("Adding ExtraJourney with id='{}' failed, caused by '{}'.", journey.getEstimatedVehicleJourneyCode(), t.getMessage());
+                                    LOG.warn(
+                                            "Adding ExtraJourney with id='{}' failed, caused by '{}'.",
+                                            journey.getEstimatedVehicleJourneyCode(), t.getMessage()
+                                    );
                                     skippedCounter++;
                                 }
                             } else {
