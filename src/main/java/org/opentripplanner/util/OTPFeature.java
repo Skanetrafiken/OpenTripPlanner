@@ -28,6 +28,7 @@ public enum OTPFeature {
     ActuatorAPI(false),
     DataOverlay(false),
     FlexRouting(true),
+    NoTransfersOnIsolatedStops(false),
     FloatingBike(false),
     GoogleCloudStorage(false),
     ReportApi(false),

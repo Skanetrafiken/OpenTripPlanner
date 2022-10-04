@@ -91,6 +91,8 @@ public class DirectTransferGenerator implements GraphBuilderModule {
              * Use map based on the list of edges, so that only distinct transfers are stored. */
             Map<TransferKey, PathTransfer> distinctTransfers = new HashMap<>();
             Stop stop = ts0.getStop();
+            var fromParentStation = stop.getParentStation();
+
             LOG.debug("Linking stop '{}' {}", stop, ts0);
 
             for (RoutingRequest transferProfile : transferRequests) {
@@ -99,6 +101,13 @@ public class DirectTransferGenerator implements GraphBuilderModule {
                 for (NearbyStop sd : nearbyStopFinder.findNearbyStopsConsideringPatterns(ts0, streetRequest, false)) {
                     // Skip the origin stop, loop transfers are not needed.
                     if (sd.stop == stop) { continue; }
+                    var toParentStation = sd.stop.getParentStation();
+                    if (OTPFeature.NoTransfersOnIsolatedStops.isOn()) {
+                        if ((toParentStation != null && toParentStation.isNoTransfers()) ||
+                                (fromParentStation != null && fromParentStation.isNoTransfers())) {
+                            continue;
+                        }
+                    }
                     distinctTransfers.put(
                         new TransferKey(stop, sd.stop, sd.edges),
                         new PathTransfer(stop, sd.stop, sd.distance, sd.edges)

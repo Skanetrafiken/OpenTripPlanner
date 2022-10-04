@@ -1,7 +1,9 @@
 package org.opentripplanner.netex.mapping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import org.rutebanken.netex.model.AccessibilityAssessment;
 import org.rutebanken.netex.model.AccessibilityLimitation;
 import org.rutebanken.netex.model.AccessibilityLimitations_RelStructure;
 import org.rutebanken.netex.model.LimitationStatusEnumeration;
+import org.rutebanken.netex.model.LimitedUseTypeEnumeration;
 import org.rutebanken.netex.model.LocationStructure;
 import org.rutebanken.netex.model.MultilingualString;
 import org.rutebanken.netex.model.Quay;
@@ -251,6 +254,49 @@ public class StopAndStationMapperTest {
         assertEquals(59.909911, childStop1.getLat(), 0.0001);
         assertEquals(10.753008, childStop1.getLon(), 0.0001);
         assertEquals("A", childStop1.getCode());
+    }
+
+    @Test
+    public void testMapIsolatedStopPlace() {
+        assertNoTransferFlag(true);
+        assertNoTransferFlag(false);
+    }
+
+    private void assertNoTransferFlag(boolean isolated) {
+        var stopPlaceById = new HierarchicalVersionMapById<StopPlace>();
+        Collection<StopPlace> stopPlaces = new ArrayList<>();
+
+        StopPlace stopPlace;
+
+        stopPlace = createStopPlace(
+                "NSR:StopPlace:1",
+                "Oslo A",
+                "1",
+                59.909584,
+                10.755165,
+                VehicleModeEnumeration.TRAM);
+        if (isolated) {
+            stopPlace.withLimitedUse(LimitedUseTypeEnumeration.ISOLATED);
+        }
+        stopPlaces.add(stopPlace);
+        stopPlaceById.add(stopPlace);
+
+        StopAndStationMapper stopMapper = new StopAndStationMapper(
+                MappingSupport.ID_FACTORY,
+                new HierarchicalVersionMapById<>(),
+                null,
+                new DataImportIssueStore(false),
+                stopPlaceById
+        );
+
+        stopMapper.mapParentAndChildStops(stopPlaces);
+        Collection<Station> stations = stopMapper.resultStations;
+        assertEquals(1, stations.size());
+        if (isolated) {
+            assertTrue(stations.stream().findFirst().get().isNoTransfers());
+        } else {
+            assertFalse(stations.stream().findFirst().get().isNoTransfers());
+        }
     }
 
     private static StopPlace createStopPlace(

@@ -43,7 +43,8 @@ class StationMapper {
         rhs.getUrl(),
         rhs.getTimezone() == null ? null : TimeZone.getTimeZone(rhs.getTimezone()),
         // Use default cost priority
-        null
+        null,
+        false
     );
   }
 }

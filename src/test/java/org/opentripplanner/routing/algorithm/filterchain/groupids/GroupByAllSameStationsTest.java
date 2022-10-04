@@ -75,7 +75,7 @@ class GroupByAllSameStationsTest implements PlanTestConstants {
 
 
     Station createStation(String name) {
-        return new Station(new FeedScopedId(FEED_ID, name), name, new WgsCoordinate(0, 0), null, null, null, null, null);
+        return new Station(new FeedScopedId(FEED_ID, name), name, new WgsCoordinate(0, 0), null, null, null, null, null, false);
     }
 
 }

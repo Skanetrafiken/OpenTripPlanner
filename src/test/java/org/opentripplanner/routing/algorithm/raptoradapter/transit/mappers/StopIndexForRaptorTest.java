@@ -74,7 +74,7 @@ public class StopIndexForRaptorTest {
     }
 
     Station createStation(String name, StopTransferPriority pri) {
-        return new Station(ANY_ID, name, new WgsCoordinate(0, 0), null, null, null, null, pri);
+        return new Station(ANY_ID, name, new WgsCoordinate(0, 0), null, null, null, null, pri, false);
     }
 
     private static List<StopTime> stopTimes(Stop ... stops) {

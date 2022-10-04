@@ -9,6 +9,7 @@ import com.google.common.collect.Multimap;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.opentripplanner.model.FeedScopedId;
 import org.opentripplanner.model.PathTransfer;
+import org.opentripplanner.model.Station;
 import org.opentripplanner.model.StopLocation;
 import org.opentripplanner.model.StopPattern;
 import org.opentripplanner.model.TransitMode;
@@ -31,6 +33,7 @@ import org.opentripplanner.routing.graph.Edge;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.routing.vertextype.StreetVertex;
 import org.opentripplanner.routing.vertextype.TransitStopVertex;
+import org.opentripplanner.util.OTPFeature;
 
 /**
  * This creates a graph with trip patterns S0 - V0 | S11 - V11 --------> V21 - S21 |     \ S12 - V12
@@ -105,6 +108,7 @@ class DirectTransferGeneratorTest extends GraphRoutingTest {
         );
 
         var graph = graph(false);
+
         graph.index();
         graph.hasStreets = false;
 
@@ -237,6 +241,33 @@ class DirectTransferGeneratorTest extends GraphRoutingTest {
                 tr(S11, 100, List.of(V11, V21), S21),
                 tr(S11, 110, List.of(V11, V22), S22)
         );
+    }
+
+    @Test
+    public void testTransfersOnIsolatedStations() {
+        OTPFeature.enableFeatures(Map.of(OTPFeature.NoTransfersOnIsolatedStops, true));
+
+        var generator = new DirectTransferGenerator(
+                MAX_TRANSFER_DURATION,
+                List.of(
+                        new RoutingRequest(
+                                new RequestModes(null, StreetMode.WALK, null, null, null)
+                        )
+                )
+        );
+
+        var graph = graph(true);
+        graph.hasStreets = true;
+
+        final var NO_TRANSFERS_STATION = Station.stationForTest("Central Station", 60.0, 11.0, true);
+
+        // Loop through all stop, add station marked as noTransfers
+        graph.getVerticesOfType(TransitStopVertex.class).forEach(s -> s.getStop().setParentStation(NO_TRANSFERS_STATION));
+
+        generator.buildGraph(graph, null);
+
+        // No transfers should be possible
+        assertEquals(0, graph.transfersByStop.size());
     }
 
     private void assertTransfers(

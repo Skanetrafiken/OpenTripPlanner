@@ -43,6 +43,8 @@ public class Station extends TransitEntity implements StopCollection {
 
   private final TimeZone timezone;
 
+  private final boolean noTransfers;
+
   // We serialize this class to json only for snapshot tests, and this creates cyclical structures
   @JsonBackReference
   private final Set<StopLocation> childStops = new HashSet<>();
@@ -55,7 +57,8 @@ public class Station extends TransitEntity implements StopCollection {
       String description,
       String url,
       TimeZone timezone,
-      StopTransferPriority priority
+      StopTransferPriority priority,
+      boolean noTransfers
   ) {
     super(id);
     this.name = name;
@@ -67,13 +70,14 @@ public class Station extends TransitEntity implements StopCollection {
     this.priority = priority == null ? DEFAULT_PRIORITY : priority;
     // Initialize the geometry with an empty set of children
     this.geometry = computeGeometry(coordinate, Set.of());
+    this.noTransfers = noTransfers;
   }
 
   /**
    * Create a minimal Station object for unit-test use, where the test only care about id, name and
    * coordinate. The feedId is static set to "F"
    */
-  public static Station stationForTest(String idAndName, double lat, double lon) {
+  public static Station stationForTest(String idAndName, double lat, double lon, boolean noTransfers) {
     return new Station(
             new FeedScopedId("F", idAndName),
             idAndName,
@@ -82,7 +86,8 @@ public class Station extends TransitEntity implements StopCollection {
             "Station " + idAndName,
             null,
             null,
-            StopTransferPriority.ALLOWED
+            StopTransferPriority.ALLOWED,
+            noTransfers
     );
   }
 
@@ -172,5 +177,12 @@ public class Station extends TransitEntity implements StopCollection {
 
     var geometries = stationPoint != null ? new Geometry[]{stationPoint, convexHull} : new Geometry[]{convexHull};
     return getGeometryFactory().createGeometryCollection(geometries);
+  }
+
+  /**
+   * If true do not allow any transfers to or from any stop within station
+   */
+  public boolean isNoTransfers() {
+    return noTransfers;
   }
 }

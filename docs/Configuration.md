@@ -218,3 +218,4 @@ Feature | Description | Enabled by default | Sandbox
 `TransferAnalyzer` | Analyze transfers during graph build | no | yes
 `FlexRouting` | Enable FLEX routing | no | yes
 `FloatingBike` | Enable floating bike routing | no | yes
+`NoTransfersOnIsolatedStops` | If enabled do not allow any transfers either from or to NeTEx stop place with limitedUse marked as ISOLATED (only transit links are allowed) | no | yes

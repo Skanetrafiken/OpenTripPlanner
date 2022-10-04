@@ -9,7 +9,7 @@ import org.opentripplanner.model.Trip;
 public class TransferTestData {
     static final String FEED_ID = "F";
 
-    static final Station STATION = Station.stationForTest("Central Station", 60.0, 11.0);
+    static final Station STATION = Station.stationForTest("Central Station", 60.0, 11.0, false);
 
     static final int POS_1 = 1;
     static final int POS_2 = 2;

@@ -3,6 +3,7 @@ package org.opentripplanner.netex.mapping;
 import org.opentripplanner.graph_builder.DataImportIssueStore;
 import org.opentripplanner.model.Station;
 import org.opentripplanner.netex.mapping.support.FeedScopedIdFactory;
+import org.rutebanken.netex.model.LimitedUseTypeEnumeration;
 import org.rutebanken.netex.model.StopPlace;
 
 
@@ -26,7 +27,8 @@ class StationMapper {
         stopPlace.getDescription() != null ? stopPlace.getDescription().getValue() : null,
         null,
         null,
-        StopTransferPriorityMapper.mapToDomain(stopPlace.getWeighting())
+        StopTransferPriorityMapper.mapToDomain(stopPlace.getWeighting()),
+        LimitedUseTypeEnumeration.ISOLATED.equals(stopPlace.getLimitedUse())
     );
 
     if (station.getCoordinate() == null) {
