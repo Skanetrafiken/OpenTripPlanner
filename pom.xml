@@ -8,7 +8,7 @@
 
     <groupId>se.skanetrafiken</groupId>
     <artifactId>resesok-otp</artifactId>
-    <version>2.0.20</version>
+    <version>2.0.37</version>
     <packaging>jar</packaging>
 
     <licenses>
