@@ -882,6 +882,7 @@ public class SiriTimetableSnapshotSource implements TimetableSnapshotProvider {
                             result = result | addTripToGraphAndBuffer(feedId, graph, trip, modifiedStopTimes, modifiedStops, tripTimes, serviceDate, estimatedVehicleJourney);
                         }
                     } else {
+                        removePreviousRealtimeUpdate(feedId, trip.getId().getId(), serviceDate);
                         result = result | buffer.update(pattern, tripTimes, serviceDate);
                     }
 
