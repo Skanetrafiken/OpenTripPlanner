@@ -146,6 +146,13 @@ public class RaptorPathToItineraryMapper {
     ) {
         TripSchedule tripSchedule = pathLeg.trip();
 
+        // If the next leg is an egress leg without a duration then this transit leg arrives at the destination
+        // The cost of the egress should therefore be included in the last transit leg given that it is the last leg.
+        int lastLegCost = 0;
+        if (pathLeg.nextLeg().isEgressLeg() && pathLeg.nextLeg().duration() == 0) {
+            lastLegCost = pathLeg.nextLeg().generalizedCost();
+        }
+
         // Find stop positions in pattern where this leg boards and alights.
         // We cannot assume every stop appears only once in a pattern, so we
         // have to match stop and time.
@@ -170,7 +177,7 @@ public class RaptorPathToItineraryMapper {
                     transitSearchTimeZero.getZone().normalized(),
                     (prevTransitLeg == null ? null : prevTransitLeg.getTransferToNextLeg()),
                     (ConstrainedTransfer) pathLeg.getConstrainedTransferAfterLeg(),
-                    toOtpDomainCost(pathLeg.generalizedCost()),
+                    toOtpDomainCost(pathLeg.generalizedCost() + lastLegCost),
                     frequencyHeadwayInSeconds
             );
         } else {
@@ -185,7 +192,7 @@ public class RaptorPathToItineraryMapper {
                     transitSearchTimeZero.getZone().normalized(),
                     (prevTransitLeg == null ? null : prevTransitLeg.getTransferToNextLeg()),
                     (ConstrainedTransfer) pathLeg.getConstrainedTransferAfterLeg(),
-                    toOtpDomainCost(pathLeg.generalizedCost())
+                    toOtpDomainCost(pathLeg.generalizedCost() + lastLegCost)
             );
         }
 
