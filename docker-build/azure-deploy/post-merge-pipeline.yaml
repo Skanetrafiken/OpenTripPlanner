@@ -12,9 +12,6 @@ resources:
     name: Infra/common-devops-templates
     ref: refs/tags/3.1.1
 
-variables:
-  buildVersion: '0.1.$(Build.BuildId)'
-
 steps:
 - checkout: self
   persistCredentials: true
@@ -88,7 +85,7 @@ steps:
     azureSubscription: 'ST IKT DEV'
     chartName: otp
     chartPath: docker-build/helm/otp
-    buildVersion: $(buildVersion)
+    buildVersion: variables['OTP_VERSION']
     images:
     - name: otp
       source: docker-build/docker
