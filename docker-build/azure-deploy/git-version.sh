@@ -28,7 +28,7 @@ else
   echo "##vso[task.setvariable variable=SKIP_DEPLOY]true"
 fi
 
-echo "##vso[task.setvariable variable=OTP_VERSION]$version"
+echo "##vso[task.setvariable variable=otpVersion]$version"
 
 if [ $(git tag -l $versionTag) ]; then
   echo "Tag already exists, skipping."

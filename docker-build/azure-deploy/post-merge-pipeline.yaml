@@ -45,7 +45,6 @@ steps:
   displayName: 'Create new git tag with current version'
   env:
     DEVOPS_ACCESSTOKEN: $(System.AccessToken)
-    OTP_VERSION: $(otpVersion)
     MVN_PASSWORD: $(maven-build)
 
 - task: Maven@3
@@ -85,7 +84,7 @@ steps:
     azureSubscription: 'ST IKT DEV'
     chartName: otp
     chartPath: docker-build/helm/otp
-    buildVersion: variables['OTP_VERSION']
+    buildVersion: $(otpVersion)
     images:
     - name: otp
       source: docker-build/docker
