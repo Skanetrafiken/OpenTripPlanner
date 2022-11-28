@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+
+    <proxies/>
+    <servers>
+        <server>
+            <id>skanetrafiken</id>
+            <username>resesok</username>
+            <password>{/Z5wqq6MdNEHMzIQcYBsFOnuprcc9aLpoV9Vixl/cVo=}</password>
+        </server>
+        <server>
+            <id>skanetrafiken-releases</id>
+            <username>resesok</username>
+            <password>{/Z5wqq6MdNEHMzIQcYBsFOnuprcc9aLpoV9Vixl/cVo=}</password>
+        </server>
+        <server>
+            <id>skanetrafiken-snapshots</id>
+            <username>resesok</username>
+            <password>{/Z5wqq6MdNEHMzIQcYBsFOnuprcc9aLpoV9Vixl/cVo=}</password>
+        </server>
+    </servers>
+    <mirrors>
+        <mirror>
+            <id>skanetrafiken</id>
+            <url>https://nexus-dev.skanetrafiken.se/repository/maven-public</url>
+            <mirrorOf>*</mirrorOf>
+        </mirror>
+    </mirrors>
+
+    <profiles>
+        <profile>
+            <id>skanetrafiken-repo</id>
+            <properties>
+                <!--
+                With Maven 3 the default deploy plugin version is 2.7 (https://maven.apache.org/ref/3.6.1/maven-core/default-bindings.html). Then we can only set
+                altDeploymentRepository. This is set to the releases repo. We can not deploy to snapshots, to do so we must override this variable.
+                As of 2.8 the variable is split, on for releases one for snapshots. But since the plugin is not configured in OTP pom.xml we use the default 2.7.
+                -->
+                <altDeploymentRepository>skanetrafiken-releases::default::https://nexus-dev.skanetrafiken.se/repository/maven-releases</altDeploymentRepository>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>skanetrafiken-releases</id>
+                    <url>https://nexus-dev.skanetrafiken.se/repository/maven-releases</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>skanetrafiken-snapshots</id>
+                    <url>https://nexus-dev.skanetrafiken.se/repository/maven-snapshots</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+
+    <activeProfiles>
+        <activeProfile>skanetrafiken-repo</activeProfile>
+    </activeProfiles>
+</settings>

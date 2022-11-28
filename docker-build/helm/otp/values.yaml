@@ -1,0 +1,99 @@
+# Default values for otp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: tjpcrprod.azurecr.io/otp
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  limits:
+    cpu: "6.0"
+    memory: "10Gi"
+  requests:
+    cpu: "4.0"
+    memory: "6Gi"
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+#Parameters set in values files for each environment
+ENVIRONMENT: "set by Azure Pipeline"
+GRAPH_NAME: ""
+
+# Managed identities
+OtpKeyVaultName: "This secret should be set from build pipeline"
+
+azureIdentity:
+  bindingName: "resesok-otp-service-azure-identity-binding"
+  name: "resesok-otp-service-azure-identity"
+
+manageIdentity:
+  clientId: "This secret should be set from build pipeline"
+  resourceId: "This secret should be set from build pipeline"
+
+configmapMounts:
+  - name: config-volume
+    mountPath: /code/otpdata/malmo/router-config.json
+    subPath: router-config.json
+    configMap: otp-router-config
+    readOnly: false
+
+realtime:
+  enabled: true
+  serviceBusConnectionString: "set by Azure pipeline"
+  customMidnight: 4
+  feedId: "ST"
+  siriEt:
+    history:
+      enabled: true
+      url: "http://siri-history-service.roi.svc.cluster.local/realtimehistory/siriethistory"
+      fromDateTime: "-P1D"
+      timeout: 300000
+  siriSx:
+    history:
+      enabled: true
+      url: "http://siri-history-service.roi.svc.cluster.local/realtimehistory/sirisxhistory"
+      publishFromDateTime: "-P1D"
+      publishToDateTime: "P1D"
+      timeout: 30000

@@ -1,0 +1,35 @@
+trigger: none
+pool: TJP
+
+resources:
+  repositories:
+    - repository: self
+
+steps:
+  - checkout: self
+
+  - task: DownloadSecureFile@1
+    displayName: 'Get Maven authorization configuration'
+    name: settingsSecurityxml
+    inputs:
+      secureFile: settings-security.xml
+
+  - bash: cp -p $(settingsSecurityxml.secureFilePath) /tmp/settings-security.xml
+    displayName: 'Copy Maven authorization configuration'
+
+  - task: JavaToolInstaller@0
+    displayName: 'Use JDK 11'
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'PreInstalled'
+
+  - task: Maven@3
+    displayName: 'Package and test'
+    inputs:
+      goals: 'clean test'
+      mavenAuthenticateFeed: true
+      options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U -X'
+      jdkVersionOption: '1.11'
+      jdkArchitectureOption: 'x64'
+      mavenOptions: '-Xmx3G'

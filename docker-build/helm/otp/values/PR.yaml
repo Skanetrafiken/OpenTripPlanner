@@ -1,0 +1,11 @@
+resources:
+  limits:
+    cpu: "2.0"
+    memory: "11Gi"
+  requests:
+    cpu: "1.0"
+    memory: "11Gi"
+# This is used to indicate which storage accounts to fetch from. Since PR does not have its own, it uses the DEV-environment.
+ENVIRONMENT: dev
+realtime:
+  enabled: false

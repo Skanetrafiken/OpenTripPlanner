@@ -1,0 +1,130 @@
+# Pipeline for after pull request has been approved and development branch has been merged to release branch
+trigger:
+- resesok-otp2
+
+pool: TJP
+
+resources:
+  repositories:
+  - repository: self
+  - repository: Common
+    type: git
+    name: Infra/common-devops-templates
+    ref: refs/tags/3.1.1
+
+steps:
+- checkout: self
+  persistCredentials: true
+  clean: true
+
+- task: DownloadSecureFile@1
+  displayName: 'Get Maven authorization configuration'
+  name: settingsSecurity
+  inputs:
+    secureFile: settings-security.xml
+
+# security issue
+- bash: echo $(cp -p $(settingsSecurity.secureFilePath) /tmp/settings-security.xml)
+  displayName: 'Copy Maven authorization configuration'
+
+- task: JavaToolInstaller@0
+  displayName: 'Use JDK 11'
+  inputs:
+    versionSpec: '11'
+    jdkArchitectureOption: 'x64'
+    jdkSourceOption: 'PreInstalled'
+
+- task: AzureKeyVault@1
+  displayName: 'Fetch Nexus password from KeyVault'
+  inputs:
+    azureSubscription: 'ST IKT DEV'
+    KeyVaultName: TJP-INFRA-KV-DEV
+    secretsFilter: 'maven-build'
+
+- bash: docker-build/azure-deploy/git-version.sh
+  displayName: 'Create new git tag with current version'
+  env:
+    DEVOPS_ACCESSTOKEN: $(System.AccessToken)
+    MVN_PASSWORD: $(maven-build)
+
+- task: Maven@3
+  condition: eq(variables['SKIP_DEPLOY'], 'true')
+  displayName: 'Build but skip publish'
+  inputs:
+    goals: 'clean package'
+    options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
+    jdkVersionOption: '1.11'
+    jdkArchitectureOption: 'x64'
+    mavenOptions: '-Xmx2G'
+
+- task: Maven@3
+  condition: eq(variables['SKIP_DEPLOY'], 'false')
+  displayName: 'Build and publish to Skånetrafiken Maven repository'
+  inputs:
+    goals: 'clean package deploy'
+    options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
+    jdkVersionOption: '1.11'
+    jdkArchitectureOption: 'x64'
+    mavenOptions: '-Xmx2G'
+
+- task: PublishCodeCoverageResults@1
+  displayName: 'Report code coverage'
+  inputs:
+    codeCoverageTool: 'JaCoCo'
+    reportDirectory: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/**/*.*
+    summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/jacoco.xml
+
+- task: Bash@3
+  displayName: 'Copy data to docker build directory'
+  inputs:
+    filePath: docker-build/docker/copy-docker-data.sh
+
+- template: as-a-service/build.yaml@Common
+  parameters:
+    azureSubscription: 'ST IKT DEV'
+    chartName: otp
+    chartPath: docker-build/helm/otp
+    buildVersion: $(otpVersion)
+    images:
+    - name: otp
+      source: docker-build/docker
+
+# Trigger deploy to PR environment
+- task: TriggerBuild@3
+  displayName: 'Trigger resesok-otp-deploy-pr'
+  inputs:
+    definitionIsInCurrentTeamProject: true
+    buildDefinition: 'resesok-otp-deploy-pr'
+    queueBuildForUserThatTriggeredBuild: true
+    ignoreSslCertificateErrors: false
+    useSameSourceVersion: false
+    useCustomSourceVersion: false
+    useSameBranch: true
+    waitForQueuedBuildsToFinish: false
+    storeInEnvironmentVariable: false
+    authenticationMethod: 'OAuth Token'
+    enableBuildInQueueCondition: false
+    dependentOnSuccessfulBuildCondition: false
+    dependentOnFailedBuildCondition: false
+    checkbuildsoncurrentbranch: false
+    failTaskIfConditionsAreNotFulfilled: false
+
+- task: TriggerBuild@3
+  displayName: 'Trigger resesok-proxy'
+  inputs:
+    definitionIsInCurrentTeamProject: true
+    buildDefinition: resesok-proxy
+    queueBuildForUserThatTriggeredBuild: true
+    ignoreSslCertificateErrors: false
+    useSameSourceVersion: false
+    useCustomSourceVersion: false
+    useSameBranch: false
+    branchToUse: master
+    waitForQueuedBuildsToFinish: false
+    storeInEnvironmentVariable: false
+    authenticationMethod: 'OAuth Token'
+    enableBuildInQueueCondition: false
+    dependentOnSuccessfulBuildCondition: false
+    dependentOnFailedBuildCondition: false
+    checkbuildsoncurrentbranch: false
+    failTaskIfConditionsAreNotFulfilled: false

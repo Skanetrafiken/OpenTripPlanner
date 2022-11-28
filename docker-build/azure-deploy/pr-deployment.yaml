@@ -1,0 +1,37 @@
+trigger: none
+pool: TJP
+
+resources:
+  repositories:
+  - repository: self
+  - repository: Common
+    type: git
+    name: Infra/common-devops-templates
+    ref: refs/tags/3.1.1
+
+steps:
+- task: AzureKeyVault@1
+  displayName: 'Get deployment secrets'
+  inputs:
+    azureSubscription: 'ST IKT DEV'
+    KeyVaultName: TJP-INFRA-KV-DEV
+    SecretsFilter: >-
+      ResResesokProxyClientId,
+      ResResesokProxyResourceId,
+
+- template: as-a-service/deploy.yaml@Common
+  parameters:
+    namespace: otp
+    environment: PR
+    azureSubscription: 'ST IKT DEV'
+    deployments:
+    - name: resesok-otp
+      chart: otp
+      version: latest
+      timeout: 30m0s
+      uninstallFirst: true
+      values: docker-build/helm/otp/values/PR.yaml
+      override:
+      - OtpKeyVaultName=RES-RESP-KV-DEV
+      - manageIdentity.clientId=$(ResResesokProxyClientId)
+      - manageIdentity.resourceId=$(ResResesokProxyResourceId)
