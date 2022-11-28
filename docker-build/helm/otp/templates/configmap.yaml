@@ -1,0 +1,65 @@
+apiVersion: v1
+data:
+  router-config.json: |+
+    {
+      "routingDefaults": {
+        "itineraryFilters": {
+          "filterItinerariesWithSameFirstOrLastTrip": true
+        },
+        "transferSlack": 180,
+        "waitReluctance": 0.175,
+        "walkReluctance": 5,
+        "maxDirectStreetDurationSeconds": 3700,
+        "unpreferredModeCost": "720 + 0.0 x",
+        "unpreferredModes": ["RAIL"]
+      },
+      "transit": {
+        "pagingSearchWindowAdjustments": ["24h", "0h"],
+        "dynamicSearchWindow" : {
+          "maxWinTimeMinutes" : 3840
+        },
+        "stopTransferCost": {
+          "DISCOURAGED" : 3000,
+          "ALLOWED" : 150,
+          "RECOMMENDED" : 60,
+          "PREFERRED" : 0
+        }
+      },
+      "updaters": [
+        {{- if .Values.realtime.enabled }}
+          {
+            "type": "siri-azure-et-updater",
+            "topic": "siri_et",
+            "servicebus-url": "{{ .Values.realtime.serviceBusConnectionString }}",
+            "customMidnight": {{ .Values.realtime.customMidnight }},
+            "feedId": "{{ .Values.realtime.feedId }}",
+          {{- if .Values.realtime.siriEt.history.enabled }}
+            "history": {
+              "url": "{{ .Values.realtime.siriEt.history.url }}",
+              "fromDateTime": "{{ .Values.realtime.siriEt.history.fromDateTime }}",
+              "timeout": "{{ .Values.realtime.siriEt.history.timeout }}"
+            }
+          {{- end }}
+          },
+          {
+            "type": "siri-azure-sx-updater",
+            "topic": "siri_sx",
+            "servicebus-url": "{{ .Values.realtime.serviceBusConnectionString }}",
+            "customMidnight": {{ .Values.realtime.customMidnight }},
+            "feedId": "{{ .Values.realtime.feedId }}",
+            {{- if .Values.realtime.siriSx.history.enabled }}
+            "history": {
+              "url": "{{ .Values.realtime.siriSx.history.url }}",
+              "publishFromDateTime": "{{ .Values.realtime.siriSx.history.publishFromDateTime }}",
+              "publishToDateTime": "{{ .Values.realtime.siriSx.history.publishToDateTime }}",
+              "timeout": "{{ .Values.realtime.siriSx.history.timeout }}"
+            }
+            {{- end }}
+          }
+          {{- end }}
+        ]
+    }
+kind: ConfigMap
+metadata:
+  name: {{ template "otp.name" . }}-router-config
+  namespace: {{ .Release.Namespace }}

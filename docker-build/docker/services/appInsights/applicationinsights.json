@@ -1,0 +1,10 @@
+{
+  "preview": {
+    "openTelemetryApiSupport": true,
+    "instrumentation": {
+        "grizzly": {
+            "enabled": true
+        }
+    }
+  }
+}
