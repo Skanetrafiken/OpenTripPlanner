@@ -1,0 +1,26 @@
+trigger: none
+pool: TJP
+
+resources:
+  repositories:
+    - repository: self
+    - repository: Common
+      type: git
+      name: Infra/common-devops-templates
+      ref: refs/tags/3.1.1
+
+steps:
+  - template: internal-tasks/get-kubeconfig.yaml@Common
+    parameters:
+      environment: PR
+      azureSubscription: 'ST IKT DEV'
+
+  - task: AzureCLI@2
+    displayName: Restart OTP in PR cluster with kubectl
+    inputs:
+      azureSubscription: 'ST IKT DEV'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        kubectl delete pods -l app=otp -n otp
+

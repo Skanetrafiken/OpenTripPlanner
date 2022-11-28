@@ -1,0 +1,106 @@
+trigger: none
+pool: TJP
+
+# This pipeline is not used by Azure but it is useful if we want to deploy OTP
+# but skip the git tag & nexus repo steps.
+resources:
+  repositories:
+    - repository: self
+    - repository: Common
+      type: git
+      name: Infra/common-devops-templates
+      ref: refs/tags/3.1.1
+
+variables:
+  buildVersion: '0.1.$(Build.BuildId)'
+
+steps:
+  - checkout: self
+
+  - task: DownloadSecureFile@1
+    displayName: 'Get Maven authorization configuration'
+    name: settingsSecurityxml
+    inputs:
+      secureFile: settings-security.xml
+
+  # security issue
+  - bash: cp -p $(settingsSecurityxml.secureFilePath) /tmp/settings-security.xml
+    displayName: 'Copy Maven authorization configuration'
+
+  - task: JavaToolInstaller@0
+    displayName: 'Use JDK 11'
+    inputs:
+      versionSpec: '11'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'PreInstalled'
+
+  - task: Maven@3
+    displayName: 'Package and test'
+    inputs:
+      goals: 'clean package'
+      mavenAuthenticateFeed: true
+      options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U -X'
+      jdkVersionOption: '1.11'
+      jdkArchitectureOption: 'x64'
+      mavenOptions: '-Xmx2G'
+
+  - task: PublishCodeCoverageResults@1
+    displayName: 'Report code coverage'
+    inputs:
+      codeCoverageTool: 'JaCoCo'
+      reportDirectory: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/**/*.*
+      summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/jacoco.xml
+
+  - task: Bash@3
+    displayName: 'Copy data to docker build directory'
+    inputs:
+      filePath: docker-build/docker/copy-docker-data.sh
+
+  - template: as-a-service/build.yaml@Common
+    parameters:
+      azureSubscription: 'ST IKT DEV'
+      chartName: otp
+      chartPath: docker-build/helm/otp
+      buildVersion: $(buildVersion)
+      images:
+        - name: otp
+          source: docker-build/docker
+
+  - task: TriggerBuild@3
+    displayName: 'Trigger resesok-otp-deploy-pr'
+    inputs:
+      definitionIsInCurrentTeamProject: true
+      buildDefinition: resesok-otp-deploy-pr
+      queueBuildForUserThatTriggeredBuild: true
+      ignoreSslCertificateErrors: false
+      useSameSourceVersion: false
+      useCustomSourceVersion: false
+      useSameBranch: true
+      waitForQueuedBuildsToFinish: false
+      storeInEnvironmentVariable: false
+      authenticationMethod: 'OAuth Token'
+      enableBuildInQueueCondition: false
+      dependentOnSuccessfulBuildCondition: false
+      dependentOnFailedBuildCondition: false
+      checkbuildsoncurrentbranch: false
+      failTaskIfConditionsAreNotFulfilled: false
+
+  - task: TriggerBuild@3
+    displayName: 'Trigger resesok-proxy'
+    inputs:
+      definitionIsInCurrentTeamProject: true
+      buildDefinition: resesok-proxy
+      queueBuildForUserThatTriggeredBuild: true
+      ignoreSslCertificateErrors: false
+      useSameSourceVersion: false
+      useCustomSourceVersion: false
+      useSameBranch: false
+      branchToUse: master
+      waitForQueuedBuildsToFinish: false
+      storeInEnvironmentVariable: false
+      authenticationMethod: 'OAuth Token'
+      enableBuildInQueueCondition: false
+      dependentOnSuccessfulBuildCondition: false
+      dependentOnFailedBuildCondition: false
+      checkbuildsoncurrentbranch: false
+      failTaskIfConditionsAreNotFulfilled: false

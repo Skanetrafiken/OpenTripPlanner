@@ -1,0 +1,7 @@
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentityBinding
+metadata:
+  name: {{ .Values.azureIdentity.bindingName }}
+spec:
+  azureIdentity: {{ .Values.azureIdentity.name }}
+  selector: {{ .Values.azureIdentity.bindingName }} #replace me with a sensible label, if your pod defines this label in its deployment.yaml it will get assigned the AzureIdentity you defined above
