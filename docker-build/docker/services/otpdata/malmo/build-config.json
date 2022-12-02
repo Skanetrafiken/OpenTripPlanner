@@ -1,5 +1,4 @@
 {
-	"useTransit": true,
 	"areaVisibility": true,
 	"parentStopLinking": true,
 	"platformEntriesLinking": true,
@@ -7,13 +6,15 @@
 	"islandWithoutStopsMaxSize": 5,
 	"islandWithStopsMaxSize": 5,
 	"dataImportReport": true,
-	"maxTransferDistance": 5000,
+	"maxTransferDurationSeconds": 3600,
 	"maxStopToShapeSnapDistance": 500,
-	"netex" : {
-		"moduleFilePattern" : ".*-netex\\.zip",
-		"sharedFilePattern" : "ST_stops.xml",
-		"sharedGroupFilePattern" : "(\\w{2})_shared_data.xml",
-		"groupFilePattern" : "(\\w{2})_line.*\\.xml",
-		"netexFeedId": "ST"
+	"transitModelTimeZone": "Europe/Stockholm",
+	"timeZone": "Europe/Stockholm",
+	"netexDefaults": {
+		"feedId": "ST",
+		"sharedFilePattern": "ST_stops.xml",
+		"sharedGroupFilePattern": "(\\w{2})_shared_data.xml",
+		"groupFilePattern": "(\\w{2})_line.*\\.xml",
+		"noTransfersOnIsolatedStops": true
 	}
 }
