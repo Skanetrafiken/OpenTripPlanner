@@ -10,9 +10,9 @@ steps:
     path: master
 
   - task: JavaToolInstaller@0
-    displayName: 'Use JDK 11'
+    displayName: 'Use JDK 17'
     inputs:
-      versionSpec: '11'
+      versionSpec: '17'
       jdkArchitectureOption: 'x64'
       jdkSourceOption: 'PreInstalled'
 
