@@ -64,16 +64,21 @@ public class TransferIndexGenerator {
         continue;
       }
 
-      findTPoints(tx.getFrom(), ALIGHT)
-        .stream()
-        .filter(TPoint::canAlight)
-        .forEachOrdered(fromPoint -> {
-          for (var toPoint : findTPoints(tx.getTo(), BOARD)) {
-            if (toPoint.canBoard() && !fromPoint.equals(toPoint)) {
-              fromPoint.addTransferConstraints(tx, toPoint, forwardTransfers, reverseTransfers);
+      try {
+        findTPoints(tx.getFrom(), ALIGHT)
+          .stream()
+          .filter(TPoint::canAlight)
+          .forEachOrdered(fromPoint -> {
+            for (var toPoint : findTPoints(tx.getTo(), BOARD)) {
+              if (toPoint.canBoard() && !fromPoint.equals(toPoint)) {
+                fromPoint.addTransferConstraints(tx, toPoint, forwardTransfers, reverseTransfers);
+              }
             }
-          }
-        });
+          });
+      } catch (Exception e) {
+        LOG.error("Unable to generate transfers:", e);
+        LOG.warn("Affected transfer {}", tx);
+      }
     }
 
     sortTransfers(forwardTransfers);
