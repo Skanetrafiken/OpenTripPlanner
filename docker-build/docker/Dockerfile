@@ -1,8 +1,8 @@
 FROM openjdk:17.0.2-slim-buster
 
+RUN apt update > /dev/null 2>&1
 RUN apt -y install jq ca-certificates curl apt-transport-https lsb-release gnupg > /dev/null 2>&1
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-RUN apt update > /dev/null 2>&1
 RUN apt-get -y install zip unzip
 
 # install application insights
