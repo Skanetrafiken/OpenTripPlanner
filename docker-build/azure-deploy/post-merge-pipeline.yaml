@@ -47,6 +47,12 @@ steps:
     DEVOPS_ACCESSTOKEN: $(System.AccessToken)
     MVN_PASSWORD: $(maven-build)
 
+- bash: sed -i 's/<groupId>org.opentripplanner<\/groupId>/<groupId>se.skanetrafiken<\/groupId>/' pom.xml
+  displayName: 'Change groupId'
+
+- bash: sed -i 's/<artifactId>otp<\/artifactId>/<artifactId>resesok-otp<\/artifactId>/' pom.xml
+  displayName: 'Change artifactId'
+
 - task: Maven@3
   condition: eq(variables['SKIP_DEPLOY'], 'true')
   displayName: 'Build but skip publish'

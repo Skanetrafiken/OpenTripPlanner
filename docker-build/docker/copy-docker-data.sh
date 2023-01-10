@@ -13,4 +13,4 @@ cd $bashdir/../.. || exit
 
 cleanTarget
 mkdir $DATA_FOLDER
-cp target/otp*shaded.jar $DATA_FOLDER
+cp target/resesok-otp*shaded.jar $DATA_FOLDER
