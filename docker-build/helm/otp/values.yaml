@@ -73,11 +73,16 @@ manageIdentity:
   resourceId: "This secret should be set from build pipeline"
 
 configmapMounts:
-  - name: config-volume
+  - name: router-config-volume
     mountPath: /code/otpdata/malmo/router-config.json
     subPath: router-config.json
     configMap: otp-router-config
     readOnly: false
+  - name: otp-config-volume
+    mountPath: /code/otpdata/malmo/otp-config.json
+    subPath: otp-config.json
+    configMap: otp-otp-config
+    readnOnly: false
 
 realtime:
   enabled: true
