@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "otp.name" . }}-otp-config
+  namespace: {{ .Release.Namespace }}
+data:
+  otp-config.json: |+
+    {
+      "otpFeatures": {
+        "OptimizeTransfers": true,
+        "ActuatorAPI": true,
+        "FlexRouting": true,
+        "NoTransfersOnIsolatedStops": true,
+        "SandboxAPITransmodelApi": true
+      }
+    }
