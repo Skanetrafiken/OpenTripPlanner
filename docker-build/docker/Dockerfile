@@ -13,8 +13,8 @@ WORKDIR /code
 COPY target/resesok-otp-*-shaded.jar /code/otp-shaded.jar
 COPY docker-build/docker/services/ /code
 
-RUN curl -LO https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.2.0-BETA.2/applicationinsights-agent-3.2.0-BETA.2.jar
-RUN mv applicationinsights-agent-3.2.0-BETA.2.jar /code/appInsights/applicationinsights-agent.jar
+RUN curl -LO https://github.com/microsoft/ApplicationInsights-Java/releases/download/3.4.7/applicationinsights-agent-3.4.7.jar
+RUN mv applicationinsights-agent-3.4.7.jar /code/appInsights/applicationinsights-agent.jar
 
 RUN chmod a+x /code/*.sh
 
