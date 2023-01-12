@@ -10,7 +10,6 @@ data:
         "OptimizeTransfers": true,
         "ActuatorAPI": true,
         "FlexRouting": true,
-        "NoTransfersOnIsolatedStops": true,
         "SandboxAPITransmodelApi": true
       }
     }
