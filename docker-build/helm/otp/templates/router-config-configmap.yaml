@@ -4,7 +4,11 @@ data:
     {
       "routingDefaults": {
         "itineraryFilters": {
-          "filterItinerariesWithSameFirstOrLastTrip": true
+          "filterItinerariesWithSameFirstOrLastTrip": true,
+          "transitGeneralizedCostLimit" : {
+            "costLimitFunction" : "3600 + 2.0 x",
+            "intervalRelaxFactor" : 0.4
+          }
         },
         "transferSlack": 180,
         "waitReluctance": 0.175,
