@@ -6,7 +6,7 @@
 	"islandWithoutStopsMaxSize": 5,
 	"islandWithStopsMaxSize": 5,
 	"dataImportReport": true,
-	"maxTransferDurationSeconds": 3600,
+	"maxTransferDurationSeconds": 1504,
 	"maxStopToShapeSnapDistance": 500,
 	"transitModelTimeZone": "Europe/Stockholm",
 	"timeZone": "Europe/Stockholm",
