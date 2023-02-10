@@ -76,8 +76,9 @@ public class TransferIndexGenerator {
             }
           });
       } catch (Exception e) {
-        LOG.error("Unable to generate transfers:", e);
-        LOG.warn("Affected transfer {}", tx);
+        // TODO Disable logging until issue with NeTEx data quality can be resolved.
+        //        LOG.error("Unable to generate transfers:", e);
+        //        LOG.warn("Affected transfer {}", tx);
       }
     }
 
