@@ -361,7 +361,7 @@ public class SiriTimetableSnapshotSource implements TimetableSnapshotProvider {
     var datedServiceJourneyId = resolveDatedServiceJourneyId(vehicleJourney);
     return datedServiceJourneyId
       .map(dsjId ->
-        getTimetableSnapshot()
+        !getTimetableSnapshot()
           .getRealtimeAddedTripOnServiceDate()
           .containsKey(new FeedScopedId(feedId, dsjId))
       )
