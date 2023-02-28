@@ -7,9 +7,32 @@ data:
   otp-config.json: |+
     {
       "otpFeatures": {
+        "APIBikeRental": true,
+        "APIServerInfo": true,
+        "APIGraphInspectorTile": true,
+        "APIUpdaterStatus": true,
+        "ConsiderPatternsForDirectTransfers": false,
+        "DebugClient": true,
+        "FloatingBike": true,
+        "MinimumTransferTimeIsDefinitive": false,
         "OptimizeTransfers": true,
-        "ActuatorAPI": true,
+        "ParallelRouting": true,
+        "TransferConstraints": true,
+
+        "ActuatorAPI": false,
+        "DataOverlay": false,
+        "FaresV2": false,
         "FlexRouting": true,
-        "SandboxAPITransmodelApi": true
+        "GoogleCloudStorage": false,
+        "ReportApi": false,
+        "SandboxAPIGeocoder": false,
+        "SandboxAPILegacyGraphQLApi": false,
+        "SandboxAPIMapboxVectorTilesApi": false,
+        "SandboxAPIParkAndRideApi": false,
+        "SandboxAPITransmodelApi": true,
+        "SandboxAPITravelTime": false,
+        "TransferAnalyzer": false,
+        "VehicleToStopHeuristics": false,
+        "RealtimeResolver": true
       }
     }
