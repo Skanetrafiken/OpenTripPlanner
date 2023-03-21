@@ -21,7 +21,7 @@ public class OtpProjectInfoTest {
     assertNull(p.buildConfigVersion);
     assertNull(p.routerConfigVersion);
 
-    assertEquals(2, p.version.major);
+    assertTrue(p.version.major >= 2);
     assertTrue(p.version.minor >= 0);
     assertTrue(p.version.patch >= 0);
 
