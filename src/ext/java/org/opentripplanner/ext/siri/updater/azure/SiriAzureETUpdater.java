@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import javax.xml.stream.XMLStreamException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.opentripplanner.ext.siri.SiriTimetableSnapshotSource;
 import org.opentripplanner.framework.io.HttpUtils;
@@ -122,6 +123,30 @@ public class SiriAzureETUpdater extends AbstractAzureSiriUpdater {
         return;
       }
 
+      super.saveResultOnGraph.execute((graph, transitModel) ->
+        snapshotSource.applyEstimatedTimetable(
+          transitModel,
+          fuzzyTripMatcher(),
+          entityResolver(),
+          feedId,
+          false,
+          updates
+        )
+      );
+    } catch (JAXBException | XMLStreamException e) {
+      LOG.error(e.getLocalizedMessage(), e);
+    }
+  }
+
+  private void processHistory(String message, String id) {
+    try {
+      List<EstimatedTimetableDeliveryStructure> updates = getUpdates(message, id);
+
+      if (updates.isEmpty()) {
+        LOG.info("Did not receive any ET messages from history endpoint");
+        return;
+      }
+
       var f = super.saveResultOnGraph.execute((graph, transitModel) -> {
         try {
           long t1 = System.currentTimeMillis();
@@ -140,46 +165,14 @@ public class SiriAzureETUpdater extends AbstractAzureSiriUpdater {
             (System.currentTimeMillis() - t1),
             DurationUtils.durationToStr(Duration.between(startTime, Instant.now()))
           );
+
           setPrimed(true);
         } catch (Exception e) {
-          LOG.error("Could not process history: {}", e.getMessage());
+          LOG.error("Could not process ET history: {}", ExceptionUtils.getStackTrace(e));
         }
       });
       f.get();
     } catch (JAXBException | XMLStreamException | ExecutionException | InterruptedException e) {
-      LOG.error(e.getLocalizedMessage(), e);
-    }
-  }
-
-  private void processHistory(String message, String id) {
-    try {
-      List<EstimatedTimetableDeliveryStructure> updates = getUpdates(message, id);
-
-      if (updates.isEmpty()) {
-        LOG.info("Did not receive any ET messages from history endpoint");
-        return;
-      }
-
-      super.saveResultOnGraph.execute((graph, transitModel) -> {
-        long t1 = System.currentTimeMillis();
-        var result = snapshotSource.applyEstimatedTimetable(
-          transitModel,
-          fuzzyTripMatcher(),
-          entityResolver(),
-          feedId,
-          false,
-          updates
-        );
-        recordMetrics.accept(result);
-
-        setPrimed(true);
-        LOG.info(
-          "Azure ET updater initialized after {} ms: [time since startup: {}]",
-          (System.currentTimeMillis() - t1),
-          DurationUtils.durationToStr(Duration.between(startTime, Instant.now()))
-        );
-      });
-    } catch (JAXBException | XMLStreamException e) {
       LOG.error(e.getLocalizedMessage(), e);
     }
   }
