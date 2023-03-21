@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import javax.xml.stream.XMLStreamException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.opentripplanner.ext.siri.SiriTimetableSnapshotSource;
 import org.opentripplanner.framework.io.HttpUtils;
@@ -167,7 +168,7 @@ public class SiriAzureETUpdater extends AbstractAzureSiriUpdater {
 
           setPrimed(true);
         } catch (Exception e) {
-          LOG.error("Could not process history: {}", e.getMessage());
+          LOG.error("Could not process ET history: {}", ExceptionUtils.getStackTrace(e));
         }
       });
       f.get();
