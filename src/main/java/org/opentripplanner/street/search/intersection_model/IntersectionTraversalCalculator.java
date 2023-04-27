@@ -39,6 +39,7 @@ public interface IntersectionTraversalCalculator {
     return switch (intersectionTraversalModel) {
       case NORWAY -> new NorwayIntersectionTraversalCalculator(drivingDirection);
       case SIMPLE -> new SimpleIntersectionTraversalCalculator(drivingDirection);
+      case SKANE -> new SkaneIntersectionTraversalCalculator(drivingDirection);
     };
   }
 }
