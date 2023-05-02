@@ -8,12 +8,20 @@ import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLOutputType;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.opentripplanner.ext.transmodelapi.TransmodelGraphQLPlanner;
 import org.opentripplanner.ext.transmodelapi.model.DefaultRouteRequestType;
 import org.opentripplanner.ext.transmodelapi.model.EnumTypes;
 import org.opentripplanner.ext.transmodelapi.model.TransportModeSlack;
 import org.opentripplanner.ext.transmodelapi.model.framework.LocationInputType;
 import org.opentripplanner.ext.transmodelapi.support.GqlUtil;
+import org.opentripplanner.routing.api.request.StreetMode;
+import org.opentripplanner.routing.api.request.framework.DurationForEnum;
 import org.opentripplanner.routing.api.request.preference.RoutingPreferences;
 import org.opentripplanner.routing.core.BicycleOptimizeType;
 
@@ -514,6 +522,7 @@ public class TripQuery {
             "Cannot be higher than default value. This is a performance optimisation parameter, avoid using it to limit the search. "
           )
           .type(new GraphQLList(new GraphQLNonNull(durationPerStreetModeType)))
+          .defaultValue(getDefaultValues(preferences.street().maxAccessEgressDuration()))
           .build()
       )
       .argument(
@@ -525,6 +534,7 @@ public class TripQuery {
             "Cannot be higher than default value. This is a performance optimisation parameter, avoid using it to limit the search."
           )
           .type(new GraphQLList(new GraphQLNonNull(durationPerStreetModeType)))
+          .defaultValue(getDefaultValues(preferences.street().maxDirectDuration()))
           .build()
       )
       .dataFetcher(environment -> new TransmodelGraphQLPlanner().plan(environment))
@@ -540,5 +550,20 @@ public class TripQuery {
       .findFirst()
       .get()
       .getName();
+  }
+
+  private static List<Map<String, Object>> getDefaultValues(DurationForEnum durations) {
+    return EnumTypes.STREET_MODE
+      .getValues()
+      .stream()
+      .map(sm -> {
+        Map<String, Object> map = new HashMap<>();
+        var streetMode = (StreetMode) sm.getValue();
+        map.put("streetMode", streetMode);
+        map.put("duration", durations.valueOf(streetMode));
+
+        return map;
+      })
+      .toList();
   }
 }
