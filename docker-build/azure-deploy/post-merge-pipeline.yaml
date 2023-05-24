@@ -67,7 +67,7 @@ steps:
   condition: eq(variables['SKIP_DEPLOY'], 'false')
   displayName: 'Build and publish to Skånetrafiken Maven repository'
   inputs:
-    goals: 'clean package deploy'
+    goals: 'clean deploy'
     options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
     jdkVersionOption: '1.17'
     jdkArchitectureOption: 'x64'
