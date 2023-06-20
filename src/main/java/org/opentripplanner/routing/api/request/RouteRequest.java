@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -22,6 +24,7 @@ import org.opentripplanner.routing.api.response.InputField;
 import org.opentripplanner.routing.api.response.RoutingError;
 import org.opentripplanner.routing.api.response.RoutingErrorCode;
 import org.opentripplanner.routing.error.RoutingValidationException;
+import org.opentripplanner.transit.model.site.StopLocations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +55,8 @@ public class RouteRequest implements Cloneable, Serializable {
   private GenericLocation from;
 
   private GenericLocation to;
+
+  private List<StopLocations> passthroughLocations = Collections.emptyList();
 
   private Instant dateTime = Instant.now();
 
@@ -293,6 +298,14 @@ public class RouteRequest implements Cloneable, Serializable {
 
   public void setTo(GenericLocation to) {
     this.to = to;
+  }
+
+  public List<StopLocations> getPassthroughLocations() {
+    return passthroughLocations;
+  }
+
+  public void setPassthroughLocations(final List<StopLocations> passthroughLocations) {
+    this.passthroughLocations = passthroughLocations;
   }
 
   /**

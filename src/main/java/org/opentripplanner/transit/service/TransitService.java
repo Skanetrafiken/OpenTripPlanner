@@ -98,6 +98,8 @@ public interface TransitService {
 
   StopLocation getStopLocation(FeedScopedId parseId);
 
+  Collection<StopLocation> getStopOrChildStops(FeedScopedId id);
+
   Collection<StopLocationsGroup> listStopLocationGroups();
 
   StopLocationsGroup getStopLocationsGroup(FeedScopedId id);
