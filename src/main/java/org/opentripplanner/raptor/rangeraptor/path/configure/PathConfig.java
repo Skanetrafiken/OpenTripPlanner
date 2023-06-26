@@ -2,6 +2,8 @@ package org.opentripplanner.raptor.rangeraptor.path.configure;
 
 import static org.opentripplanner.raptor.rangeraptor.path.PathParetoSetComparators.paretoComparator;
 
+import java.util.List;
+import java.util.Set;
 import org.opentripplanner.raptor.api.model.RaptorTripSchedule;
 import org.opentripplanner.raptor.api.model.SearchDirection;
 import org.opentripplanner.raptor.api.path.RaptorPath;
@@ -41,7 +43,7 @@ public class PathConfig<T extends RaptorTripSchedule> {
    * @param includeC2Cost whether to include c2 cost in the pareto set criteria.
    *                      It will be generated for each leg and a total for the path.
    */
-  public DestinationArrivalPaths<T> createDestArrivalPaths(boolean includeGeneralizedCost, boolean includeC2Cost) {
+  public DestinationArrivalPaths<T> createDestArrivalPaths(boolean includeGeneralizedCost, boolean includeC2Cost, List<Set<Integer>> viaIndexes) {
     return new DestinationArrivalPaths<>(
       createPathParetoComparator(includeGeneralizedCost, includeC2Cost),
       ctx.calculator(),
@@ -50,7 +52,8 @@ public class PathConfig<T extends RaptorTripSchedule> {
       createPathMapper(includeGeneralizedCost),
       ctx.debugFactory(),
       ctx.stopNameResolver(),
-      ctx.lifeCycle()
+      ctx.lifeCycle(),
+      viaIndexes
     );
   }
 

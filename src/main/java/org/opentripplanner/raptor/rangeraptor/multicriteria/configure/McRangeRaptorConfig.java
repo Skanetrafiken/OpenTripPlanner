@@ -2,6 +2,7 @@ package org.opentripplanner.raptor.rangeraptor.multicriteria.configure;
 
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import org.opentripplanner.raptor.api.model.DominanceFunction;
@@ -90,7 +91,7 @@ public class McRangeRaptorConfig<T extends RaptorTripSchedule> {
       context.costCalculator(),
       context.slackProvider(),
       createPatternRideParetoSet(patternRideComparator),
-      context.multiCriteria().transitViaRequest().map(RaptorTransitViaRequest::viaPoints).orElse(new HashSet<>())
+      context.multiCriteria().transitViaRequest().map(RaptorTransitViaRequest::viaPoints).orElse(List.of())
     );
   }
 
@@ -142,7 +143,11 @@ public class McRangeRaptorConfig<T extends RaptorTripSchedule> {
 
   private DestinationArrivalPaths<T> createDestinationArrivalPaths() {
     if (paths == null) {
-      paths = pathConfig.createDestArrivalPaths(true, includeC2());
+      paths = pathConfig.createDestArrivalPaths(
+        true,
+        includeC2(),
+        context.multiCriteria().transitViaRequest().map(RaptorTransitViaRequest::viaPoints).orElse(List.of())
+        );
     }
     return paths;
   }

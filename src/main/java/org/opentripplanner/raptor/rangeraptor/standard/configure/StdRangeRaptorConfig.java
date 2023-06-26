@@ -4,6 +4,7 @@ import static org.opentripplanner.raptor.api.request.RaptorProfile.MIN_TRAVEL_DU
 import static org.opentripplanner.raptor.rangeraptor.path.PathParetoSetComparators.paretoComparator;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.opentripplanner.raptor.api.model.RaptorTripSchedule;
 import org.opentripplanner.raptor.api.model.RelaxFunction;
@@ -175,7 +176,7 @@ public class StdRangeRaptorConfig<T extends RaptorTripSchedule> {
 
   private DestinationArrivalPaths<T> destinationArrivalPaths() {
     // TODO: 2023-05-19 via pass through: Since this is range raptor, no C2?
-    var destinationArrivalPaths = pathConfig.createDestArrivalPaths(false, false);
+    var destinationArrivalPaths = pathConfig.createDestArrivalPaths(false, false, List.of());
 
     // Add egressArrivals to stops and bind them to the destination arrival paths. The
     // adapter notify the destination on each new egress stop arrival.

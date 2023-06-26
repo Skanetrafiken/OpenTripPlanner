@@ -1,15 +1,18 @@
 package org.opentripplanner.raptor.api.request;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.opentripplanner.raptor.api.model.DominanceFunction;
 
 public class RaptorTransitViaRequest implements C2Request {
 
-  HashSet<Integer> viaPoints = new HashSet<>();
+  private List<Set<Integer>> viaPoints = new ArrayList<>();
 
   // TODO: 2023-05-19 we haven't decided yet how this should look
   //  Probably not a HashSet<Integer>
-  public HashSet<Integer> viaPoints() {
+  public List<Set<Integer>> viaPoints() {
    return viaPoints;
   }
 

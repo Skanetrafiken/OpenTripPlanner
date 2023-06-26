@@ -2,6 +2,8 @@ package org.opentripplanner.raptor.rangeraptor.path;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.opentripplanner.framework.lang.OtpNumberFormat;
 import org.opentripplanner.framework.logging.ThrottleLogger;
@@ -54,6 +56,7 @@ public class DestinationArrivalPaths<T extends RaptorTripSchedule> {
   private final RaptorStopNameResolver stopNameResolver;
   private boolean reachedCurrentRound = false;
   private int iterationDepartureTime = -1;
+  private final List<Set<Integer>> viaIndexes;
 
   // TODO: 2023-05-22 via pass through: we need to inject expected c2 value here
   //  so that we can determine whether we should filter out results with c2 == 0
@@ -65,7 +68,8 @@ public class DestinationArrivalPaths<T extends RaptorTripSchedule> {
     PathMapper<T> pathMapper,
     DebugHandlerFactory<T> debugHandlerFactory,
     RaptorStopNameResolver stopNameResolver,
-    WorkerLifeCycle lifeCycle
+    WorkerLifeCycle lifeCycle,
+    List<Set<Integer>> viaIndexes
   ) {
     this.paths =
       new ParetoSet<>(paretoComparator, debugHandlerFactory.paretoSetDebugPathListener());
@@ -75,6 +79,7 @@ public class DestinationArrivalPaths<T extends RaptorTripSchedule> {
     this.pathMapper = pathMapper;
     this.debugPathHandler = debugHandlerFactory.debugPathArrival();
     this.stopNameResolver = stopNameResolver;
+    this.viaIndexes = viaIndexes;
     lifeCycle.onPrepareForNextRound(round -> clearReachedCurrentRoundFlag());
     lifeCycle.onSetupIteration(this::setRangeRaptorIterationDepartureTime);
   }
@@ -87,7 +92,7 @@ public class DestinationArrivalPaths<T extends RaptorTripSchedule> {
     }
 
     // TODO: 2023-05-17 via pass through: somewhere here we should filter out all paths without via
-    if (transitCalculator.exceedsTimeLimit(destArrival.arrivalTime()) || destArrival.c2() == 0) {
+    if (transitCalculator.exceedsTimeLimit(destArrival.arrivalTime()) || destArrival.c2() != viaIndexes.size()) {
       debugRejectByTimeLimitOptimization(destArrival);
     } else {
       RaptorPath<T> path = pathMapper.mapToPath(destArrival);

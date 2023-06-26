@@ -2,8 +2,10 @@ package org.opentripplanner.raptor.rangeraptor.multicriteria;
 
 import static org.opentripplanner.raptor.api.model.PathLegType.ACCESS;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.opentripplanner.raptor.api.model.RaptorAccessEgress;
 import org.opentripplanner.raptor.api.model.RaptorTripSchedule;
@@ -37,7 +39,7 @@ public final class MultiCriteriaRoutingStrategy<
   private final ParetoSet<R> patternRides;
   private final RaptorCostCalculator<T> generalizedCostCalculator;
   private final SlackProvider slackProvider;
-  public Set<Integer> indexes = new HashSet<>();
+  private final List<Set<Integer>> indexes;
 
   public MultiCriteriaRoutingStrategy(
     McRangeRaptorWorkerState<T> state,
@@ -46,7 +48,7 @@ public final class MultiCriteriaRoutingStrategy<
     RaptorCostCalculator<T> generalizedCostCalculator,
     SlackProvider slackProvider,
     ParetoSet<R> patternRides,
-    Set<Integer> indexes
+    List<Set<Integer>> indexes
   ) {
     this.state = state;
     this.boardingSupport = boardingSupport;
@@ -75,8 +77,12 @@ public final class MultiCriteriaRoutingStrategy<
     // TODO: 2023-05-11 pass through via: add extra c2 to the ride
 
     for (R ride : patternRides) {
-      if (ride.c2() == 0 && indexes.contains(stopIndex)) {
-        ride = patternRideFactory.createPatternRide(ride,1);
+      int c2 = ride.c2();
+      if ((c2 + 1) <= indexes.size() ) {
+        var viaIndexes = indexes.get(c2);
+        if (viaIndexes.contains(stopIndex)) {
+          ride = patternRideFactory.createPatternRide(ride,c2 + 1);
+        }
       }
 
       state.transitToStop(ride, stopIndex, ride.trip().arrival(stopPos), alightSlack);

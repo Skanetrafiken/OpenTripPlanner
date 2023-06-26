@@ -124,41 +124,29 @@ public class TransitRouter {
       serverContext.meterRegistry()
     );
 
-    var STOP_NAME = "Helsingborg C";
+    var vias = List.of(
+        "Simrishamn station",
+        "Helsingborg C",
+        "Helsingör Färjeläge"
+    );
 
-    for (int i = 0; i < serverContext.transitService().getTransitLayer().getStopCount(); i++) {
+    for (var via : vias) {
+      var indexes = new HashSet<Integer>();
+      for (int i = 0; i < serverContext.transitService().getTransitLayer().getStopCount(); i++) {
 
-      var stopName = serverContext
-        .transitService()
-        .getTransitLayer()
-        .getStopByIndex(i)
-        .getName()
-        .toString()
-        .split("\\(")[0];
+        var stopName = serverContext
+          .transitService()
+          .getTransitLayer()
+          .getStopByIndex(i)
+          .getName()
+          .toString()
+          .split("\\(")[0];
 
-      if (STOP_NAME.equals(stopName)) {
-//        System.out.println("adding index: " + i);
-        raptorRequest.multiCriteria().transitViaRequest().get().viaPoints().add(i);
+        if (via.equals(stopName)) {
+          indexes.add(i);
+        }
       }
-    }
-
-    var firstVia = raptorRequest.multiCriteria().transitViaRequest().map(RaptorTransitViaRequest::viaPoints).orElse(new HashSet<>());
-    var secondVia = new HashSet<Integer>();
-
-    STOP_NAME = "Helsingör Färjeläge";
-    for (int i = 0; i < serverContext.transitService().getTransitLayer().getStopCount(); i++) {
-
-      var stopName = serverContext
-        .transitService()
-        .getTransitLayer()
-        .getStopByIndex(i)
-        .getName()
-        .toString()
-        .split("\\(")[0];
-
-      if (STOP_NAME.equals(stopName)) {
-        secondVia.add(i);
-      }
+      raptorRequest.multiCriteria().transitViaRequest().get().viaPoints().add(indexes);
     }
 
 
@@ -182,7 +170,7 @@ public class TransitRouter {
             requestTransitDataProvider,
             transitLayer.getStopBoardAlightCosts(),
             request.preferences().transfer().optimization(),
-            List.of(firstVia, secondVia)
+            raptorRequest.multiCriteria().transitViaRequest().get().viaPoints()
           )
           .optimize(transitResponse.paths());
     }
