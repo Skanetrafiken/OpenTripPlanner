@@ -10,7 +10,7 @@ resources:
   - repository: Common
     type: git
     name: Infra/common-devops-templates
-    ref: refs/tags/3.1.1
+    ref: refs/tags/7.1.3
 
 steps:
 - checkout: self
@@ -85,35 +85,15 @@ steps:
   inputs:
     filePath: docker-build/docker/copy-docker-data.sh
 
-- template: as-a-service/build.yaml@Common
+- template: internal-tasks/build-and-push-docker.yaml@Common
   parameters:
     azureSubscription: 'ST IKT DEV'
-    chartName: otp
-    chartPath: docker-build/helm/otp
-    buildVersion: $(otpVersion)
     images:
-    - name: otp
-      source: docker-build/docker
-
-# Trigger deploy to PR environment
-- task: TriggerBuild@3
-  displayName: 'Trigger resesok-otp-deploy-pr'
-  inputs:
-    definitionIsInCurrentTeamProject: true
-    buildDefinition: 'resesok-otp-deploy-pr'
-    queueBuildForUserThatTriggeredBuild: true
-    ignoreSslCertificateErrors: false
-    useSameSourceVersion: false
-    useCustomSourceVersion: false
-    useSameBranch: true
-    waitForQueuedBuildsToFinish: false
-    storeInEnvironmentVariable: false
-    authenticationMethod: 'OAuth Token'
-    enableBuildInQueueCondition: false
-    dependentOnSuccessfulBuildCondition: false
-    dependentOnFailedBuildCondition: false
-    checkbuildsoncurrentbranch: false
-    failTaskIfConditionsAreNotFulfilled: false
+      - name: otp
+        source: docker-build/docker
+        context: .
+        tags:
+          - $(otpVersion)
 
 - task: TriggerBuild@3
   displayName: 'Trigger resesok-proxy'
