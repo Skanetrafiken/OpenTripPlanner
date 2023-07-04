@@ -77,7 +77,7 @@ public class TransferIndexGenerator {
           });
       } catch (Exception e) {
         // TODO: 2023-05-23 Disable logging until issue with NeTEx data quality can be resolved.
-//          LOG.error("Unable to generate transfers: {}. Affected transfer: {}", e, tx);
+        //          LOG.error("Unable to generate transfers: {}. Affected transfer: {}", e, tx);
       }
     }
 

@@ -90,6 +90,7 @@ public class RouteRequestMapper {
 
       preferences.withWalk(b -> {
         callWith.argument("walkReluctance", b::withReluctance);
+        // TODO add transferWalkReluctance
         callWith.argument("walkSpeed", b::withSpeed);
         callWith.argument("walkBoardCost", b::withBoardCost);
         callWith.argument("walkSafetyFactor", b::withSafetyFactor);

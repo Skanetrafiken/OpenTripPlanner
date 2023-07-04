@@ -1118,7 +1118,8 @@ public class StreetEdge
           traverseMode,
           speed,
           walkingBike,
-          s0.getRequest().wheelchair()
+          s0.getRequest().wheelchair(),
+          s0.getRequest().isTransfer()
         );
         default -> otherTraversalCosts(preferences, traverseMode, walkingBike, speed);
       };
@@ -1221,7 +1222,8 @@ public class StreetEdge
         preferences,
         traverseMode,
         walkingBike,
-        isStairs()
+        isStairs(),
+        false // TODO
       );
     return new TraversalCosts(time, weight);
   }
@@ -1261,7 +1263,8 @@ public class StreetEdge
       pref,
       TraverseMode.BICYCLE,
       false,
-      isStairs()
+      isStairs(),
+      false // TODO
     );
     weight *= reluctance;
     return new TraversalCosts(time, weight);
@@ -1273,7 +1276,8 @@ public class StreetEdge
     TraverseMode traverseMode,
     double speed,
     boolean walkingBike,
-    boolean wheelchair
+    boolean wheelchair,
+    boolean isTransfer
   ) {
     double time, weight;
     if (wheelchair) {
@@ -1309,7 +1313,8 @@ public class StreetEdge
           preferences,
           traverseMode,
           walkingBike,
-          isStairs()
+          isStairs(),
+          isTransfer
         );
     }
 

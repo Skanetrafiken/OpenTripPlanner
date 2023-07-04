@@ -16,13 +16,22 @@ class StreetEdgeReluctanceCalculator {
     RoutingPreferences pref,
     TraverseMode traverseMode,
     boolean walkingBike,
-    boolean edgeIsStairs
+    boolean edgeIsStairs,
+    boolean isTransfer
   ) {
     if (edgeIsStairs) {
       return pref.walk().stairsReluctance();
     } else {
       return switch (traverseMode) {
-        case WALK -> walkingBike ? pref.bike().walkingReluctance() : pref.walk().reluctance();
+        case WALK -> {
+          if (isTransfer) {
+            yield walkingBike
+              ? pref.bike().walkingReluctance()
+              : pref.walk().transferWalkReluctance();
+          } else {
+            yield walkingBike ? pref.bike().walkingReluctance() : pref.walk().reluctance();
+          }
+        }
         case BICYCLE -> pref.bike().reluctance();
         case CAR -> pref.car().reluctance();
         default -> throw new IllegalArgumentException(

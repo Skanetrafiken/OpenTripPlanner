@@ -49,6 +49,7 @@ class RequestToPreferencesMapper {
   private void mapWalk() {
     preferences.withWalk(walk -> {
       setIfNotNull(req.walkReluctance, walk::withReluctance);
+      // TODO: add transferWalkReluctance
       setIfNotNull(req.walkSpeed, walk::withSpeed);
       setIfNotNull(req.walkBoardCost, walk::withBoardCost);
       setIfNotNull(req.walkSafetyFactor, walk::withSafetyFactor);

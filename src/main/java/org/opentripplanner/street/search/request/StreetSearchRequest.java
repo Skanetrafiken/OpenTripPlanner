@@ -40,6 +40,7 @@ public class StreetSearchRequest implements AStarRequest {
   private final StreetMode mode;
   private final boolean arriveBy;
   private final boolean wheelchair;
+  private final boolean isTransfer;
   private final VehicleParkingRequest parking;
   private final VehicleRentalRequest rental;
 
@@ -62,6 +63,7 @@ public class StreetSearchRequest implements AStarRequest {
     this.mode = StreetMode.WALK;
     this.arriveBy = false;
     this.wheelchair = false;
+    this.isTransfer = false;
     this.parking = new VehicleParkingRequest();
     this.rental = new VehicleRentalRequest();
     this.from = null;
@@ -76,6 +78,7 @@ public class StreetSearchRequest implements AStarRequest {
     this.mode = builder.mode;
     this.arriveBy = builder.arriveBy;
     this.wheelchair = builder.wheelchair;
+    this.isTransfer = builder.isTransfer;
     this.parking = builder.parking;
     this.rental = builder.rental;
     this.from = builder.from;
@@ -117,6 +120,10 @@ public class StreetSearchRequest implements AStarRequest {
 
   public boolean wheelchair() {
     return wheelchair;
+  }
+
+  public boolean isTransfer() {
+    return isTransfer;
   }
 
   public VehicleParkingRequest parking() {
