@@ -735,6 +735,17 @@ high values.
           )
           .asDouble(dft.reluctance())
       )
+      .withTransferWalkReluctance(
+        c
+          .of("transferWalkReluctance")
+          .since(V2_0) // TODO
+          .summary("TODO")
+          .description("""
+TODO
+""")
+          .asDoubleOptional()
+          .orElse(null)
+      )
       .withBoardCost(
         c
           .of("walkBoardCost")

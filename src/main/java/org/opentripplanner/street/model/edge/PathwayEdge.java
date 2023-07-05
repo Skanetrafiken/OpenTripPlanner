@@ -113,7 +113,8 @@ public class PathwayEdge extends Edge implements BikeWalkableEdge, WheelchairTra
             preferences,
             TraverseMode.WALK,
             s0.getNonTransitMode() == TraverseMode.BICYCLE,
-            isStairs()
+            isStairs(),
+            s0.getRequest().isTransfer()
           );
       }
       s1.incrementTimeInSeconds(time);

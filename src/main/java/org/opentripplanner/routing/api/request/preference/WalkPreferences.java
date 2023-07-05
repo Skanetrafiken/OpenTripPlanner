@@ -23,6 +23,7 @@ public final class WalkPreferences implements Serializable {
 
   private final double speed;
   private final double reluctance;
+  private final Double transferWalkReluctance;
   private final int boardCost;
   private final double stairsReluctance;
   private final double stairsTimeFactor;
@@ -31,6 +32,7 @@ public final class WalkPreferences implements Serializable {
   private WalkPreferences() {
     this.speed = 1.33;
     this.reluctance = 2.0;
+    this.transferWalkReluctance = null;
     this.boardCost = 60 * 10;
     this.stairsReluctance = 2.0;
     this.stairsTimeFactor = 3.0;
@@ -40,6 +42,11 @@ public final class WalkPreferences implements Serializable {
   private WalkPreferences(Builder builder) {
     this.speed = Units.speed(builder.speed);
     this.reluctance = Units.reluctance(builder.reluctance);
+    if (builder.transferWalkReluctance == null) {
+      this.transferWalkReluctance = null;
+    } else {
+      this.transferWalkReluctance = Units.reluctance(builder.transferWalkReluctance);
+    }
     this.boardCost = Units.cost(builder.boardCost);
     this.stairsReluctance = Units.reluctance(builder.stairsReluctance);
     this.stairsTimeFactor = Units.reluctance(builder.stairsTimeFactor);
@@ -74,6 +81,14 @@ public final class WalkPreferences implements Serializable {
    * performance with high values. Default value: 2.0
    */
   public double reluctance() {
+    return reluctance;
+  }
+
+  public double transferWalkReluctance() {
+    if (transferWalkReluctance != null) {
+      return transferWalkReluctance;
+    }
+    // Fall back to regular walkReluctance
     return reluctance;
   }
 
@@ -148,6 +163,7 @@ public final class WalkPreferences implements Serializable {
     private final WalkPreferences original;
     private double speed;
     private double reluctance;
+    private Double transferWalkReluctance;
     private int boardCost;
     private double stairsReluctance;
     private double stairsTimeFactor;
@@ -157,6 +173,7 @@ public final class WalkPreferences implements Serializable {
       this.original = original;
       this.speed = original.speed;
       this.reluctance = original.reluctance;
+      this.transferWalkReluctance = original.transferWalkReluctance;
       this.boardCost = original.boardCost;
       this.stairsReluctance = original.stairsReluctance;
       this.stairsTimeFactor = original.stairsTimeFactor;
@@ -182,6 +199,11 @@ public final class WalkPreferences implements Serializable {
 
     public Builder withReluctance(double reluctance) {
       this.reluctance = reluctance;
+      return this;
+    }
+
+    public Builder withTransferWalkReluctance(Double reluctance) {
+      this.transferWalkReluctance = reluctance;
       return this;
     }
 

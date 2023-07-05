@@ -62,11 +62,14 @@ public class Transfer {
     WalkPreferences walkPreferences = request.preferences().walk();
     if (edges == null || edges.isEmpty()) {
       double durationSeconds = distanceMeters / walkPreferences.speed();
+      double reluctance = request.isTransfer()
+        ? walkPreferences.transferWalkReluctance()
+        : walkPreferences.reluctance();
       return Optional.of(
         new DefaultRaptorTransfer(
           this.toStop,
           (int) Math.ceil(durationSeconds),
-          RaptorCostConverter.toRaptorCost(durationSeconds * walkPreferences.reluctance()),
+          RaptorCostConverter.toRaptorCost(durationSeconds * reluctance),
           this
         )
       );

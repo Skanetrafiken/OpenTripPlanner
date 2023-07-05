@@ -15,6 +15,7 @@ public class StreetSearchRequestBuilder {
   RoutingPreferences preferences;
   boolean arriveBy;
   boolean wheelchair;
+  boolean isTransfer;
   VehicleParkingRequest parking;
   VehicleRentalRequest rental;
   GenericLocation from;
@@ -26,6 +27,7 @@ public class StreetSearchRequestBuilder {
     this.preferences = original.preferences();
     this.arriveBy = original.arriveBy();
     this.wheelchair = original.wheelchair();
+    this.isTransfer = original.isTransfer();
     this.parking = original.parking().clone();
     this.rental = original.rental();
     this.from = original.from();
@@ -39,6 +41,11 @@ public class StreetSearchRequestBuilder {
 
   public StreetSearchRequestBuilder withMode(StreetMode mode) {
     this.mode = mode;
+    return this;
+  }
+
+  public StreetSearchRequestBuilder withIsTransfer(boolean isTransfer) {
+    this.isTransfer = isTransfer;
     return this;
   }
 

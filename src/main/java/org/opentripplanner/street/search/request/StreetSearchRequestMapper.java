@@ -25,6 +25,7 @@ public class StreetSearchRequestMapper {
       .withWheelchair(opt.wheelchair())
       .withParking(opt.journey().parking())
       .withRental(opt.journey().rental())
-      .withMode(opt.journey().transfer().mode());
+      .withMode(opt.journey().transfer().mode())
+      .withIsTransfer(true);
   }
 }
