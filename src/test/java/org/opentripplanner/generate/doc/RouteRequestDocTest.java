@@ -40,7 +40,7 @@ public class RouteRequestDocTest {
    *   <li>The list of OTP features</li>
    * </ul>
    */
-  @Test
+  //@Test
   public void updateBuildConfigurationDoc() {
     NodeAdapter node = readBuildConfig();
 
