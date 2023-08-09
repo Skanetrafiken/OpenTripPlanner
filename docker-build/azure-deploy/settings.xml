@@ -39,7 +39,7 @@
                 altDeploymentRepository. This is set to the releases repo. We can not deploy to snapshots, to do so we must override this variable.
                 As of 2.8 the variable is split, on for releases one for snapshots. But since the plugin is not configured in OTP pom.xml we use the default 2.7.
                 -->
-                <altDeploymentRepository>skanetrafiken-releases::default::https://nexus-dev.skanetrafiken.se/repository/maven-releases</altDeploymentRepository>
+                <altDeploymentRepository>skanetrafiken-snapshots::default::https://nexus-dev.skanetrafiken.se/repository/maven-snapshots</altDeploymentRepository>
             </properties>
             <repositories>
                 <repository>
