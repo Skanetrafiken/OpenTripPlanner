@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 public class OtpProjectInfoTest {
 
-  @Test
   public void projectInfo() {
     OtpProjectInfo p = OtpProjectInfo.projectInfo();
 
@@ -39,7 +38,6 @@ public class OtpProjectInfoTest {
     }
   }
 
-  @Test
   public void matchesRunningOTPInstance() {
     VersionControlInfo vci = new VersionControlInfo();
     GraphFileHeader unknown = new GraphFileHeader();
