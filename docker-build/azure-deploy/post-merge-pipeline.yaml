@@ -85,9 +85,22 @@ steps:
   inputs:
     filePath: docker-build/docker/copy-docker-data.sh
 
-- template: internal-tasks/build-and-push-docker.yaml@Common
+#- template: internal-tasks/build-and-push-docker.yaml@Common
+#  parameters:
+#    azureSubscription: 'ST IKT DEV'
+#    images:
+#      - name: otp
+#        source: docker-build/docker
+#        context: .
+#        tags:
+#          - $(otpVersion)
+
+- template: as-a-service/build.yaml@Common
   parameters:
     azureSubscription: 'ST IKT DEV'
+    chartName: resesok-trip
+    chartPath: docker-build/helm/resesok-trip
+    chartVersion: $(otpVersion)
     images:
       - name: otp
         source: docker-build/docker
@@ -95,6 +108,7 @@ steps:
         tags:
           - $(otpVersion)
 
+# TODO: remove this once we have split the pods fully
 - task: TriggerBuild@3
   displayName: 'Trigger resesok-proxy'
   inputs:
