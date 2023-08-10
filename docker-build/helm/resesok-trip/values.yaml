@@ -1,0 +1,179 @@
+replicaCount: 1
+
+image:
+  repository: tjpcrprod.azurecr.io/resesok-trip
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+imagePullSecrets: [ ]
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: { }
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: { }
+podSecurityContext: { }
+#fsGroup: 2000
+
+securityContext: { }
+#  capabilities:
+#    drop:
+#      - ALL
+#    readOnlyRootFilesystem: true
+#    runAsNonRoot: true
+#    runAsUser: 1000
+
+service:
+  type: ClusterIp
+  port: 7000
+
+# Values overridden by TokyoResesokInfra
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+rollouts:
+  maxUnavailable: 1 # Values overridden by TokyoResesokInfra
+  maxSurge: "20%"   # Values overridden by TokyoResesokInfra
+  steps:
+    - setWeight: 1
+    - pause: { }
+    - setWeight: 20
+    - pause: { duration: 60m }
+    - setWeight: 50
+    - pause: { duration: 60m }
+
+virtualService:
+  prefix: ""
+  name: resesok-trip
+  hosts:
+    - should-be-set-from-value-file.com
+  gateway: istio-system/istio-gateway
+
+combinedServices:
+  otpVersion: "0.1.9921"
+  OtpKeyVaultName: "This secret should be set from build pipeline"
+  image:
+    repository: tjpcrprod.azurecr.io/otp
+    pullPolicy: IfNotPresent
+  otpResources:
+    limits:
+      cpu: "6.0"
+      memory: "12Gi"
+    requests:
+      cpu: "4.0"
+      memory: "12Gi"
+
+resources:
+  limits:
+    cpu: "1.0"
+    memory: "2Gi"
+  requests:
+    cpu: "500m"
+    memory: "500Mi"
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+#Parameters set in values files for each environment
+OTP_SERVER_HOST: "set by Azure Pipeline"
+OTP_SERVER_PORT: "set by Azure Pipeline"
+OTP_SERVER_PROTOCOL: "set by Azure Pipeline"
+ENVIRONMENT: "set by Azure Pipeline"
+
+# todo we probably can skip this right now
+#resesokTripConfigMapMounts:
+#  - name: resp-volume
+#    mountPath: /resesok-trip/config/application.yaml
+#    subPath: application.yaml
+#    readOnly: false
+
+resesokOtpConfigMapMounts:
+  - name: resesok-trip-router-config-volume
+    mountPath: /code/otpdata/malmo/router-config.json
+    subPath: router-config.json
+    readOnly: false
+  - name: resesok-trip-otp-config-volume
+    mountPath: /code/otpdata/malmo/otp-config.json
+    subPath: otp-config.json
+    readOnly: false
+
+configmapVolumes:
+  - name: resesok-trip-router-config-volume
+    mountPath: /code/otpdata/malmo/router-config.json
+    subPath: router-config.json
+    configMap: resesok-trip-router-config
+    readOnly: false
+    items:
+      - key: "router-config.json"
+        path: "router-config.json"
+  - name: resesok-trip-otp-config-volume
+    mountPath: /code/otpdata/malmo/otp-config.json
+    subPath: otp-config.json
+    configMap: resesok-trip-router-config
+    readOnly: false
+    items:
+      - key: "otp-config.json"
+        path: "otp-config.json"
+# todo we probably can skip this one
+#  - name: resp-volume
+#    mountPath: /resesok-trip/config/application.yaml
+#    subPath: application.yaml
+#    configMap: resesok-trip-router-config
+#    readOnly: false
+#    items:
+#      - key: "application.yaml"
+#        path: "application.yaml"
+
+realtime:
+  enabled: true
+  serviceBusConnectionString: "set by Azure Pipeline"
+  customMidnight: 4
+  feedId: "ST"
+  siriEt:
+    history:
+      enabled: true
+      url: "http://siri-history-service.roi.svc.cluster.local/realtimehistory/siriethistory"
+      fromDateTime: "-P0D"
+      timeout: 300000
+  siriSx:
+    history:
+      enabled: true
+      url: "http://siri-history-service.roi.svc.cluster.local/realtimehistory/sirisxhistory"
+      publishFromDateTime: "-P1D"
+      publishToDateTime: "P1D"
+      timeout: 30000
+
+# todo why do we need this?
+# Managed identities
+ResesokTripKeyVaultUrl: "This secret should be set from build pipeline"
+
+# todo This is probably the "old way".
+azureIdentity:
+  bindingName: "resesok-trip-service-azure-identity-binding"
+  name: "resesok-trip-service-azure-identity"
+
+manageIdentity:
+  clientId: "This secret should be set from build pipeline"
+  resourceId: "This secret should be set from build pipeline"

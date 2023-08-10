@@ -1,0 +1,11 @@
+{{ if .Values.pdb }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "resesok-trip.fullname" . }}
+spec:
+  maxUnavailable: {{ required "A valid .Values.pdb.maxUnavailable entry required!" .Values.pdb.maxUnavailable  }}
+  selector:
+    matchLabels:
+      {{- include "resesok-trip.selectorLabels" . | nindent 6 }}
+{{- end }}

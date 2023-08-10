@@ -1,0 +1,12 @@
+{{/* todo this is "old way". We'll need to rewrite this */}}
+
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
+metadata:
+  name: {{ .Values.azureIdentity.name }}
+  annotations:
+    aadpodidentity.k8s.io/Behavior: namespaced
+spec:
+  type: 0
+  resourceID: {{ .Values.manageIdentity.resourceId }}
+  clientID: {{ .Values.manageIdentity.clientId }}

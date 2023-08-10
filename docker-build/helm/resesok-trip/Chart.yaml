@@ -1,0 +1,14 @@
+apiVersion: v2
+name: resesok-trip
+description: resesok-trip
+type: application
+
+# will be replaced in devops pipelines
+version: 0.1.2
+appVersion: 0.1.2
+
+dependencies:
+  - name: tjp-service-lib
+    version: 1.5.0
+    repository:  https://tjpcrprod.azurecr.io/helm/v1/repo
+

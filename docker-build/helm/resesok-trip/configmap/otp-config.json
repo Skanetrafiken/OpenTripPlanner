@@ -1,0 +1,9 @@
+{
+  "otpFeatures": {
+    "OptimizeTransfers": true,
+    "ActuatorAPI": true,
+    "FlexRouting": true,
+    "SandboxAPITransmodelApi": true,
+    "RealtimeResolver": true
+  }
+}

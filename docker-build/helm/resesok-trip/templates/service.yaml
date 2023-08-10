@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.virtualService.name }}
+  labels:
+    {{- include "resesok-trip.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "resesok-trip.name" . }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.virtualService.name }}-canary
+  labels:
+    {{- include "resesok-trip.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "resesok-trip.name" . }}

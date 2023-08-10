@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+
+metadata:
+  name: {{ include "resesok-trip.fullname" . }}
+  labels:
+    {{- include "resesok-trip.labels" . | nindent 4 }}
+
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "resesok-trip.selectorLabels" . | nindent 6 }}
+  template:
+    {{- include "resesok-trip.template" . | indent 4 }}
+  strategy:
+    canary:
+      maxSurge: {{ .Values.rollouts.maxSurge }}
+      maxUnavailable: {{ .Values.rollouts.maxUnavailable }}
+      {{- if .Release.IsUpgrade }}
+      steps:
+        {{- toYaml .Values.rollouts.steps | nindent 8 }}
+
+      # Reference to a Service which the controller updates to point to the canary ReplicaSet
+      canaryService: {{ .Values.virtualService.name }}-canary
+
+      # Reference to a Service which the controller updates to point to the stable ReplicaSet
+      stableService: {{ .Values.virtualService.name }}
+
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.virtualService.name }}-vsvc
+            routes:
+              - {{ .Values.virtualService.name }}-route
+      {{- else }}
+      steps: []
+      {{- end }}

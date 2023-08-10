@@ -1,0 +1,48 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Values.virtualService.name }}-vsvc
+spec:
+  hosts:
+  {{- range .Values.virtualService.hosts }}
+    - {{ . | quote }}
+  {{- end }}
+
+  gateways:
+    - {{ .Values.virtualService.gateway }}
+
+  http:
+    # Canary route listening for custom route header
+    - match:
+        - uri:
+            prefix: "{{ .Values.virtualService.prefix }}/"
+          headers:
+            X-tjp-canary:
+              exact: {{ .Values.virtualService.name }}
+      rewrite:
+        uri: "/"
+      route:
+        - destination:
+            host: "{{ .Values.virtualService.name }}-canary"  # Should match spec.strategy.canary.canaryService
+            port:
+              number: {{ .Values.service.port }}
+
+    # Main route to use both for stable and weighted canary rollouts
+    - name: "{{ .Values.virtualService.name }}-route"
+      match:
+        - uri:
+            prefix: "{{ .Values.virtualService.prefix }}/"
+      rewrite:
+        uri: "/"
+      route:
+        - weight: 100
+          destination:
+            host: "{{ .Values.virtualService.name }}"  # Should match spec.strategy.canary.stableService
+            port:
+              number: {{ .Values.service.port }}
+
+        - weight: 0
+          destination:
+            host: "{{ .Values.virtualService.name }}-canary"  # Should match spec.strategy.canary.canaryService
+            port:
+              number: {{ .Values.service.port }}

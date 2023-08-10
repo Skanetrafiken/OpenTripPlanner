@@ -1,0 +1,38 @@
+{{- $waitUrl := print "http://" .Values.virtualService.name "-canary:7000" "/status?api-version=1" }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-wait-for-svc"
+  labels:
+    {{- include "resesok-trip.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}-wait-for-svc"
+      labels:
+        {{- include "resesok-trip.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: "curlimages/curl"
+          command: ["/bin/sh", "-c"]
+          args:
+            - echo "Apparently I need to sleep for a bit...:(";
+              sleep 5;
+              echo "Looking here for status -> {{ $waitUrl }}";
+              while [ $(curl --silent --output /dev/stderr --write-out "%{http_code}" {{ $waitUrl | quote }}) != 200 ];
+              do
+              echo "Service unavailable...";
+              sleep 3s;
+              done;
+              echo "Service available.";
+              until (curl --silent --output /dev/stderr -XPOST http://127.0.0.1:15020/quitquitquit);
+              do
+              echo "Waiting for proxy to respond...";
+              sleep 1s;
+              done;
+              echo "Proxy responded. Exiting."
