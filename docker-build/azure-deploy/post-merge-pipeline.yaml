@@ -53,6 +53,9 @@ steps:
 - bash: sed -i 's/<artifactId>otp<\/artifactId>/<artifactId>resesok-otp<\/artifactId>/' pom.xml
   displayName: 'Change artifactId'
 
+- bash: sed -i 's+<altDeploymentRepository>skanetrafiken-releases::default::https://nexus-dev.skanetrafiken.se/repository/maven-releases</altDeploymentRepository>+<altDeploymentRepository>skanetrafiken-snapshots::default::https://nexus-dev.skanetrafiken.se/repository/maven-snapshots</altDeploymentRepository>+' docker-build/azure-deploy/settings.xml
+  condition: endsWith(variables['otpVersion'], 'SNAPSHOT')
+
 - task: Maven@3
   condition: eq(variables['SKIP_DEPLOY'], 'true')
   displayName: 'Build but skip publish'
@@ -109,22 +112,24 @@ steps:
           - $(otpVersion)
 
 # TODO: remove this once we have split the pods fully
-- task: TriggerBuild@3
-  displayName: 'Trigger resesok-proxy'
-  inputs:
-    definitionIsInCurrentTeamProject: true
-    buildDefinition: resesok-proxy
-    queueBuildForUserThatTriggeredBuild: true
-    ignoreSslCertificateErrors: false
-    useSameSourceVersion: false
-    useCustomSourceVersion: false
-    useSameBranch: false
-    branchToUse: master
-    waitForQueuedBuildsToFinish: false
-    storeInEnvironmentVariable: false
-    authenticationMethod: 'OAuth Token'
-    enableBuildInQueueCondition: false
-    dependentOnSuccessfulBuildCondition: false
-    dependentOnFailedBuildCondition: false
-    checkbuildsoncurrentbranch: false
-    failTaskIfConditionsAreNotFulfilled: false
+
+# temporarily disabled since we don't want to publish to dev right now
+#- task: TriggerBuild@3
+#  displayName: 'Trigger resesok-proxy'
+#  inputs:
+#    definitionIsInCurrentTeamProject: true
+#    buildDefinition: resesok-proxy
+#    queueBuildForUserThatTriggeredBuild: true
+#    ignoreSslCertificateErrors: false
+#    useSameSourceVersion: false
+#    useCustomSourceVersion: false
+#    useSameBranch: false
+#    branchToUse: master
+#    waitForQueuedBuildsToFinish: false
+#    storeInEnvironmentVariable: false
+#    authenticationMethod: 'OAuth Token'
+#    enableBuildInQueueCondition: false
+#    dependentOnSuccessfulBuildCondition: false
+#    dependentOnFailedBuildCondition: false
+#    checkbuildsoncurrentbranch: false
+#    failTaskIfConditionsAreNotFulfilled: false
