@@ -1,0 +1,125 @@
+# (required) managed identity the pod will present towards Azure resources
+identityClientId: "This secret should be set from build pipeline"
+identityResourceId: "This secret should be set from build pipeline"
+
+ENVIRONMENT: "set by Azure Pipeline"
+
+## todo This is probably the "old way".
+azureIdentity:
+  bindingName: "resesok-otp-service-azure-identity-binding"
+  name: "resesok-otp-service-azure-identity"
+
+# Container port for resesok-trip
+containerPort: 7000
+
+
+waitUrl: "/status?api-version=1"
+
+
+pdb:
+  maxUnavailable: "50%"
+
+
+rollouts:
+  maxUnavailable: 1
+  maxSurge: "20%"
+  steps:
+    - setWeight: 1
+    - pause: { }
+    - setWeight: 20
+    - pause: { duration: 60m }
+    - setWeight: 50
+    - pause: { duration: 60m }
+
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+
+# Config for resesok-trip container
+trip:
+  image:
+    repository: tjpcrprod.azurecr.io/resesok-trip
+    tag: "1.0.0"  # override this in pipeline
+
+  containerPort: 7000
+
+  environment:
+    OTP_SERVER_HOST: "localhost:8080/otp"
+    OTP_SERVER_PROTOCOL: "http"
+
+  resources:
+    limits:
+      cpu: "1.0"
+      memory: "2Gi"
+    requests:
+      cpu: "500m"
+      memory: "500Mi"
+
+
+# Config for resesok-otp container
+otp:
+  image:
+    repository: tjpcrprod.azurecr.io/resesok-otp
+    # Overrides the image tag whose default is the chart appVersion
+    tag: ""
+
+  containerPort: 8080
+
+  resources:
+    limits:
+      cpu: "6.0"
+      memory: "12Gi"
+    requests:
+      cpu: "4.0"
+      memory: "12Gi"
+
+  configmapMounts:
+    - name: resesok-otp-router-config-volume
+      mountPath: /code/otpdata/malmo/router-config.json
+      subPath: router-config.json
+      readOnly: false
+    - name: resesok-otp-otp-config-volume
+      mountPath: /code/otpdata/malmo/otp-config.json
+      subPath: otp-config.json
+      readOnly: false
+
+  configmapVolumes:
+    - name: resesok-otp-router-config-volume
+      mountPath: /code/otpdata/malmo/router-config.json
+      subPath: router-config.json
+      configMap: resesok-otp-config
+      readOnly: false
+      items:
+        - key: "router-config.json"
+          path: "router-config.json"
+    - name: resesok-otp-otp-config-volume
+      mountPath: /code/otpdata/malmo/otp-config.json
+      subPath: otp-config.json
+      configMap: resesok-otp-config
+      readOnly: false
+      items:
+        - key: "otp-config.json"
+          path: "otp-config.json"
+
+  realtime:
+    enabled: true
+    serviceBusConnectionString: "set by Azure Pipeline"
+    customMidnight: 4
+    feedId: "ST"
+    siriEt:
+      history:
+        enabled: true
+        url: "http://siri-history-service.roi.svc.cluster.local/realtimehistory/siriethistory"
+        fromDateTime: "-P0D"
+        timeout: 300000
+    siriSx:
+      history:
+        enabled: true
+        url: "http://siri-history-service.roi.svc.cluster.local/realtimehistory/sirisxhistory"
+        publishFromDateTime: "-P1D"
+        publishToDateTime: "P1D"
+        timeout: 30000

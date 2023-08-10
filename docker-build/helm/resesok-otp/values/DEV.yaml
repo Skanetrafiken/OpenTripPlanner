@@ -1,0 +1,25 @@
+rollouts:
+  maxUnavailable: 0
+  maxSurge: 1
+  steps:
+    - setWeight: 50
+    - pause: { duration: 20m }
+
+# todo do we need this?
+#host: otp.dev-tjp.int.skanetrafiken.com
+
+ENVIRONMENT: dev
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 65
+
+otp:
+  resources:
+    limits:
+      cpu: "6.0"
+      memory: "10Gi"
+    requests:
+      cpu: "4.0"
+      memory: "7Gi"

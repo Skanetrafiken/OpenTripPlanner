@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.pdb" (list . "override.pdb") -}}
+{{- define "override.pdb" -}}
+{{- end -}}

@@ -1,0 +1,137 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+
+metadata:
+  name: {{ include "service.name" . }}
+  labels:
+    {{- include "service.labels" . | nindent 4 }}
+
+spec:
+{{- if not .Values.autoscaling }}
+  replicas: 1
+{{- end }}
+
+  selector:
+    matchLabels:
+      {{- include "service.match-labels" . | nindent 6 }}
+
+  template:
+    metadata:
+      labels:
+        {{- include "service.labels" . | nindent 8 }}
+    spec:
+      imagePullSecrets: []
+      serviceAccountName: {{ include "service.serviceAccountName" . }}
+      securityContext: {}
+      containers:
+        - name: resesok-otp
+          securityContext: {}
+          image: "{{ .Values.otp.image.repository }}:{{ .Values.otp.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: "ENVIRONMENT"
+              value: {{ .Values.ENVIRONMENT | quote }}
+          ports:
+            - name: otpport
+              containerPort: {{ required "A valid .Values.otp.containerPort entry required!" .Values.otp.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 120
+            httpGet:
+              path: /otp/routers/ready
+              port: otpport
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+          readinessProbe:
+            failureThreshold: 120
+            httpGet:
+              path: otp/routers/ready
+              port: otpport
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 20
+          volumeMounts:
+          {{- range .Values.otp.configmapMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+              readOnly: {{ .readOnly }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.otp.resources | nindent 12 }}
+        - name: resesok-trip
+          securityContext: {}
+          image: "{{ .Values.trip.image.repository }}:{{ .Values.trip.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: "ENVIRONMENT"
+              value: {{ .Values.ENVIRONMENT | quote }}
+            {{- range $key, $value := .Values.trip.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: tripport
+              containerPort: {{ required "A valid .Values.trip.containerPort entry required!" .Values.trip.containerPort }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 120
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+            httpGet:
+              path: /status?api-version=1
+              port: tripport
+          readinessProbe:
+            failureThreshold: 120
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+            httpGet:
+              path: /status?api-version=1
+              port: tripport
+          volumeMounts: []
+          resources:
+            {{- toYaml .Values.trip.resources | nindent 12 }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      volumes:
+      {{- range .Values.otp.configmapVolumes }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+      {{- range .items }}
+            items:
+            - key: {{ .key }}
+              path: {{ .path }}
+      {{- end }}
+      {{- end }}
+  strategy:
+    canary:
+      maxSurge: {{ required "A valid .Values.rollouts.maxSurge entry required!" .Values.rollouts.maxSurge }}
+      maxUnavailable: {{ required "A valid .Values.rollouts.maxUnavailable entry required!" .Values.rollouts.maxUnavailable }}
+      {{- if .Release.IsUpgrade }}
+      steps:
+        {{- toYaml (required "A valid .Values.rollouts.steps entry required!" .Values.rollouts.steps) | nindent 8 }}
+
+      # Reference to a Service which the controller updates to point to the canary ReplicaSet
+      canaryService: {{ include "service.name" . }}-canary
+
+      # Reference to a Service which the controller updates to point to the stable ReplicaSet
+      stableService: {{ include "service.name" . }}
+
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ include "service.name" . }}
+            routes:
+            - default-route
+      {{- else }}
+      steps: []
+      {{- end }}

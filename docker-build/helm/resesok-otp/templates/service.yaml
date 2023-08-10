@@ -1,0 +1,6 @@
+{{- include "tjp-service-lib.service" (list . "override.service") -}}
+{{- define "override.service" -}}
+spec:
+  selector:
+    app: resesok-otp-trip
+{{- end -}}

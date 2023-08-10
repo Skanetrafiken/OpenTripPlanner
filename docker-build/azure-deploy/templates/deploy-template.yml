@@ -1,0 +1,51 @@
+parameters:
+  - name: environment
+    type: string
+  - name: otpVersion
+    type: string
+  - name: tripVersion
+    type: string
+
+jobs:
+  - deployment: DEPLOY_${{ parameters.environment }}
+    variables:
+      otpVersion: ${{ parameters.otpVersion }}
+      tripVersion: ${{ parameters.tripVersion }}
+    pool: TJP
+    workspace:
+      clean: all
+    environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+            - checkout: Common
+
+            - bash: echo otpVersion $(otpVersion) , tripVersion $(tripVersion)
+              displayName: 'Version info'
+
+            - task: AzureKeyVault@1
+              displayName: 'Get deployment secrets'
+              inputs:
+                azureSubscription: 'ST IKT ${{ upper(parameters.environment) }}'
+                KeyVaultName: 'journeyplanner-kv-${{ lower(parameters.environment) }}'
+                SecretsFilter: serviceBusConnectionString
+
+            - template: as-a-service/deploy.yaml@Common
+              parameters:
+                namespace: otp
+                environment: ${{ parameters.environment }}
+                keyVaultName: 'journeyplanner-kv-${{ lower(parameters.environment)}}'
+                azureSubscription: 'ST IKT ${{ upper(parameters.environment) }}'
+                resourceGroupName: 'svc-journeyplanner-rg-${{ lower(parameters.environment)}}'
+                managedIdentityName: 'svc-res-journeyplanner-id-${{ lower(parameters.environment)}}'
+                deployment:
+                  name: resesok-otp
+                  chart: resesok-otp
+                  version: $(otpVersion)
+                  values: $(Build.SourcesDirectory)/resesok-otp/docker-build/helm/resesok-otp/values/${{ parameters.environment }}.yaml
+                  override:
+                    - trip.image.tag=$(tripVersion)
+                    - otp.image.tag=$(otpVersion)
+                    - otp.realtime.serviceBusConnectionString=$(serviceBusConnectionString)
