@@ -16,24 +16,32 @@ spec:
             - name: otpport
               containerPort: {{ required "A valid .Values.otp.containerPort entry required!" .Values.otp.containerPort }}
               protocol: TCP
-          livenessProbe:
-            failureThreshold: 120
+          startupProbe:
+            failureThreshold: 80
+            periodSeconds: 30
+            initialDelaySeconds: 120
+            successThreshold: 1
+            timeoutSeconds: 20
             httpGet:
               path: /otp/routers/ready
               port: otpport
-            initialDelaySeconds: 120
-            periodSeconds: 30
-            successThreshold: 1
-            timeoutSeconds: 30
-          readinessProbe:
-            failureThreshold: 120
-            httpGet:
-              path: otp/routers/ready
-              port: otpport
-            initialDelaySeconds: 120
+          livenessProbe:
+            failureThreshold: 5
             periodSeconds: 30
             successThreshold: 1
             timeoutSeconds: 20
+            httpGet:
+              path: /otp/routers/ready
+              port: otpport
+          readinessProbe:
+            failureThreshold: 5
+            periodSeconds: 30
+            initialDelaySeconds: 120
+            successThreshold: 1
+            timeoutSeconds: 20
+            httpGet:
+              path: otp/routers/ready
+              port: otpport
           volumeMounts:
           {{- range .Values.otp.configmapMounts }}
             - name: {{ .name }}
@@ -58,8 +66,8 @@ spec:
             - name: tripport
               containerPort: {{ required "A valid .Values.trip.containerPort entry required!" .Values.trip.containerPort }}
               protocol: TCP
-          livenessProbe:
-            failureThreshold: 120
+          startupProbe:
+            failureThreshold: 80
             initialDelaySeconds: 120
             periodSeconds: 30
             successThreshold: 1
@@ -67,8 +75,16 @@ spec:
             httpGet:
               path: /status?api-version=1
               port: tripport
+          livenessProbe:
+            failureThreshold: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+            httpGet:
+              path: /status?api-version=1
+              port: tripport
           readinessProbe:
-            failureThreshold: 120
+            failureThreshold: 5
             initialDelaySeconds: 120
             periodSeconds: 30
             successThreshold: 1
