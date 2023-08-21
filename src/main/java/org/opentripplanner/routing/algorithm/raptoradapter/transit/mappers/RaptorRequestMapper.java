@@ -1,5 +1,7 @@
 package org.opentripplanner.routing.algorithm.raptoradapter.transit.mappers;
 
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toList;
 import static org.opentripplanner.raptor.api.request.Optimization.PARALLEL;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -11,12 +13,15 @@ import org.opentripplanner.framework.application.OTPFeature;
 import org.opentripplanner.raptor.api.model.RaptorAccessEgress;
 import org.opentripplanner.raptor.api.model.RaptorConstants;
 import org.opentripplanner.raptor.api.request.Optimization;
+import org.opentripplanner.raptor.api.request.PassThroughPoint;
+import org.opentripplanner.raptor.api.request.PassThroughPoints;
 import org.opentripplanner.raptor.api.request.RaptorRequest;
 import org.opentripplanner.raptor.api.request.RaptorRequestBuilder;
 import org.opentripplanner.raptor.rangeraptor.SystemErrDebugLogger;
 import org.opentripplanner.routing.algorithm.raptoradapter.router.performance.PerformanceTimersForRaptor;
 import org.opentripplanner.routing.algorithm.raptoradapter.transit.TripSchedule;
 import org.opentripplanner.routing.api.request.RouteRequest;
+import org.opentripplanner.transit.model.site.StopLocation;
 
 public class RaptorRequestMapper {
 
@@ -105,12 +110,21 @@ public class RaptorRequestMapper {
     if (preferences.transfer().maxAdditionalTransfers() != null) {
       searchParams.numberOfAdditionalTransfers(preferences.transfer().maxAdditionalTransfers());
     }
+
+    final PassThroughPoints passThroughPoints = request
+      .getPassthroughLocations()
+      .stream()
+      .map(sls -> sls.stream().mapToInt(StopLocation::getIndex).toArray())
+      .map(PassThroughPoint::new)
+      .collect(collectingAndThen(toList(), PassThroughPoints::new));
+
     builder.withMultiCriteria(mcBuilder -> {
       preferences
         .transit()
         .raptor()
         .relaxGeneralizedCostAtDestination()
         .ifPresent(mcBuilder::withRelaxCostAtDestination);
+      mcBuilder.withPassThroughPoints(passThroughPoints);
     });
 
     for (Optimization optimization : preferences.transit().raptor().optimizations()) {
