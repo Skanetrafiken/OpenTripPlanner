@@ -12,6 +12,13 @@ resources:
     name: Infra/common-devops-templates
     ref: refs/tags/8.0.1
 
+variables:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    isTaggedRelease: true
+    buildVersion: $(Build.SourceBranchName)
+  ${{ else }}:
+    isTaggedRelease: false
+    buildVersion: '0.1.$(Build.BuildId)-$(Build.SourceVersion)'
 
 stages:
   - stage: PREPARE
@@ -84,22 +91,22 @@ stages:
         - bash: sed -i 's/<artifactId>otp<\/artifactId>/<artifactId>resesok-otp<\/artifactId>/' pom.xml
           displayName: 'Change artifactId'
 
-        - task: Maven@3
-          condition: eq(variables['SKIP_DEPLOY'], 'true')
-          displayName: 'Build but skip publish'
-          inputs:
-            goals: 'clean package'
-            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
-            jdkVersionOption: '1.17'
-            jdkArchitectureOption: 'x64'
-            mavenOptions: '-Xmx2G'
+        #- task: Maven@3
+        #  condition: eq(variables['SKIP_DEPLOY'], 'true')
+        #  displayName: 'Build but skip publish'
+        #  inputs:
+        #    goals: 'clean package'
+        #    options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
+        #    jdkVersionOption: '1.17'
+        #    jdkArchitectureOption: 'x64'
+        #    mavenOptions: '-Xmx2G'
 
         - task: Maven@3
-          condition: eq(variables['SKIP_DEPLOY'], 'false')
+          #condition: eq(variables['SKIP_DEPLOY'], 'false')
           displayName: 'Build and publish to Skånetrafiken Maven repository'
           inputs:
             goals: 'clean deploy'
-            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
+            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -Drevision=$(buildVersion) -B -U'
             jdkVersionOption: '1.17'
             jdkArchitectureOption: 'x64'
             mavenOptions: '-Xmx2G'
@@ -121,20 +128,20 @@ stages:
             azureSubscription: 'ST IKT DEV'
             chartName: resesok-otp
             chartPath: docker-build/helm/resesok-otp
-            chartVersion: $(otp_version.otpVersion)
+            chartVersion: $(buildVersion)
             images:
               - name: resesok-otp
                 source: docker-build/docker
                 context: .
                 tags:
-                  - $(otp_version.otpVersion)
+                  - $(buildVersion)
 
   - stage: DEV
     dependsOn: [PREPARE, BUILD]
     jobs:
       - template: templates/deploy-template.yml
         parameters:
-          otpVersion: $[ stageDependencies.BUILD.BUILD.outputs['otp_version.otpVersion'] ]
+          otpVersion: $(buildVersion) #[ stageDependencies.BUILD.BUILD.outputs['otp_version.otpVersion'] ]
           tripVersion: $[ stageDependencies.PREPARE.PREPARE.outputs['find_version.tripVersion'] ]
           environment: DEV
 
