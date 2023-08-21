@@ -123,3 +123,7 @@ otp:
         publishFromDateTime: "-P1D"
         publishToDateTime: "P1D"
         timeout: 30000
+
+# Dummy values needed by the common-helm-charts _rollout.yaml template. We override this.
+image: {}
+resources: {}

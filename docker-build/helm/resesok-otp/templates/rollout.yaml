@@ -1,28 +1,9 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Rollout
-
-metadata:
-  name: {{ include "service.name" . }}
-  labels:
-    {{- include "service.labels" . | nindent 4 }}
-
+{{- include "tjp-service-lib.rollout" (list . "override.rollout") -}}
+{{- define "override.rollout" -}}
+{{/* We override the spec since the template does not support multiple containers */}}
 spec:
-{{- if not .Values.autoscaling }}
-  replicas: 1
-{{- end }}
-
-  selector:
-    matchLabels:
-      {{- include "service.match-labels" . | nindent 6 }}
-
   template:
-    metadata:
-      labels:
-        {{- include "service.labels" . | nindent 8 }}
     spec:
-      imagePullSecrets: []
-      serviceAccountName: {{ include "service.serviceAccountName" . }}
-      securityContext: {}
       containers:
         - name: resesok-otp
           securityContext: {}
@@ -98,40 +79,15 @@ spec:
           volumeMounts: []
           resources:
             {{- toYaml .Values.trip.resources | nindent 12 }}
-      nodeSelector: {}
-      affinity: {}
-      tolerations: []
       volumes:
       {{- range .Values.otp.configmapVolumes }}
         - name: {{ .name }}
           configMap:
             name: {{ .configMap }}
-      {{- range .items }}
+            {{- range .items }}
             items:
             - key: {{ .key }}
               path: {{ .path }}
+            {{- end }}
       {{- end }}
-      {{- end }}
-  strategy:
-    canary:
-      maxSurge: {{ required "A valid .Values.rollouts.maxSurge entry required!" .Values.rollouts.maxSurge }}
-      maxUnavailable: {{ required "A valid .Values.rollouts.maxUnavailable entry required!" .Values.rollouts.maxUnavailable }}
-      {{- if .Release.IsUpgrade }}
-      steps:
-        {{- toYaml (required "A valid .Values.rollouts.steps entry required!" .Values.rollouts.steps) | nindent 8 }}
-
-      # Reference to a Service which the controller updates to point to the canary ReplicaSet
-      canaryService: {{ include "service.name" . }}-canary
-
-      # Reference to a Service which the controller updates to point to the stable ReplicaSet
-      stableService: {{ include "service.name" . }}
-
-      trafficRouting:
-        istio:
-          virtualService:
-            name: {{ include "service.name" . }}
-            routes:
-            - default-route
-      {{- else }}
-      steps: []
-      {{- end }}
+{{- end -}}
