@@ -44,6 +44,7 @@ jobs:
                   name: resesok-otp
                   chart: resesok-otp
                   version: $(otpVersion)
+                  timeout: 30m0s  # OTP might take a long time to start if it has to build a graph
                   values: $(Build.SourcesDirectory)/resesok-otp/docker-build/helm/resesok-otp/values/${{ parameters.environment }}.yaml
                   override:
                     - trip.image.tag=$(tripVersion)
