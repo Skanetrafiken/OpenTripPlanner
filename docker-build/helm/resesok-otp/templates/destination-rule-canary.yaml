@@ -6,4 +6,5 @@ spec:
   host: {{ include "service.name" . }}-canary
   trafficPolicy:
     loadBalancer:
-      simple: ROUND_ROBIN
+      simple: LEAST_REQUEST
+      warmupDurationSecs: 300s
