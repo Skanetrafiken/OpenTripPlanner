@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: resesok-trip-restart-job
+  name: resesok-otp-restart-job
 spec:
   schedule: "0 2 * * *" # Occurrs 02:00 UTC every night, which is 04:00 swedish summer time (GMT+2)
   jobTemplate:
@@ -14,7 +14,7 @@ spec:
           serviceAccountName: {{include "service.serviceAccountName" .}}-restart-account
           restartPolicy: Never
           containers:
-            - name: resesok-trip-restart
+            - name: resesok-otp-restart
               image: tjpcrprod.azurecr.io/argo-rollouts-cli:latest
               command:
                 - bash
@@ -30,7 +30,7 @@ spec:
                   hourToRestart="$(date -u -d "0 $restartDate sec - $currentDate sec" +"%H")h" ;
                   minuteToRestart="$(date -u -d "0 $restartDate sec - $currentDate sec" +"%M")m" ;
                   secondToRestart="$(date -u -d "0 $restartDate sec - $currentDate sec" +"%S")s" ;
-                  kubectl argo rollouts restart resesok-trip -i $hourToRestart$minuteToRestart$secondToRestart ;
+                  kubectl argo rollouts restart resesok-otp -i $hourToRestart$minuteToRestart$secondToRestart ;
                   curl -X POST localhost:15020/quitquitquit ;
       backoffLimit: 0
 
