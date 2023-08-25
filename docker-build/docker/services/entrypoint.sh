@@ -12,7 +12,7 @@ GRAPH_CONTAINER="resesok-graph"
 NETEX_FILENAME="ST_netex.zip"
 OSM_FILENAME="sweden-filtered.osm.pbf"
 OSM_DK_FILENAME="denmark-oresund.osm.pbf"
-SA_NAME="ressa$ENVIRONMENT"
+SA_NAME="jpsa${ENVIRONMENT,,}"
 
 log_info "Running Entrypoint.sh.."
 
@@ -31,7 +31,7 @@ else
   UPLOAD_TO_AZURE=false
 fi
 
-keyvault=$OtpKeyVaultName
+keyvault="journeyplanner-kv-${ENVIRONMENT,,}"
 
 log_info "Logging into azure.."
 
@@ -41,7 +41,7 @@ if ! az login --identity; then
 fi
 
 # Get value from KeyVault
-if ! applicationInsightsKey=$(getKeyVaultValue $keyvault "applicationInsightsKey"); then
+if ! applicationInsightsKey=$(getKeyVaultValue $keyvault "ApplicationInsightsKey"); then
   # Warn about not finding this key, but don't stop the startup
   log_error "Error fetching value for KeyVault key $applicationInsightsKey in keyvault $keyvault"
   exit 1
