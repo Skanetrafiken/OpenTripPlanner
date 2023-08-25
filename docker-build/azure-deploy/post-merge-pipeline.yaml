@@ -38,14 +38,14 @@ steps:
   displayName: 'Fetch Nexus password from KeyVault'
   inputs:
     azureSubscription: 'ST IKT DEV'
-    KeyVaultName: TJP-INFRA-KV-DEV
-    secretsFilter: 'maven-build'
+    KeyVaultName: journeyplanner-kv-dev
+    secretsFilter: 'MVN-PASSWORD'
 
 - bash: docker-build/azure-deploy/git-version.sh
   displayName: 'Create new git tag with current version'
   env:
     DEVOPS_ACCESSTOKEN: $(System.AccessToken)
-    MVN_PASSWORD: $(maven-build)
+    MVN_PASSWORD: $(MVN-PASSWORD)
 
 - bash: sed -i 's/<groupId>org.opentripplanner<\/groupId>/<groupId>se.skanetrafiken<\/groupId>/' pom.xml
   displayName: 'Change groupId'
