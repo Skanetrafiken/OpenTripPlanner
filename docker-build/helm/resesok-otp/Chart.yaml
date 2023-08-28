@@ -1,0 +1,13 @@
+apiVersion: v2
+name: resesok-otp
+description: resesok-otp
+type: application
+
+# will be replaced in devops pipelines
+version: 0.1.2
+appVersion: 0.1.2
+
+dependencies:
+  - name: tjp-service-lib
+    version: 2.0.0
+    repository: oci://tjpcrprod.azurecr.io/helm

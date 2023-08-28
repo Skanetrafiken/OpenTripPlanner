@@ -1,0 +1,16 @@
+rollouts:
+  maxUnavailable: 0
+  maxSurge: 1
+  steps:
+    - setWeight: 50
+    - pause: { duration: 20m }
+
+# todo do we need this?
+#host: otp.test-tjp.int.skanetrafiken.com
+
+ENVIRONMENT: test
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 65

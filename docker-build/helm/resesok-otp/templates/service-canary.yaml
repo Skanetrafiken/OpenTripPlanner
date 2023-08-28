@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.service-canary" (list . "override.service-canary") -}}
+{{- define "override.service-canary" -}}
+{{- end -}}
