@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.identitybinding" (list . "override.identitybinding") -}}
+{{- define "override.identitybinding" -}}
+{{- end -}}

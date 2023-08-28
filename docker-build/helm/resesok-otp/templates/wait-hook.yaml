@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.waithook" (list . "override.waithook") -}}
+{{- define "override.waithook" -}}
+{{- end -}}
