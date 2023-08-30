@@ -17,9 +17,8 @@ When we want to fetch the upstream changes from OTP community we:
 
 # Release Policy
 
-- Branch off from the current major release branch, eg `resesok-3.x`. Your release branch should be named `release/X.X`. For example `release/3.7`.
-- Update `pom.xml` with new version and commit.
-- Push branch.
-- Run the `resesok-otp-post-merge` pipeline manually for your branch to publish and deploy to DEV.
+- Create and push a tag on the current major release branch (eg `resesok-3.x`), the tag should be on the format `3.2`.
+- Run the `resesok-otp-build` pipeline on your tag and it will build a new release.
+- Run the `resesok-otp-release` pipeline to deploy your newly built version.
 
-![Release Flow](/.images/release_flow.png)
+Also see: https://dev.azure.com/Skanetrafiken2/Tokyo/_wiki/wikis/Tokyo.wiki/3717/Release-och-hotfix-strategi

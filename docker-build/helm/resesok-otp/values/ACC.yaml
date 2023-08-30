@@ -2,9 +2,6 @@ rollouts:
   maxUnavailable: 0
   maxSurge: 3
 
-# todo do we need this?
-#host: otp.acc-tjp.int.skanetrafiken.com
-
 ENVIRONMENT: acc
 
 autoscaling:

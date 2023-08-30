@@ -5,9 +5,6 @@ rollouts:
     - setWeight: 50
     - pause: { duration: 20m }
 
-# todo do we need this?
-#host: otp.dev-tjp.int.skanetrafiken.com
-
 ENVIRONMENT: dev
 
 autoscaling:
