@@ -1,0 +1,53 @@
+trigger: none
+
+pool: TJP
+
+resources:
+  repositories:
+    - repository: self
+    - repository: Common
+      type: git
+      name: Infra/common-devops-templates
+      ref: refs/tags/8.0.1
+
+parameters:
+  - name: otpVersion
+    type: string
+  - name: tripVersion
+    type: string
+  - name: deployToEnvironments
+    type: object
+    default:
+      - name: DEV
+
+      - name: TEST
+        pred: DEV
+
+      - name: ACC
+        pred: TEST
+
+      - name: PROD
+        pred: ACC
+
+stages:
+  - stage: INFO
+    jobs:
+      - job: INFO
+        pool: TJP
+        steps:
+          - bash: 'echo resesok-otp version: ${{ parameters.otpVersion }}'
+            displayName: 'resesok-otp'
+          - bash: 'echo resesok-trip version: ${{ parameters.tripVersion }}'
+            displayName: 'resesok-trip'
+
+  - ${{ each environment in parameters.deployToEnvironments }}:
+      - stage: ${{ environment.name }}
+        ${{ if ne(upper(environment.name), 'DEV') }}:
+          dependsOn: [ '${{ environment.pred }}' ]
+        jobs:
+          - template: templates/deploy-template.yml
+            parameters:
+              otpVersion: ${{ parameters.otpVersion }}
+              tripVersion: ${{ parameters.tripVersion }}
+              environment: ${{ environment.name }}
+

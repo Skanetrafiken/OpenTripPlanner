@@ -1,6 +1,7 @@
-# Pipeline for after pull request has been approved and development branch has been merged to release branch
+# Pipeline that builds a nexus artifact and helm chart
+# Run it on a specific git tag (like "5.2") to set a specific version. Otherwise a version will be auto generated.
 trigger:
-- resesok-otp2
+- resesok-*.x
 
 pool: TJP
 
@@ -12,6 +13,18 @@ resources:
     name: Infra/common-devops-templates
     ref: refs/tags/8.0.1
 
+parameters:
+  - name: deployToDev
+    type: boolean
+    default: true
+
+variables:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    isTaggedRelease: true
+    buildVersion: $(Build.SourceBranchName)
+  ${{ else }}:
+    isTaggedRelease: false
+    buildVersion: '0.1.$(Build.BuildId)-$(Build.SourceVersion)'
 
 stages:
   - stage: PREPARE
@@ -47,16 +60,6 @@ stages:
           persistCredentials: true
           clean: true
 
-        - task: DownloadSecureFile@1
-          displayName: 'Get Maven authorization configuration'
-          name: settingsSecurity
-          inputs:
-            secureFile: settings-security.xml
-
-        # security issue
-        - bash: echo $(cp -p $(settingsSecurity.secureFilePath) /tmp/settings-security.xml)
-          displayName: 'Copy Maven authorization configuration'
-
         - task: JavaToolInstaller@0
           displayName: 'Use JDK 17'
           inputs:
@@ -71,35 +74,41 @@ stages:
             KeyVaultName: journeyplanner-kv-dev
             secretsFilter: 'MVN-PASSWORD'
 
-        - bash: docker-build/azure-deploy/git-version.sh
-          displayName: 'Create new git tag with current version'
-          name: otp_version
+        - bash: |
+            sed -i 's/<groupId>org.opentripplanner<\/groupId>/<groupId>se.skanetrafiken<\/groupId>/' pom.xml
+            sed -i 's/<artifactId>otp<\/artifactId>/<artifactId>resesok-otp<\/artifactId>/' pom.xml
+            sed -i '0,/<version>/s/<version>.*<\/version>/<version>$(buildVersion)<\/version>/' pom.xml
+          displayName: 'Update pom.xml'
+
+        - bash: docker-build/azure-deploy/nexus-check-version-exists.sh
+          displayName: 'Check if version exists on nexus'
+          name: check_nexus
           env:
-            DEVOPS_ACCESSTOKEN: $(System.AccessToken)
+            OTP_VERSION: $(buildVersion)
             MVN_PASSWORD: $(MVN-PASSWORD)
 
-        - bash: sed -i 's/<groupId>org.opentripplanner<\/groupId>/<groupId>se.skanetrafiken<\/groupId>/' pom.xml
-          displayName: 'Change groupId'
-
-        - bash: sed -i 's/<artifactId>otp<\/artifactId>/<artifactId>resesok-otp<\/artifactId>/' pom.xml
-          displayName: 'Change artifactId'
+        - task: DownloadSecureFile@1
+          displayName: 'Get Maven authorization configuration'
+          name: settingsSecurity
+          inputs:
+            secureFile: settings-security.xml
 
         - task: Maven@3
-          condition: eq(variables['SKIP_DEPLOY'], 'true')
+          condition: eq(variables['versionExistsOnNexus'], 'true')
           displayName: 'Build but skip publish'
           inputs:
             goals: 'clean package'
-            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
+            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=$(settingsSecurity.secureFilePath) -Dtest=!OtpProjectInfoTest -B -U'
             jdkVersionOption: '1.17'
             jdkArchitectureOption: 'x64'
             mavenOptions: '-Xmx2G'
 
         - task: Maven@3
-          condition: eq(variables['SKIP_DEPLOY'], 'false')
-          displayName: 'Build and publish to Skånetrafiken Maven repository'
+          condition: ne(variables['versionExistsOnNexus'], 'true')
+          displayName: 'Build and publish to Nexus'
           inputs:
             goals: 'clean deploy'
-            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=/tmp/settings-security.xml -B -U'
+            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=$(settingsSecurity.secureFilePath) -Dtest=!OtpProjectInfoTest -B -U'
             jdkVersionOption: '1.17'
             jdkArchitectureOption: 'x64'
             mavenOptions: '-Xmx2G'
@@ -121,19 +130,20 @@ stages:
             azureSubscription: 'ST IKT DEV'
             chartName: resesok-otp
             chartPath: docker-build/helm/resesok-otp
-            chartVersion: $(otp_version.otpVersion)
+            chartVersion: $(buildVersion)
             images:
               - name: resesok-otp
                 source: docker-build/docker
                 context: .
                 tags:
-                  - $(otp_version.otpVersion)
+                  - $(buildVersion)
 
   - stage: DEV
     dependsOn: [PREPARE, BUILD]
+    condition: and(succeeded(), eq('${{ parameters.deployToDev }}', true))
     jobs:
       - template: templates/deploy-template.yml
         parameters:
-          otpVersion: $[ stageDependencies.BUILD.BUILD.outputs['otp_version.otpVersion'] ]
+          otpVersion: $(buildVersion)
           tripVersion: $[ stageDependencies.PREPARE.PREPARE.outputs['find_version.tripVersion'] ]
           environment: DEV
