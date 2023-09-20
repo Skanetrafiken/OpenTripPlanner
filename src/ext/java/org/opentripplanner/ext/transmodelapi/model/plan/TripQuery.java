@@ -15,7 +15,7 @@ import org.opentripplanner.ext.transmodelapi.model.DefaultRouteRequestType;
 import org.opentripplanner.ext.transmodelapi.model.EnumTypes;
 import org.opentripplanner.ext.transmodelapi.model.TransportModeSlack;
 import org.opentripplanner.ext.transmodelapi.model.framework.LocationInputType;
-import org.opentripplanner.ext.transmodelapi.model.framework.PassthroughPointInputType;
+import org.opentripplanner.ext.transmodelapi.model.framework.PassThroughPointInputType;
 import org.opentripplanner.ext.transmodelapi.model.framework.PenaltyForStreetModeType;
 import org.opentripplanner.ext.transmodelapi.support.GqlUtil;
 import org.opentripplanner.routing.api.request.preference.RoutingPreferences;
@@ -154,9 +154,11 @@ public class TripQuery {
       .argument(
         GraphQLArgument
           .newArgument()
-          .name("passthrough")
-          .description("The passthrough points as stops")
-          .type(new GraphQLList(new GraphQLNonNull(PassthroughPointInputType.INPUT_TYPE)))
+          .name("passThroughPoints")
+          .description(
+            "The points the journey must pass by, going from the start location to the destination."
+          )
+          .type(new GraphQLList(new GraphQLNonNull(PassThroughPointInputType.INPUT_TYPE)))
           .build()
       )
       .argument(

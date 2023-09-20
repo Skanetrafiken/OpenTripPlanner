@@ -5,35 +5,39 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import org.opentripplanner.transit.model.site.StopLocations;
+import java.util.Objects;
+import org.opentripplanner.routing.api.request.PassThroughPoint;
 import org.opentripplanner.transit.service.TransitService;
 
-class PassthroughLocationMapper {
+class PassThroughLocationMapper {
 
-  static List<StopLocations> toLocations(
+  static List<PassThroughPoint> toLocations(
     final TransitService transitService,
-    final List<Map<String, Object>> passthroughPoints
+    final List<Map<String, Object>> passThroughPoints
   ) {
-    return passthroughPoints
+    return passThroughPoints
       .stream()
-      .map(m ->
-        m
-          .entrySet()
-          .stream()
-          .filter(e -> e.getKey().equals("places"))
-          .findFirst()
-          .map(e -> handlePoint(transitService, (List<String>) e.getValue()))
-      )
-      .flatMap(Optional::stream)
+      .map(le -> {
+        return handlePoint(
+          transitService,
+          (List<String>) le.get("placeIds"),
+          (String) le.get("name")
+        );
+      })
+      .filter(Objects::nonNull)
       .collect(toList());
     // TODO Propagate an error if a stopplace is unknown and fails lookup.
   }
 
-  private static StopLocations handlePoint(
+  private static PassThroughPoint handlePoint(
     final TransitService transitService,
-    final List<String> stops
+    final List<String> stops,
+    final String name
   ) {
+    if (stops == null) {
+      return null;
+    }
+
     return stops
       .stream()
       .map(TransitIdMapper::mapIDToDomain)
@@ -44,6 +48,6 @@ class PassthroughLocationMapper {
         }
         return stopLocations.stream();
       })
-      .collect(collectingAndThen(toList(), StopLocations::new));
+      .collect(collectingAndThen(toList(), sls -> new PassThroughPoint(sls, name)));
   }
 }

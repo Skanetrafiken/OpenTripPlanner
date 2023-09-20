@@ -43,9 +43,9 @@ public class TripRequestMapper {
     );
     final TransitService transitService = context.getTransitService();
     callWith.argument(
-      "passthrough",
+      "passThroughPoints",
       (List<Map<String, Object>> v) -> {
-        request.setPassthroughLocations(PassthroughLocationMapper.toLocations(transitService, v));
+        request.setPassThroughPoints(PassThroughLocationMapper.toLocations(transitService, v));
       }
     );
 

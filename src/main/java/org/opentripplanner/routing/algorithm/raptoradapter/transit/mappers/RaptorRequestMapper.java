@@ -112,9 +112,9 @@ public class RaptorRequestMapper {
     }
 
     final PassThroughPoints passThroughPoints = request
-      .getPassthroughLocations()
+      .getPassThroughPoints()
       .stream()
-      .map(sls -> sls.stream().mapToInt(StopLocation::getIndex).toArray())
+      .map(sls -> sls.getStopLocations().stream().mapToInt(StopLocation::getIndex).toArray())
       .map(PassThroughPoint::new)
       .collect(collectingAndThen(toList(), PassThroughPoints::new));
 

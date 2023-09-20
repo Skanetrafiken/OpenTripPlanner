@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,6 +33,7 @@ import org.opentripplanner.model.plan.Place;
 import org.opentripplanner.model.plan.PlanTestConstants;
 import org.opentripplanner.model.plan.ScheduledTransitLeg;
 import org.opentripplanner.raptor.configure.RaptorConfig;
+import org.opentripplanner.routing.api.request.PassThroughPoint;
 import org.opentripplanner.routing.api.request.RouteRequest;
 import org.opentripplanner.routing.api.request.StreetMode;
 import org.opentripplanner.routing.api.request.preference.StreetPreferences;
@@ -53,7 +53,6 @@ import org.opentripplanner.transit.model.network.Route;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.site.RegularStop;
 import org.opentripplanner.transit.model.site.StopLocation;
-import org.opentripplanner.transit.model.site.StopLocations;
 import org.opentripplanner.transit.service.DefaultTransitService;
 import org.opentripplanner.transit.service.StopModel;
 import org.opentripplanner.transit.service.TransitModel;
@@ -294,26 +293,28 @@ public class TripRequestMapperTest implements PlanTestConstants {
   }
 
   @Test
-  void testPassthrough() {
+  void testPassThroughPoints() {
     final List<String> PTP1 = List.of(stop1, stop2, stop3).stream().map(STOP_TO_ID).toList();
     final List<String> PTP2 = List.of(stop2, stop3, stop1).stream().map(STOP_TO_ID).toList();
     final Map<String, Object> arguments = Map.of(
-      "passthrough",
-      List.of(Map.of("places", PTP1), Map.of("places", PTP2))
+      "passThroughPoints",
+      List.of(Map.of("name", "PTP1", "placeIds", PTP1), Map.of("placeIds", PTP2, "name", "PTP2"))
     );
 
-    final List<StopLocations> locations = TripRequestMapper
+    final List<PassThroughPoint> points = TripRequestMapper
       .createRequest(executionContext(arguments))
-      .getPassthroughLocations();
-    assertEquals(PTP1, locations.get(0).stream().map(STOP_TO_ID).toList());
-    assertEquals(PTP2, locations.get(1).stream().map(STOP_TO_ID).toList());
+      .getPassThroughPoints();
+    assertEquals(PTP1, points.get(0).getStopLocations().stream().map(STOP_TO_ID).toList());
+    assertEquals("PTP1", points.get(0).getName());
+    assertEquals(PTP2, points.get(1).getStopLocations().stream().map(STOP_TO_ID).toList());
+    assertEquals("PTP2", points.get(1).getName());
   }
 
   @Test
-  void testPassthroughNoMatch() {
+  void testPassThroughPointsNoMatch() {
     final Map<String, Object> arguments = Map.of(
-      "passthrough",
-      List.of(Map.of("places", List.of("F:XX:NonExisting")))
+      "passThroughPoints",
+      List.of(Map.of("placeIds", List.of("F:XX:NonExisting")))
     );
 
     assertThrows(
