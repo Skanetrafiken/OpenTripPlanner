@@ -1,0 +1,149 @@
+# Pipeline that builds a nexus artifact and helm chart
+# Run it on a specific git tag (like "5.2") to set a specific version. Otherwise a version will be auto generated.
+trigger:
+- resesok-*.x
+
+pool: TJP
+
+resources:
+  repositories:
+  - repository: self
+  - repository: Common
+    type: git
+    name: Infra/common-devops-templates
+    ref: refs/tags/8.0.1
+
+parameters:
+  - name: deployToDev
+    type: boolean
+    default: true
+
+variables:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    isTaggedRelease: true
+    buildVersion: $(Build.SourceBranchName)
+  ${{ else }}:
+    isTaggedRelease: false
+    buildVersion: '0.1.$(Build.BuildId)-$(Build.SourceVersion)'
+
+stages:
+  - stage: PREPARE
+    jobs:
+      - job: PREPARE
+        pool: TJP
+        steps:
+          - task: AzureCli@2
+            displayName: 'Get latest resesok-trip version'
+            name: find_version
+            env:
+              REPOSITORY: resesok-trip
+              REGISTRY: TJPCRPROD
+            inputs:
+              azureSubscription: 'ST IKT DEV'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                LATEST=$(\
+                  az acr repository show-tags --name $REGISTRY --repository $REPOSITORY --orderby time_desc --top 5 --output tsv \
+                  | grep --invert-match latest \
+                  | grep --invert-match cache \
+                  | head -n 1)
+                echo "##vso[task.setvariable variable=tripVersion;isOutput=true]$LATEST"
+                echo "Using resesok-trip version: $LATEST"
+
+  - stage: BUILD
+    jobs:
+      - job: BUILD
+        pool: TJP
+        steps:
+        - checkout: self
+          persistCredentials: true
+          clean: true
+
+        - task: JavaToolInstaller@0
+          displayName: 'Use JDK 17'
+          inputs:
+            versionSpec: '17'
+            jdkArchitectureOption: 'x64'
+            jdkSourceOption: 'PreInstalled'
+
+        - task: AzureKeyVault@1
+          displayName: 'Fetch Nexus password from KeyVault'
+          inputs:
+            azureSubscription: 'ST IKT DEV'
+            KeyVaultName: journeyplanner-kv-dev
+            secretsFilter: 'MVN-PASSWORD'
+
+        - bash: |
+            sed -i 's/<groupId>org.opentripplanner<\/groupId>/<groupId>se.skanetrafiken<\/groupId>/' pom.xml
+            sed -i 's/<artifactId>otp<\/artifactId>/<artifactId>resesok-otp<\/artifactId>/' pom.xml
+            sed -i '0,/<version>/s/<version>.*<\/version>/<version>$(buildVersion)<\/version>/' pom.xml
+          displayName: 'Update pom.xml'
+
+        - bash: docker-build/azure-deploy/nexus-check-version-exists.sh
+          displayName: 'Check if version exists on nexus'
+          name: check_nexus
+          env:
+            OTP_VERSION: $(buildVersion)
+            MVN_PASSWORD: $(MVN-PASSWORD)
+
+        - task: DownloadSecureFile@1
+          displayName: 'Get Maven authorization configuration'
+          name: settingsSecurity
+          inputs:
+            secureFile: settings-security.xml
+
+        - task: Maven@3
+          condition: eq(variables['versionExistsOnNexus'], 'true')
+          displayName: 'Build but skip publish'
+          inputs:
+            goals: 'clean package'
+            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=$(settingsSecurity.secureFilePath) -Dtest=!OtpProjectInfoTest -B -U'
+            jdkVersionOption: '1.17'
+            jdkArchitectureOption: 'x64'
+            mavenOptions: '-Xmx2G'
+
+        - task: Maven@3
+          condition: ne(variables['versionExistsOnNexus'], 'true')
+          displayName: 'Build and publish to Nexus'
+          inputs:
+            goals: 'clean deploy'
+            options: '-Pjunit-report --settings docker-build/azure-deploy/settings.xml -Dsettings.security=$(settingsSecurity.secureFilePath) -Dtest=!OtpProjectInfoTest -B -U'
+            jdkVersionOption: '1.17'
+            jdkArchitectureOption: 'x64'
+            mavenOptions: '-Xmx2G'
+
+        - task: PublishCodeCoverageResults@1
+          displayName: 'Report code coverage'
+          inputs:
+            codeCoverageTool: 'JaCoCo'
+            reportDirectory: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/**/*.*
+            summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/jacoco.xml
+
+        - task: Bash@3
+          displayName: 'Copy data to docker build directory'
+          inputs:
+            filePath: docker-build/docker/copy-docker-data.sh
+
+        - template: as-a-service/build.yaml@Common
+          parameters:
+            azureSubscription: 'ST IKT DEV'
+            chartName: resesok-otp
+            chartPath: docker-build/helm/resesok-otp
+            chartVersion: $(buildVersion)
+            images:
+              - name: resesok-otp
+                source: docker-build/docker
+                context: .
+                tags:
+                  - $(buildVersion)
+
+  - stage: DEV
+    dependsOn: [PREPARE, BUILD]
+    condition: and(succeeded(), eq('${{ parameters.deployToDev }}', true))
+    jobs:
+      - template: templates/deploy-template.yml
+        parameters:
+          otpVersion: $(buildVersion)
+          tripVersion: $[ stageDependencies.PREPARE.PREPARE.outputs['find_version.tripVersion'] ]
+          environment: DEV

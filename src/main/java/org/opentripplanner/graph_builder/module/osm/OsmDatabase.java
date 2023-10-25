@@ -1,6 +1,7 @@
 package org.opentripplanner.graph_builder.module.osm;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import gnu.trove.iterator.TLongIterator;
@@ -32,8 +33,6 @@ import org.opentripplanner.graph_builder.issue.api.Issue;
 import org.opentripplanner.graph_builder.issues.DisconnectedOsmNode;
 import org.opentripplanner.graph_builder.issues.InvalidOsmGeometry;
 import org.opentripplanner.graph_builder.issues.LevelAmbiguous;
-import org.opentripplanner.graph_builder.issues.PublicTransportRelationSkipped;
-import org.opentripplanner.graph_builder.issues.TooManyAreasInRelation;
 import org.opentripplanner.graph_builder.issues.TurnRestrictionBad;
 import org.opentripplanner.graph_builder.issues.TurnRestrictionException;
 import org.opentripplanner.graph_builder.issues.TurnRestrictionUnknown;
@@ -117,7 +116,7 @@ public class OsmDatabase {
    * Map of all transit stop nodes that lie within an area and which are connected to the area by
    * a relation. Keyed by the area's OSM way.
    */
-  private final Map<OSMWithTags, Set<OSMNode>> stopsInAreas = new HashMap<>();
+  private final Multimap<OSMWithTags, OSMNode> stopsInAreas = HashMultimap.create();
 
   /*
    * ID of the next virtual node we create during building phase. Negative to prevent conflicts
@@ -130,11 +129,9 @@ public class OsmDatabase {
    * the United States. This does not affect floor names from level maps.
    */
   public boolean noZeroLevels = true;
-  private final Set<String> boardingAreaRefTags;
 
-  public OsmDatabase(DataImportIssueStore issueStore, Set<String> boardingAreaRefTags) {
+  public OsmDatabase(DataImportIssueStore issueStore) {
     this.issueStore = issueStore;
-    this.boardingAreaRefTags = boardingAreaRefTags;
   }
 
   public OSMNode getNode(Long nodeId) {
@@ -249,12 +246,7 @@ public class OsmDatabase {
 
     /* filter out ways that are not relevant for routing */
     if (
-      !(
-        OsmFilter.isWayRoutable(way) ||
-        way.isParkAndRide() ||
-        way.isBikeParking() ||
-        way.isBoardingLocation()
-      )
+      !(way.isRoutable() || way.isParkAndRide() || way.isBikeParking() || way.isBoardingLocation())
     ) {
       return;
     }
@@ -263,12 +255,7 @@ public class OsmDatabase {
 
     /* An area can be specified as such, or be one by default as an amenity */
     if (
-      (
-        way.isTag("area", "yes") ||
-        way.isTag("amenity", "parking") ||
-        way.isTag("amenity", "bicycle_parking") ||
-        way.isBoardingArea()
-      ) &&
+      (way.isArea() || way.isParkAndRide() || way.isBikeParking() || way.isBoardingArea()) &&
       way.getNodeRefs().size() > 2
     ) {
       // this is an area that's a simple polygon. So we can just add it straight
@@ -296,17 +283,15 @@ public class OsmDatabase {
     }
 
     if (
-      relation.isTag("type", "multipolygon") &&
-      (OsmFilter.isOsmEntityRoutable(relation) || relation.isParkAndRide()) ||
+      relation.isMultiPolygon() &&
+      (relation.isRoutable() || relation.isParkAndRide()) ||
       relation.isBikeParking()
     ) {
       // OSM MultiPolygons are ferociously complicated, and in fact cannot be processed
       // without reference to the ways that compose them. Accordingly, we will merely
       // mark the ways for preservation here, and deal with the details once we have
       // the ways loaded.
-      if (
-        !OsmFilter.isWayRoutable(relation) && !relation.isParkAndRide() && !relation.isBikeParking()
-      ) {
+      if (!relation.isRoutable() && !relation.isParkAndRide() && !relation.isBikeParking()) {
         return;
       }
       for (OSMRelationMember member : relation.getMembers()) {
@@ -314,18 +299,12 @@ public class OsmDatabase {
       }
       applyLevelsForWay(relation);
     } else if (
-      !(relation.isTag("type", "restriction")) &&
-      !(relation.isTag("type", "route") && relation.isTag("route", "road")) &&
-      !(relation.isTag("type", "multipolygon") && OsmFilter.isOsmEntityRoutable(relation)) &&
-      !(relation.isTag("type", "level_map")) &&
-      !(
-        relation.isTag("type", "public_transport") &&
-        relation.isTag("public_transport", "stop_area")
-      ) &&
-      !(
-        relation.isTag("type", "route") &&
-        (relation.isTag("route", "road") || relation.isTag("route", "bicycle"))
-      )
+      !relation.isRestriction() &&
+      !relation.isRoadRoute() &&
+      !(relation.isMultiPolygon() && relation.isRoutable()) &&
+      !relation.isLevelMap() &&
+      !relation.isStopArea() &&
+      !(relation.isRoadRoute() || relation.isBicycleRoute())
     ) {
       return;
     }
@@ -738,12 +717,8 @@ public class OsmDatabase {
       }
       if (
         !(
-          relation.isTag("type", "multipolygon") &&
-          (
-            OsmFilter.isOsmEntityRoutable(relation) ||
-            relation.isParkAndRide() ||
-            relation.isBikeParking()
-          )
+          relation.isMultiPolygon() &&
+          (relation.isRoutable() || relation.isParkAndRide() || relation.isBikeParking())
         )
       ) {
         continue;
@@ -752,7 +727,6 @@ public class OsmDatabase {
       ArrayList<OSMWay> innerWays = new ArrayList<>();
       ArrayList<OSMWay> outerWays = new ArrayList<>();
       for (OSMRelationMember member : relation.getMembers()) {
-        String role = member.getRole();
         OSMWay way = areaWaysById.get(member.getRef());
         if (way == null) {
           // relation includes way which does not exist in the data. Skip.
@@ -769,12 +743,12 @@ public class OsmDatabase {
             continue RELATION;
           }
         }
-        if (role.equals("inner")) {
+        if (member.hasRoleInner()) {
           innerWays.add(way);
-        } else if (role.equals("outer")) {
+        } else if (member.hasRoleOuter()) {
           outerWays.add(way);
         } else {
-          LOG.warn("Unexpected role {} in multipolygon", role);
+          LOG.warn("Unexpected role {} in multipolygon", member.getRole());
         }
       }
       processedAreas.add(relation);
@@ -787,7 +761,7 @@ public class OsmDatabase {
 
       for (OSMRelationMember member : relation.getMembers()) {
         // multipolygons for attribute mapping
-        if (!("way".equals(member.getType()) && waysById.containsKey(member.getRef()))) {
+        if (!(member.hasTypeWay() && waysById.containsKey(member.getRef()))) {
           continue;
         }
 
@@ -801,7 +775,7 @@ public class OsmDatabase {
             way.addTag(tag, relation.getTag(tag));
           }
         }
-        if (relation.isTag("railway", "platform") && !way.hasTag("railway")) {
+        if (relation.isRailwayPlatform() && !way.hasTag("railway")) {
           way.addTag("railway", "platform");
         }
         if (relation.isPlatform() && !way.hasTag("public_transport")) {
@@ -815,13 +789,10 @@ public class OsmDatabase {
    * Handler for a new Area (single way area or multipolygon relations)
    */
   private void newArea(Area area) {
-    StreetTraversalPermission permissions = OsmFilter.getPermissionsForEntity(
-      area.parent,
+    StreetTraversalPermission permissions = area.parent.overridePermissions(
       StreetTraversalPermission.PEDESTRIAN_AND_BICYCLE
     );
-    if (
-      OsmFilter.isOsmEntityRoutable(area.parent) && permissions != StreetTraversalPermission.NONE
-    ) {
+    if (area.parent.isRoutable() && permissions != StreetTraversalPermission.NONE) {
       walkableAreas.add(area);
     }
     // Please note: the same area can be both car P+R AND bike park.
@@ -840,14 +811,13 @@ public class OsmDatabase {
     LOG.debug("Processing relations...");
 
     for (OSMRelation relation : relationsById.valueCollection()) {
-      if (relation.isTag("type", "restriction")) {
+      if (relation.isRestriction()) {
         processRestriction(relation);
-      } else if (relation.isTag("type", "level_map")) {
+      } else if (relation.isLevelMap()) {
         processLevelMap(relation);
-      } else if (relation.isTag("type", "route")) {
-        processRoad(relation);
-        processBicycleRoute(relation);
-      } else if (relation.isTag("type", "public_transport")) {
+      } else if (relation.isRoute()) {
+        processRoute(relation);
+      } else if (relation.isPublicTransport()) {
         processPublicTransportStopArea(relation);
       }
     }
@@ -859,28 +829,10 @@ public class OsmDatabase {
    * @see "https://wiki.openstreetmap.org/wiki/Tag:route%3Dbicycle"
    */
   private void processBicycleRoute(OSMRelation relation) {
-    if (relation.isTag("route", "bicycle")) {
-      var network = relation.getTag("network");
-
-      if (network == null) network = "lcn";
-      switch (network) {
-        case "lcn":
-          setNetworkForAllMembers(relation, "lcn");
-          break;
-        case "rcn":
-          setNetworkForAllMembers(relation, "rcn");
-          break;
-        case "ncn":
-          setNetworkForAllMembers(relation, "ncn");
-          break;
-        case "icn":
-          setNetworkForAllMembers(relation, "icn");
-          break;
-        // we treat networks without known network type like local networks
-        default:
-          setNetworkForAllMembers(relation, "lcn");
-          break;
-      }
+    if (relation.isBicycleRoute()) {
+      // we treat networks without known network type like local networks
+      var network = relation.getTagOpt("network").orElse("lcn");
+      setNetworkForAllMembers(relation, network);
     }
   }
 
@@ -888,9 +840,9 @@ public class OsmDatabase {
     relation
       .getMembers()
       .forEach(member -> {
-        var isOsmWay = "way".equals(member.getType());
+        var isOsmWay = member.hasTypeWay();
         var way = waysById.get(member.getRef());
-        // if it is an OSM way (rather than a node) and it it doesn't already contain the tag
+        // if it is an OSM way (rather than a node) and it doesn't already contain the tag
         // we add it
         if (way != null && isOsmWay && !way.hasTag(key)) {
           way.addTag(key, "yes");
@@ -1031,7 +983,7 @@ public class OsmDatabase {
       issueStore
     );
     for (OSMRelationMember member : relation.getMembers()) {
-      if ("way".equals(member.getType()) && waysById.containsKey(member.getRef())) {
+      if (member.hasTypeWay() && waysById.containsKey(member.getRef())) {
         OSMWay way = waysById.get(member.getRef());
         if (way != null) {
           String role = member.getRole();
@@ -1050,11 +1002,11 @@ public class OsmDatabase {
   }
 
   /**
-   * Handle route=road relations.
+   * Handle route=road and route=bicycle relations.
    */
-  private void processRoad(OSMRelation relation) {
+  private void processRoute(OSMRelation relation) {
     for (OSMRelationMember member : relation.getMembers()) {
-      if (!("way".equals(member.getType()) && waysById.containsKey(member.getRef()))) {
+      if (!(member.hasTypeWay() && waysById.containsKey(member.getRef()))) {
         continue;
       }
 
@@ -1084,6 +1036,7 @@ public class OsmDatabase {
         }
       }
     }
+    processBicycleRoute(relation);
   }
 
   /**
@@ -1098,37 +1051,46 @@ public class OsmDatabase {
    * @see "http://wiki.openstreetmap.org/wiki/Tag:public_transport%3Dstop_area"
    */
   private void processPublicTransportStopArea(OSMRelation relation) {
-    OSMWithTags platformArea = null;
-    Set<OSMNode> platformsNodes = new HashSet<>();
+    Set<OSMWithTags> platformAreas = new HashSet<>();
+    Set<OSMNode> platformNodes = new HashSet<>();
     for (OSMRelationMember member : relation.getMembers()) {
-      if (
-        "way".equals(member.getType()) &&
-        "platform".equals(member.getRole()) &&
-        areaWayIds.contains(member.getRef())
-      ) {
-        if (platformArea == null) {
-          platformArea = areaWaysById.get(member.getRef());
-        } else {
-          issueStore.add(new TooManyAreasInRelation(relation));
+      switch (member.getType()) {
+        case NODE -> {
+          var node = nodesById.get(member.getRef());
+          if (node != null && (node.isEntrance() || node.isBoardingLocation())) {
+            platformNodes.add(node);
+          }
         }
-      } else if (
-        "relation".equals(member.getType()) &&
-        "platform".equals(member.getRole()) &&
-        relationsById.containsKey(member.getRef())
-      ) {
-        if (platformArea == null) {
-          platformArea = relationsById.get(member.getRef());
-        } else {
-          issueStore.add(new TooManyAreasInRelation(relation));
+        case WAY -> {
+          if (member.hasRolePlatform() && areaWaysById.containsKey(member.getRef())) {
+            platformAreas.add(areaWaysById.get(member.getRef()));
+          }
         }
-      } else if ("node".equals(member.getType()) && nodesById.containsKey(member.getRef())) {
-        platformsNodes.add(nodesById.get(member.getRef()));
+        case RELATION -> {
+          if (member.hasRolePlatform() && relationsById.containsKey(member.getRef())) {
+            platformAreas.add(relationsById.get(member.getRef()));
+          }
+        }
       }
     }
-    if (platformArea != null && !platformsNodes.isEmpty()) {
-      stopsInAreas.put(platformArea, platformsNodes);
-    } else {
-      issueStore.add(new PublicTransportRelationSkipped(relation));
+
+    for (OSMWithTags area : platformAreas) {
+      if (area == null) {
+        throw new RuntimeException(
+          "Could not process public transport relation '%s' (%s)".formatted(
+              relation,
+              relation.url()
+            )
+        );
+      }
+      // single platform area presumably contains only one level in most cases
+      // a node inside it may specify several levels if it is an elevator
+      // make sure each node has access to the current platform level
+      final Set<String> filterLevels = area.getLevels();
+      platformNodes
+        .stream()
+        .filter(node -> node.getLevels().containsAll(filterLevels))
+        .forEach(node -> stopsInAreas.put(area, node));
     }
   }
 

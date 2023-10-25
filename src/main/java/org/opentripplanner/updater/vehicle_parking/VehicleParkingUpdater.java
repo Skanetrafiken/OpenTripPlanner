@@ -42,9 +42,9 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
   private final DataSource<VehicleParking> source;
   private final List<VehicleParking> oldVehicleParkings = new ArrayList<>();
   private WriteToGraphCallback saveResultOnGraph;
-  private VertexLinker linker;
+  private final VertexLinker linker;
 
-  private VehicleParkingService vehicleParkingService;
+  private final VehicleParkingService vehicleParkingService;
 
   public VehicleParkingUpdater(
     VehicleParkingUpdaterParameters parameters,
@@ -59,11 +59,7 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
     // Adding a vehicle parking station service needs a graph writer runnable
     this.vehicleParkingService = vehicleParkingService;
 
-    LOG.info(
-      "Creating vehicle-parking updater running every {} seconds : {}",
-      pollingPeriodSeconds(),
-      source
-    );
+    LOG.info("Creating vehicle-parking updater running every {}: {}", pollingPeriod(), source);
   }
 
   @Override
@@ -108,6 +104,8 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
       Set<VehicleParking> toLink = new HashSet<>();
       Set<VehicleParking> toRemove = new HashSet<>();
 
+      var vehicleParkingHelper = new VehicleParkingHelper(graph);
+
       for (VehicleParking updatedVehicleParking : updatedVehicleParkings) {
         var operational = updatedVehicleParking.getState().equals(VehicleParkingState.OPERATIONAL);
         var alreadyExists = oldVehicleParkings.contains(updatedVehicleParking);
@@ -143,8 +141,7 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
 
       /* Add new parks, after removing, so that there are no duplicate vertices for removed and re-added parks.*/
       for (final VehicleParking updatedVehicleParking : toLink) {
-        var vehicleParkingVertices = VehicleParkingHelper.createVehicleParkingVertices(
-          graph,
+        var vehicleParkingVertices = vehicleParkingHelper.createVehicleParkingVertices(
           updatedVehicleParking
         );
         var disposableEdgeCollectionsForVertex = linkVehicleParkingVertexToStreets(
@@ -189,8 +186,14 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
           LinkingDirection.BOTH_WAYS,
           (vertex, streetVertex) ->
             List.of(
-              new StreetVehicleParkingLink((VehicleParkingEntranceVertex) vertex, streetVertex),
-              new StreetVehicleParkingLink(streetVertex, (VehicleParkingEntranceVertex) vertex)
+              StreetVehicleParkingLink.createStreetVehicleParkingLink(
+                (VehicleParkingEntranceVertex) vertex,
+                streetVertex
+              ),
+              StreetVehicleParkingLink.createStreetVehicleParkingLink(
+                streetVertex,
+                (VehicleParkingEntranceVertex) vertex
+              )
             )
         );
         disposableEdgeCollections.add(disposableWalkEdges);
@@ -203,8 +206,14 @@ public class VehicleParkingUpdater extends PollingGraphUpdater {
           LinkingDirection.BOTH_WAYS,
           (vertex, streetVertex) ->
             List.of(
-              new StreetVehicleParkingLink((VehicleParkingEntranceVertex) vertex, streetVertex),
-              new StreetVehicleParkingLink(streetVertex, (VehicleParkingEntranceVertex) vertex)
+              StreetVehicleParkingLink.createStreetVehicleParkingLink(
+                (VehicleParkingEntranceVertex) vertex,
+                streetVertex
+              ),
+              StreetVehicleParkingLink.createStreetVehicleParkingLink(
+                streetVertex,
+                (VehicleParkingEntranceVertex) vertex
+              )
             )
         );
         disposableEdgeCollections.add(disposableCarEdges);

@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.security" (list . "override.security") -}}
+{{- define "override.security" -}}
+{{- end -}}

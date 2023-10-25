@@ -1,11 +1,15 @@
 package org.opentripplanner.framework.time;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -15,8 +19,9 @@ import javax.annotation.Nonnull;
  */
 public class TimeUtils {
 
-  private static final Pattern DAYS_SUFFIX = Pattern.compile("([-+])(\\d+)d");
   public static final Integer ONE_DAY_SECONDS = 24 * 60 * 60;
+  private static final Pattern DAYS_SUFFIX = Pattern.compile("([-+])(\\d+)d");
+  private static final AtomicLong BUSY_WAIT_GRACE_PERIOD_TIMEOUT = new AtomicLong(0);
 
   /** This is a utility class. Do not instantiate this class. It should have only static methods. */
   private TimeUtils() {}
@@ -161,5 +166,84 @@ public class TimeUtils {
    */
   public static ZonedDateTime zonedDateTime(LocalDate date, int seconds, ZoneId zoneId) {
     return RelativeTime.ofSeconds(seconds).toZonedDateTime(date, zoneId);
+  }
+
+  /**
+   * Convert system time in milliseconds to a sting:
+   * <pre>
+   * -1100 -> -1.1s
+   *     0 -> 0s
+   *  1000 -> 1s
+   *  1001 -> 1.001s
+   *  1010 -> 1.01s
+   *  1100 -> 1.1s
+   * 23456 -> 23.456s
+   * </pre>
+   */
+  public static String msToString(long milliseconds) {
+    long seconds = milliseconds / 1000L;
+    int decimals = Math.abs((int) (milliseconds % 1000));
+    if (decimals == 0) {
+      return seconds + "s";
+    }
+    if (decimals % 10 == 0) {
+      decimals = decimals / 10;
+      if (decimals % 10 == 0) {
+        decimals = decimals / 10;
+        return seconds + "." + decimals + "s";
+      }
+      return seconds + "." + String.format("%02d", decimals) + "s";
+    }
+    return seconds + "." + String.format("%03d", decimals) + "s";
+  }
+
+  /**
+   * Wait (compute) until the given {@code waitMs} is past. The returned long is a very random
+   * number. If this method is called twice a grace period of 5 times the wait-time is set. All
+   * calls within the grace period will return immediately. This ensures only ONE wait is applied
+   * to a given client request. Wait a bit, then make another request, and you will enter the
+   * busy-wait again.
+   * <p>
+   * This method does a "busy" wait - it is not affected by a thread interrupt like
+   * {@link Thread#sleep(long)}; Hence do not interfere with timeout logic witch uses the interrupt
+   * flag.
+   * <p>
+   * THIS CODE IS NOT MEANT FOR PRODUCTION!
+   */
+  @SuppressWarnings("unused")
+  public static long busyWaitOnce(int waitMs) {
+    long time = System.currentTimeMillis();
+    if (time < BUSY_WAIT_GRACE_PERIOD_TIMEOUT.get()) {
+      return 0;
+    }
+    BUSY_WAIT_GRACE_PERIOD_TIMEOUT.set(time + 5L * waitMs);
+
+    return busyWait(waitMs);
+  }
+
+  /**
+   * Wait (compute) until the given {@code waitMs} is past. The returned long is a very random
+   * number.
+   * <p>
+   * This method does a "busy" wait - it is not affected by a thread interrupt like
+   * {@link Thread#sleep(long)}; Hence do not interfere with timeout logic witch uses the interrupt
+   * flag.
+   * <p>
+   * THIS CODE IS NOT MEANT FOR PRODUCTION!
+   */
+  @SuppressWarnings("unused")
+  public static long busyWait(int waitMs) {
+    long waitUntil = System.currentTimeMillis() + waitMs;
+
+    Random rnd = new SecureRandom();
+    long value = rnd.nextLong();
+
+    // Print wait, this method is for debugging only
+    System.err.printf(Locale.ROOT, "BUSY-WAIT(%.1fs)%n", (waitMs / 1000.0));
+
+    while (System.currentTimeMillis() < waitUntil) {
+      value |= rnd.nextLong();
+    }
+    return value;
   }
 }

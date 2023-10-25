@@ -1,6 +1,6 @@
 package org.opentripplanner.routing.linking;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +12,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.linearref.LinearLocation;
 import org.locationtech.jts.linearref.LocationIndexedLine;
 import org.locationtech.jts.operation.distance.DistanceOp;
@@ -22,6 +21,7 @@ import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.routing.graph.index.EdgeSpatialIndex;
 import org.opentripplanner.street.model.edge.AreaEdge;
+import org.opentripplanner.street.model.edge.AreaEdgeBuilder;
 import org.opentripplanner.street.model.edge.AreaEdgeList;
 import org.opentripplanner.street.model.edge.Edge;
 import org.opentripplanner.street.model.edge.NamedArea;
@@ -31,11 +31,10 @@ import org.opentripplanner.street.model.vertex.SplitterVertex;
 import org.opentripplanner.street.model.vertex.StreetVertex;
 import org.opentripplanner.street.model.vertex.TemporarySplitterVertex;
 import org.opentripplanner.street.model.vertex.Vertex;
+import org.opentripplanner.street.model.vertex.VertexFactory;
 import org.opentripplanner.street.search.TraverseMode;
 import org.opentripplanner.street.search.TraverseModeSet;
 import org.opentripplanner.transit.service.StopModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class links transit stops to streets by splitting the streets (unless the stop is extremely
@@ -55,7 +54,6 @@ import org.slf4j.LoggerFactory;
  */
 public class VertexLinker {
 
-  private static final Logger LOG = LoggerFactory.getLogger(VertexLinker.class);
   /**
    * if there are two ways and the distances to them differ by less than this value, we link to both
    * of them
@@ -63,6 +61,8 @@ public class VertexLinker {
   private static final double DUPLICATE_WAY_EPSILON_METERS = 0.001;
   private static final int INITIAL_SEARCH_RADIUS_METERS = 100;
   private static final int MAX_SEARCH_RADIUS_METERS = 1000;
+  // exit a complex area maximally via this many exit points
+  private static final int MAX_AREA_LINKS = 300;
   private static final GeometryFactory GEOMETRY_FACTORY = GeometryUtils.getGeometryFactory();
   /**
    * Spatial index of StreetEdges in the graph.
@@ -72,9 +72,10 @@ public class VertexLinker {
   private final Graph graph;
 
   private final StopModel stopModel;
+  private final VertexFactory vertexFactory;
 
   // TODO Temporary code until we refactor WalkableAreaBuilder  (#3152)
-  private Boolean addExtraEdgesToAreas = true;
+  private boolean addExtraEdgesToAreas = true;
 
   /**
    * Construct a new VertexLinker. NOTE: Only one VertexLinker should be active on a graph at any
@@ -83,6 +84,7 @@ public class VertexLinker {
   public VertexLinker(Graph graph, StopModel stopModel, EdgeSpatialIndex edgeSpatialIndex) {
     this.edgeSpatialIndex = edgeSpatialIndex;
     this.graph = graph;
+    this.vertexFactory = new VertexFactory(graph);
     this.stopModel = stopModel;
   }
 
@@ -127,30 +129,6 @@ public class VertexLinker {
   // TODO Temporary code until we refactor WalkableAreaBuilder (#3152)
   public void setAddExtraEdgesToAreas(Boolean addExtraEdgesToAreas) {
     this.addExtraEdgesToAreas = addExtraEdgesToAreas;
-  }
-
-  /**
-   * While in destructive splitting mode (during graph construction rather than handling routing
-   * requests), we remove edges that have been split and may then re-split the resulting segments
-   * recursively, so parts of them are also removed. Newly created edge fragments are added to the
-   * spatial index; the edges that were split are removed (disconnected) from the graph but were
-   * previously not removed from the spatial index, so for all subsequent splitting operations we
-   * had to check whether any edge coming out of the spatial index had been "soft deleted".
-   * <p>
-   * I believe this was compensating for the fact that STRTrees are optimized at construction and
-   * read-only. That restriction no longer applies since we've been using our own hash grid spatial
-   * index instead of the STRTree. So rather than filtering out soft deleted edges, this is now an
-   * assertion that the system behaves as intended, and will log an error if the spatial index is
-   * returning edges that have been disconnected from the graph.
-   */
-  private static boolean edgeReachableFromGraph(Edge edge) {
-    boolean edgeReachableFromGraph = edge.getToVertex().getIncoming().contains(edge);
-    if (!edgeReachableFromGraph) {
-      LOG.error(
-        "Edge returned from spatial index is no longer reachable from graph. That is not expected."
-      );
-    }
-    return edgeReachableFromGraph;
   }
 
   /** projected distance from stop to edge, in latitude degrees */
@@ -270,10 +248,10 @@ public class VertexLinker {
       .query(env, scope)
       .filter(StreetEdge.class::isInstance)
       .map(StreetEdge.class::cast)
-      .filter(e -> e.canTraverse(traverseModes) && edgeReachableFromGraph(e))
+      .filter(e -> e.canTraverse(traverseModes) && e.isReachableFromGraph())
       .map(e -> new DistanceTo<>(e, distance(vertex, e, xscale)))
       .filter(ead -> ead.distanceDegreesLat < radiusDeg)
-      .collect(Collectors.toList());
+      .toList();
 
     if (candidateEdges.isEmpty()) {
       return Set.of();
@@ -364,6 +342,7 @@ public class VertexLinker {
     double length = SphericalDistanceLibrary.length(orig);
 
     IntersectionVertex start = null;
+    boolean snapped = true;
 
     // if we're very close to one end of the line or the other, or endwise, don't bother to split,
     // cut to the chase and link directly
@@ -387,6 +366,7 @@ public class VertexLinker {
     ) {
       start = (IntersectionVertex) edge.getToVertex();
     } else {
+      snapped = false;
       boolean split = true;
       // if vertex is inside an area, no need to snap to nearest edge and split it
       if (this.addExtraEdgesToAreas && edge instanceof AreaEdge aEdge) {
@@ -406,12 +386,14 @@ public class VertexLinker {
       }
       if (split) {
         // split the edge, get the split vertex
-        start = (IntersectionVertex) split(edge, ll, scope, direction, tempEdges);
+        start = split(edge, ll, scope, direction, tempEdges);
       }
     }
 
     if (this.addExtraEdgesToAreas && edge instanceof AreaEdge aEdge) {
-      addAreaVertex(start, aEdge.getArea(), scope, tempEdges);
+      if (!snapped || !aEdge.getArea().visibilityVertices().contains(start)) {
+        addAreaVertex(start, aEdge.getArea(), scope, tempEdges);
+      }
     }
     // TODO Consider moving this code
     if (OTPFeature.FlexRouting.isOn()) {
@@ -495,7 +477,7 @@ public class VertexLinker {
       tsv.setWheelchairAccessible(originalEdge.isWheelchairAccessible());
       v = tsv;
     } else {
-      v = new SplitterVertex(graph, uniqueSplitLabel, x, y, originalEdge.getName());
+      v = vertexFactory.splitter(originalEdge, x, y, uniqueSplitLabel);
     }
     v.addRentalRestriction(originalEdge.getFromVertex().rentalRestrictions());
     v.addRentalRestriction(originalEdge.getToVertex().rentalRestrictions());
@@ -533,8 +515,6 @@ public class VertexLinker {
     }
   }
 
-  private record StreetEdgePair(StreetEdge e0, StreetEdge e1) {}
-
   /**
    * Link a new vertex permanently with area geometry
    */
@@ -556,7 +536,6 @@ public class VertexLinker {
     List<NamedArea> areas = edgeList.getAreas();
     Geometry origPolygon = edgeList.getGeometry();
     Geometry polygon = origPolygon.union(origPolygon.getBoundary()).buffer(0.000001);
-    HashSet<IntersectionVertex> visibilityVertices = edgeList.visibilityVertices;
 
     // Due to truncating of precision in storage of the edge geometry, the new split vertex
     // might be located just outside the area, so we calculate the point closest to the polygon
@@ -568,7 +547,18 @@ public class VertexLinker {
 
     int added = 0;
 
-    for (IntersectionVertex v : visibilityVertices) {
+    // if area is too complex, consider only part of visibility nodes
+    float skip_ratio = (float) MAX_AREA_LINKS / (float) edgeList.visibilityVertices().size();
+    int i = 0;
+    float sum_i = 0;
+
+    for (IntersectionVertex v : edgeList.visibilityVertices()) {
+      sum_i += skip_ratio;
+      if (Math.floor(sum_i) < i + 1) {
+        continue;
+      }
+      i = (int) Math.floor(sum_i);
+
       LineString newGeometry = GEOMETRY_FACTORY.createLineString(
         new Coordinate[] { nearestPoints[0], v.getCoordinate() }
       );
@@ -587,13 +577,33 @@ public class VertexLinker {
     // TODO: Temporary fix for unconnected area edges. This should go away when moving walkable
     // area calculation to be done after stop linking
     if (added == 0) {
-      for (IntersectionVertex v : visibilityVertices) {
+      for (IntersectionVertex v : edgeList.visibilityVertices()) {
         createSegments(newVertex, v, edgeList, areas, scope, tempEdges);
       }
     }
     if (scope == Scope.PERMANENT) {
-      visibilityVertices.add(newVertex);
+      edgeList.addVisibilityVertex(newVertex);
     }
+  }
+
+  static final Set<TraverseMode> noThruModes = Set.of(
+    TraverseMode.WALK,
+    TraverseMode.BICYCLE,
+    TraverseMode.CAR
+  );
+
+  private Set<TraverseMode> getNoThruModes(Collection<Edge> edges) {
+    var modes = new HashSet<>(noThruModes);
+    for (Edge e : edges) {
+      if (e instanceof StreetEdge se) {
+        for (TraverseMode tm : noThruModes) {
+          if (!se.isNoThruTraffic(tm)) {
+            modes.remove(tm);
+          }
+        }
+      }
+    }
+    return modes;
   }
 
   private void createSegments(
@@ -612,7 +622,6 @@ public class VertexLinker {
       new Coordinate[] { from.getCoordinate(), to.getCoordinate() }
     );
 
-    List<NamedArea> intersects = new ArrayList<>();
     NamedArea hit = null;
     for (NamedArea area : areas) {
       Geometry polygon = area.getPolygon();
@@ -626,33 +635,42 @@ public class VertexLinker {
       // If more than one area intersects, we pick one by random for the name & properties
       double length = SphericalDistanceLibrary.distance(to.getCoordinate(), from.getCoordinate());
 
-      AreaEdge ae = new AreaEdge(
-        from,
-        to,
-        line,
-        hit.getName(),
-        length,
-        hit.getPermission(),
-        false,
-        ael
-      );
+      // apply consistent NoThru restrictions
+      // if all joining edges are nothru, then the new edge should be as well
+      var incomingNoThruModes = getNoThruModes(to.getIncoming());
+      var outgoingNoThruModes = getNoThruModes(to.getIncoming());
+      AreaEdgeBuilder areaEdgeBuilder = new AreaEdgeBuilder()
+        .withFromVertex(from)
+        .withToVertex(to)
+        .withGeometry(line)
+        .withName(hit.getName())
+        .withMeterLength(length)
+        .withPermission(hit.getPermission())
+        .withBack(false)
+        .withArea(ael);
+      for (TraverseMode tm : outgoingNoThruModes) {
+        areaEdgeBuilder.withNoThruTrafficTraverseMode(tm);
+      }
+      AreaEdge areaEdge = areaEdgeBuilder.buildAndConnect();
       if (scope != Scope.PERMANENT) {
-        tempEdges.addEdge(ae);
+        tempEdges.addEdge(areaEdge);
       }
 
-      ae =
-        new AreaEdge(
-          to,
-          from,
-          line.reverse(),
-          hit.getName(),
-          length,
-          hit.getPermission(),
-          true,
-          ael
-        );
+      AreaEdgeBuilder reverseAreaEdgeBuilder = new AreaEdgeBuilder()
+        .withFromVertex(to)
+        .withToVertex(from)
+        .withGeometry(line.reverse())
+        .withName(hit.getName())
+        .withMeterLength(length)
+        .withPermission(hit.getPermission())
+        .withBack(true)
+        .withArea(ael);
+      for (TraverseMode tm : incomingNoThruModes) {
+        reverseAreaEdgeBuilder.withNoThruTrafficTraverseMode(tm);
+      }
+      AreaEdge reverseAreaEdge = reverseAreaEdgeBuilder.buildAndConnect();
       if (scope != Scope.PERMANENT) {
-        tempEdges.addEdge(ae);
+        tempEdges.addEdge(reverseAreaEdge);
       }
     }
   }

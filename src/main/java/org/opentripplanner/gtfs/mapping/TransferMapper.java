@@ -194,7 +194,7 @@ class TransferMapper {
   }
 
   private TransferConstraint mapConstraint(Transfer rhs) {
-    var builder = TransferConstraint.create();
+    var builder = TransferConstraint.of();
 
     builder.guaranteed(rhs.getTransferType() == GUARANTEED);
 
@@ -296,12 +296,5 @@ class TransferMapper {
       }
     }
     return -1;
-  }
-
-  private boolean sameBlockId(Trip a, Trip b) {
-    if (a == null || b == null) {
-      return false;
-    }
-    return a.getGtfsBlockId() != null && a.getGtfsBlockId().equals(b.getGtfsBlockId());
   }
 }

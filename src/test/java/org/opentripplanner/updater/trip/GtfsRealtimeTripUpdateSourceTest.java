@@ -3,8 +3,9 @@ package org.opentripplanner.updater.trip;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Map;
+import java.time.Duration;
 import org.junit.jupiter.api.Test;
+import org.opentripplanner.test.support.ResourceLoader;
 import org.opentripplanner.updater.spi.HttpHeaders;
 
 public class GtfsRealtimeTripUpdateSourceTest {
@@ -14,11 +15,11 @@ public class GtfsRealtimeTripUpdateSourceTest {
     var source = new GtfsRealtimeTripUpdateSource(
       new PollingTripUpdaterParameters(
         "rt",
-        10,
+        Duration.ofSeconds(10),
         false,
         BackwardsDelayPropagationType.ALWAYS,
         "rt",
-        "file:src/test/resources/gtfs-rt/trip-updates/septa.pbf",
+        ResourceLoader.of(this).url("septa.pbf").toString(),
         HttpHeaders.empty()
       )
     );

@@ -1,0 +1,113 @@
+{{- include "tjp-service-lib.rollout" (list . "override.rollout") -}}
+{{- define "override.rollout" -}}
+{{/* We override the spec since the template does not support multiple containers */}}
+spec:
+  template:
+    spec:
+      containers:
+        - name: resesok-otp
+          securityContext: {}
+          image: "{{ .Values.otp.image.repository }}:{{ .Values.otp.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: "ENVIRONMENT"
+              value: {{ .Values.ENVIRONMENT | quote }}
+            {{- range $key, $value := .Values.otp.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: otpport
+              containerPort: {{ required "A valid .Values.otp.containerPort entry required!" .Values.otp.containerPort }}
+              protocol: TCP
+          startupProbe:
+            failureThreshold: 80
+            periodSeconds: 30
+            initialDelaySeconds: 120
+            successThreshold: 1
+            timeoutSeconds: 20
+            httpGet:
+              path: /otp/routers/ready
+              port: otpport
+          livenessProbe:
+            failureThreshold: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 20
+            httpGet:
+              path: /otp/routers/ready
+              port: otpport
+          readinessProbe:
+            failureThreshold: 5
+            periodSeconds: 30
+            initialDelaySeconds: 120
+            successThreshold: 1
+            timeoutSeconds: 20
+            httpGet:
+              path: otp/routers/ready
+              port: otpport
+          volumeMounts:
+          {{- range .Values.otp.configmapMounts }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+              subPath: {{ .subPath }}
+              readOnly: {{ .readOnly }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.otp.resources | nindent 12 }}
+        - name: resesok-trip
+          securityContext: {}
+          image: "{{ .Values.trip.image.repository }}:{{ .Values.trip.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: "ENVIRONMENT"
+              value: {{ .Values.ENVIRONMENT | quote }}
+            {{- range $key, $value := .Values.trip.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: tripport
+              containerPort: {{ required "A valid .Values.trip.containerPort entry required!" .Values.trip.containerPort }}
+              protocol: TCP
+          startupProbe:
+            failureThreshold: 80
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+            httpGet:
+              path: /status?api-version=1
+              port: tripport
+          livenessProbe:
+            failureThreshold: 5
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+            httpGet:
+              path: /status?api-version=1
+              port: tripport
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 30
+            httpGet:
+              path: /status?api-version=1
+              port: tripport
+          volumeMounts: []
+          resources:
+            {{- toYaml .Values.trip.resources | nindent 12 }}
+      volumes:
+      {{- range .Values.otp.configmapVolumes }}
+        - name: {{ .name }}
+          configMap:
+            name: {{ .configMap }}
+            {{- range .items }}
+            items:
+            - key: {{ .key }}
+              path: {{ .path }}
+            {{- end }}
+      {{- end }}
+{{- end -}}

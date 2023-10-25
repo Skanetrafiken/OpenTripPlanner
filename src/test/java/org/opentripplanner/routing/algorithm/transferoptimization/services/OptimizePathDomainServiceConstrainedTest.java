@@ -7,9 +7,7 @@ import static org.opentripplanner.model.transfer.TransferPriority.ALLOWED;
 import static org.opentripplanner.model.transfer.TransferPriority.NOT_ALLOWED;
 import static org.opentripplanner.model.transfer.TransferPriority.PREFERRED;
 import static org.opentripplanner.model.transfer.TransferPriority.RECOMMENDED;
-import static org.opentripplanner.routing.algorithm.transferoptimization.services.TestTransferBuilder.txConstrained;
 import static org.opentripplanner.routing.algorithm.transferoptimization.services.TransferGeneratorDummy.dummyTransferGenerator;
-import static org.opentripplanner.routing.algorithm.transferoptimization.services.TransferGeneratorDummy.tx;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -23,7 +21,7 @@ import org.opentripplanner.raptor._data.transit.TestTripSchedule;
  * <pre>
  * POSSIBLE TRANSFERS
  * Transfers        B-C 1m     C-D 2m       D-E 3m     E-F 4m      F-G 5m
- * Constraint       ALLOWED  RECOMMENDED  PREFERRED  GUARANTIED  STAY_SEATED
+ * Constraint       ALLOWED  RECOMMENDED  PREFERRED  GUARANTEED  STAY_SEATED
  * Trip 1  A 10:02  B 10:10    C 10:15     D 10:20     E 10:25     F 10:30
  * Trip 2           C 10:13    D 10:18     E 10:24     G 10:30     G 10:36   H 10:40
  * </pre>
@@ -65,15 +63,15 @@ public class OptimizePathDomainServiceConstrainedTest implements RaptorTestConst
 
   TransferGenerator<TestTripSchedule> transfers = dummyTransferGenerator(
     List.of(
-      tx(txConstrained(trip1, STOP_B, trip2, STOP_C).priority(ALLOWED), D1m),
-      tx(txConstrained(trip1, STOP_C, trip2, STOP_D).priority(RECOMMENDED), D2m),
-      tx(txConstrained(trip1, STOP_D, trip2, STOP_E).priority(PREFERRED), D3m),
-      tx(txConstrained(trip1, STOP_E, trip2, STOP_F).guaranteed(), D4m),
-      tx(txConstrained(trip1, STOP_F, trip2, STOP_G).staySeated(), D5m),
-      tx(txConstrained(trip1, STOP_C, trip2, STOP_C).priority(NOT_ALLOWED)),
-      tx(txConstrained(trip1, STOP_D, trip2, STOP_D).priority(NOT_ALLOWED)),
-      tx(txConstrained(trip1, STOP_E, trip2, STOP_E).priority(NOT_ALLOWED)),
-      tx(txConstrained(trip1, STOP_F, trip2, STOP_F).priority(NOT_ALLOWED))
+      TestTransferBuilder.tx(trip1, STOP_B, trip2, STOP_C).priority(ALLOWED).walk(D1m).build(),
+      TestTransferBuilder.tx(trip1, STOP_C, trip2, STOP_D).priority(RECOMMENDED).walk(D2m).build(),
+      TestTransferBuilder.tx(trip1, STOP_D, trip2, STOP_E).priority(PREFERRED).walk(D3m).build(),
+      TestTransferBuilder.tx(trip1, STOP_E, trip2, STOP_F).guaranteed().walk(D4m).build(),
+      TestTransferBuilder.tx(trip1, STOP_F, trip2, STOP_G).staySeated().walk(D5m).build(),
+      TestTransferBuilder.tx(trip1, STOP_C, trip2, STOP_C).priority(NOT_ALLOWED).build(),
+      TestTransferBuilder.tx(trip1, STOP_D, trip2, STOP_D).priority(NOT_ALLOWED).build(),
+      TestTransferBuilder.tx(trip1, STOP_E, trip2, STOP_E).priority(NOT_ALLOWED).build(),
+      TestTransferBuilder.tx(trip1, STOP_F, trip2, STOP_F).priority(NOT_ALLOWED).build()
     )
   );
 

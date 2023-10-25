@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.Futures;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,8 +54,8 @@ class VehicleParkingUpdaterTest {
       }
 
       @Override
-      public int frequencySec() {
-        return -1;
+      public Duration frequency() {
+        return Duration.ZERO;
       }
 
       @Override
@@ -72,7 +73,7 @@ class VehicleParkingUpdaterTest {
   }
 
   @Test
-  public void addVehicleParkingTest() {
+  void addVehicleParkingTest() {
     var vehicleParkings = List.of(
       VehicleParkingTestUtil.createParkingWithEntrances("1", 0.0001, 0)
     );
@@ -84,7 +85,7 @@ class VehicleParkingUpdaterTest {
   }
 
   @Test
-  public void updateVehicleParkingTest() {
+  void updateVehicleParkingTest() {
     var vehiclePlaces = VehicleParkingSpaces.builder().bicycleSpaces(1).build();
 
     var vehicleParkings = List.of(
@@ -120,7 +121,7 @@ class VehicleParkingUpdaterTest {
   }
 
   @Test
-  public void deleteVehicleParkingTest() {
+  void deleteVehicleParkingTest() {
     var vehicleParkings = List.of(
       VehicleParkingTestUtil.createParkingWithEntrances("1", 0.0001, 0),
       VehicleParkingTestUtil.createParkingWithEntrances("2", -0.0001, 0)
@@ -140,7 +141,7 @@ class VehicleParkingUpdaterTest {
   }
 
   @Test
-  public void addNotOperatingVehicleParkingTest() {
+  void addNotOperatingVehicleParkingTest() {
     var vehicleParking = VehicleParking.builder().state(VehicleParkingState.CLOSED).build();
 
     when(dataSource.getUpdates()).thenReturn(List.of(vehicleParking));
@@ -151,7 +152,7 @@ class VehicleParkingUpdaterTest {
   }
 
   @Test
-  public void updateNotOperatingVehicleParkingTest() {
+  void updateNotOperatingVehicleParkingTest() {
     var vehiclePlaces = VehicleParkingSpaces.builder().bicycleSpaces(1).build();
 
     var vehicleParking = VehicleParking
@@ -192,7 +193,7 @@ class VehicleParkingUpdaterTest {
   }
 
   @Test
-  public void deleteNotOperatingVehicleParkingTest() {
+  void deleteNotOperatingVehicleParkingTest() {
     var vehicleParking = VehicleParking.builder().state(VehicleParkingState.CLOSED).build();
 
     when(dataSource.getUpdates()).thenReturn(List.of(vehicleParking));
@@ -271,7 +272,7 @@ class VehicleParkingUpdaterTest {
       List.of(vehicleParkingUpdater)
     );
     graphUpdaterManager.startUpdaters();
-    graphUpdaterManager.stop();
+    graphUpdaterManager.stop(false);
   }
 
   private void assertVehicleParkingNotLinked() {

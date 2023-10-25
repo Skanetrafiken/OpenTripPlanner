@@ -27,6 +27,10 @@ public class TemplateUtil {
     return replaceSection(doc, EXAMPLE, jsonExample(root, source));
   }
 
+  public static String replaceJsonExample(String doc, JsonNode json, String source) {
+    return replaceSection(doc, EXAMPLE, jsonExample(json, source));
+  }
+
   public static String replaceSection(String doc, String token, String replacement) {
     var replaceToken = replaceToken(token);
 
@@ -67,6 +71,14 @@ public class TemplateUtil {
         comment,
         JsonSupport.prettyPrint(json)
       );
+  }
+
+  public static String graphQlExample(String query) {
+    return """
+      ```graphql
+      %s
+      ```
+      """.formatted(query);
   }
 
   /**

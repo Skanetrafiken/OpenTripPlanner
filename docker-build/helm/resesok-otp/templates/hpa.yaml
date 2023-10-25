@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.hpa" (list . "override.hpa") -}}
+{{- define "override.hpa" -}}
+{{- end -}}

@@ -24,12 +24,14 @@ import org.opentripplanner.ext.flex.trip.UnscheduledTrip;
 import org.opentripplanner.ext.ridehailing.model.RideEstimate;
 import org.opentripplanner.ext.ridehailing.model.RideHailingLeg;
 import org.opentripplanner.ext.ridehailing.model.RideHailingProvider;
+import org.opentripplanner.framework.i18n.I18NString;
+import org.opentripplanner.framework.lang.IntUtils;
 import org.opentripplanner.framework.time.TimeUtils;
 import org.opentripplanner.model.StopTime;
 import org.opentripplanner.model.transfer.ConstrainedTransfer;
 import org.opentripplanner.model.transfer.TransferConstraint;
-import org.opentripplanner.routing.graph.SimpleConcreteVertex;
 import org.opentripplanner.standalone.config.sandbox.FlexConfig;
+import org.opentripplanner.street.model._data.StreetModelForTest;
 import org.opentripplanner.street.search.TraverseMode;
 import org.opentripplanner.transit.model._data.TransitModelForTest;
 import org.opentripplanner.transit.model.basic.Money;
@@ -103,12 +105,22 @@ public class TestItineraryBuilder implements PlanTestConstants {
    *
    * @param duration number of seconds to walk
    */
-  public TestItineraryBuilder walk(int duration, Place to) {
+  public TestItineraryBuilder walk(int duration, Place to, List<WalkStep> steps) {
     if (lastEndTime == NOT_SET) {
       throw new IllegalStateException("Start time unknown!");
     }
     int legCost = cost(WALK_RELUCTANCE_FACTOR, duration);
-    streetLeg(WALK, lastEndTime, lastEndTime + duration, to, legCost);
+    streetLeg(WALK, lastEndTime, lastEndTime + duration, to, legCost, steps);
+    return this;
+  }
+
+  /**
+   * Add a walking leg to the itinerary
+   *
+   * @param duration number of seconds to walk
+   */
+  public TestItineraryBuilder walk(int duration, Place to) {
+    walk(duration, to, List.of());
     return this;
   }
 
@@ -117,13 +129,13 @@ public class TestItineraryBuilder implements PlanTestConstants {
    */
   public TestItineraryBuilder bicycle(int startTime, int endTime, Place to) {
     int legCost = cost(BICYCLE_RELUCTANCE_FACTOR, endTime - startTime);
-    streetLeg(BICYCLE, startTime, endTime, to, legCost);
+    streetLeg(BICYCLE, startTime, endTime, to, legCost, List.of());
     return this;
   }
 
   public TestItineraryBuilder drive(int startTime, int endTime, Place to) {
     int legCost = cost(CAR_RELUCTANCE_FACTOR, endTime - startTime);
-    streetLeg(CAR, startTime, endTime, to, legCost);
+    streetLeg(CAR, startTime, endTime, to, legCost, List.of());
     return this;
   }
 
@@ -132,7 +144,7 @@ public class TestItineraryBuilder implements PlanTestConstants {
    */
   public TestItineraryBuilder rentedBicycle(int startTime, int endTime, Place to) {
     int legCost = cost(BICYCLE_RELUCTANCE_FACTOR, endTime - startTime);
-    streetLeg(BICYCLE, startTime, endTime, to, legCost);
+    streetLeg(BICYCLE, startTime, endTime, to, legCost, List.of());
     var leg = ((StreetLeg) this.legs.get(0));
     var updatedLeg = StreetLegBuilder.of(leg).withRentedVehicle(true).build();
     this.legs.add(0, updatedLeg);
@@ -210,14 +222,12 @@ public class TestItineraryBuilder implements PlanTestConstants {
       FlexConfig.DEFAULT
     );
 
-    var fromv = new SimpleConcreteVertex(
-      null,
+    var fromv = StreetModelForTest.intersectionVertex(
       "v1",
       lastPlace.coordinate.latitude(),
       lastPlace.coordinate.longitude()
     );
-    var tov = new SimpleConcreteVertex(
-      null,
+    var tov = StreetModelForTest.intersectionVertex(
       "v2",
       to.coordinate.latitude(),
       to.coordinate.longitude()
@@ -226,7 +236,15 @@ public class TestItineraryBuilder implements PlanTestConstants {
     var flexPath = new DirectFlexPathCalculator()
       .calculateFlexPath(fromv, tov, template.fromStopIndex, template.toStopIndex);
 
-    var edge = new FlexTripEdge(fromv, tov, lastPlace.stop, to.stop, flexTrip, template, flexPath);
+    var edge = FlexTripEdge.createFlexTripEdge(
+      fromv,
+      tov,
+      lastPlace.stop,
+      to.stop,
+      flexTrip,
+      template,
+      flexPath
+    );
 
     FlexibleTransitLeg leg = new FlexibleTransitLeg(edge, newTime(start), newTime(end), legCost);
 
@@ -363,12 +381,12 @@ public class TestItineraryBuilder implements PlanTestConstants {
       to,
       null,
       null,
-      new ConstrainedTransfer(null, null, null, TransferConstraint.create().staySeated().build())
+      new ConstrainedTransfer(null, null, null, TransferConstraint.of().staySeated().build())
     );
   }
 
   public TestItineraryBuilder carHail(int duration, Place to) {
-    var streetLeg = streetLeg(CAR, lastEndTime, lastEndTime + duration, to, 1000);
+    var streetLeg = streetLeg(CAR, lastEndTime, lastEndTime + duration, to, 1000, List.of());
 
     var rhl = new RideHailingLeg(
       streetLeg,
@@ -376,11 +394,10 @@ public class TestItineraryBuilder implements PlanTestConstants {
       new RideEstimate(
         RideHailingProvider.UBER,
         Duration.ofSeconds(duration),
-        Money.euros(1000),
-        Money.euros(2000),
+        Money.euros(10),
+        Money.euros(20),
         "VW",
-        "UberX",
-        true
+        "UberX"
       )
     );
     // the removal is necessary because the call to streetLeg() also adds a leg to the list
@@ -396,7 +413,11 @@ public class TestItineraryBuilder implements PlanTestConstants {
 
   /** Create a dummy trip */
   private static Trip trip(String id, Route route) {
-    return TransitModelForTest.trip(id).withRoute(route).build();
+    return TransitModelForTest
+      .trip(id)
+      .withRoute(route)
+      .withHeadsign(I18NString.of("Trip headsign %s".formatted(id)))
+      .build();
   }
 
   private static Place stop(Place source) {
@@ -431,6 +452,9 @@ public class TestItineraryBuilder implements PlanTestConstants {
     fromStopTime.setArrivalTime(start);
     fromStopTime.setDepartureTime(start);
     fromStopTime.setTrip(trip);
+    fromStopTime.setStopHeadsign(
+      I18NString.of("Headsign at boarding (stop index %s)".formatted(fromStopIndex))
+    );
 
     // Duplicate stop time for all stops prior to the last.
     for (int i = 0; i < toStopIndex; i++) {
@@ -508,7 +532,8 @@ public class TestItineraryBuilder implements PlanTestConstants {
     int startTime,
     int endTime,
     Place to,
-    int legCost
+    int legCost,
+    List<WalkStep> walkSteps
   ) {
     StreetLeg leg = StreetLeg
       .create()
@@ -519,7 +544,7 @@ public class TestItineraryBuilder implements PlanTestConstants {
       .withTo(stop(to))
       .withDistanceMeters(speed(mode) * (endTime - startTime))
       .withGeneralizedCost(legCost)
-      .withWalkSteps(List.of())
+      .withWalkSteps(walkSteps)
       .build();
 
     legs.add(leg);
@@ -550,7 +575,7 @@ public class TestItineraryBuilder implements PlanTestConstants {
   }
 
   private int cost(float reluctance, int durationSeconds) {
-    return Math.round(reluctance * durationSeconds);
+    return IntUtils.round(reluctance * durationSeconds);
   }
 
   private int lastEndTime(int fallbackTime) {

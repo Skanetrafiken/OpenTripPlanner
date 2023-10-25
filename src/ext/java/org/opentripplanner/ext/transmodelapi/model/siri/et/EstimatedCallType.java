@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.opentripplanner.ext.transmodelapi.mapping.OccupancyStatusMapper;
 import org.opentripplanner.ext.transmodelapi.model.EnumTypes;
 import org.opentripplanner.ext.transmodelapi.support.GqlUtil;
 import org.opentripplanner.model.TripTimeOnDate;
@@ -202,7 +203,9 @@ public class EstimatedCallType {
           .name("occupancyStatus")
           .type(new GraphQLNonNull(EnumTypes.OCCUPANCY_STATUS))
           .dataFetcher(environment ->
-            ((TripTimeOnDate) environment.getSource()).getOccupancyStatus()
+            OccupancyStatusMapper.mapStatus(
+              ((TripTimeOnDate) environment.getSource()).getOccupancyStatus()
+            )
           )
           .build()
       )
@@ -365,8 +368,6 @@ public class EstimatedCallType {
     StopLocation stop = tripTimeOnDate.getStop();
     FeedScopedId stopId = stop.getId();
 
-    FeedScopedId parentStopId = stop.getParentStation().getId();
-
     Collection<TransitAlert> allAlerts = new HashSet<>();
 
     TransitAlertService alertPatchService = transitService.getTransitAlertService();
@@ -386,13 +387,16 @@ public class EstimatedCallType {
     );
     allAlerts.addAll(alertPatchService.getStopAndRouteAlerts(stopId, routeId, stopConditions));
     // StopPlace
-    allAlerts.addAll(alertPatchService.getStopAlerts(parentStopId, stopConditions));
-    allAlerts.addAll(
-      alertPatchService.getStopAndTripAlerts(parentStopId, tripId, serviceDate, stopConditions)
-    );
-    allAlerts.addAll(
-      alertPatchService.getStopAndRouteAlerts(parentStopId, routeId, stopConditions)
-    );
+    if (stop.getParentStation() != null) {
+      FeedScopedId parentStopId = stop.getParentStation().getId();
+      allAlerts.addAll(alertPatchService.getStopAlerts(parentStopId, stopConditions));
+      allAlerts.addAll(
+        alertPatchService.getStopAndTripAlerts(parentStopId, tripId, serviceDate, stopConditions)
+      );
+      allAlerts.addAll(
+        alertPatchService.getStopAndRouteAlerts(parentStopId, routeId, stopConditions)
+      );
+    }
     // Trip
     allAlerts.addAll(alertPatchService.getTripAlerts(tripId, serviceDate));
     // Route

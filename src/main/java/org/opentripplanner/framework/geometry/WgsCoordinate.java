@@ -26,8 +26,8 @@ public final class WgsCoordinate implements Serializable {
 
   public WgsCoordinate(double latitude, double longitude) {
     // Verify coordinates are in range
-    DoubleUtils.assertInRange(latitude, LAT_MIN, LAT_MAX, "latitude");
-    DoubleUtils.assertInRange(longitude, LON_MIN, LON_MAX, "longitude");
+    DoubleUtils.requireInRange(latitude, LAT_MIN, LAT_MAX, "latitude");
+    DoubleUtils.requireInRange(longitude, LON_MIN, LON_MAX, "longitude");
 
     // Normalize coordinates to precision around ~ 1 centimeters (7 decimals)
     this.latitude = DoubleUtils.roundTo7Decimals(latitude);
@@ -143,6 +143,23 @@ public final class WgsCoordinate implements Serializable {
   public WgsCoordinate roundToApproximate10m() {
     var lat = DoubleUtils.roundTo4Decimals(latitude);
     var lng = DoubleUtils.roundTo4Decimals(longitude);
+    return new WgsCoordinate(lat, lng);
+  }
+
+  /**
+   * Return a new version of this coordinate where latitude/longitude are rounded to 3 decimal
+   * places which at the equator has ~100 meter precision.
+   * <p>
+   * See https://wiki.openstreetmap.org/wiki/Precision_of_coordinates
+   * <p>
+   * This is useful when you want to cache coordinate-based computations but don't need absolute
+   * precision.
+   * <p>
+   * DO NOT USE THIS IN ROUTING (USE AT LEAST 7 DECIMALS)!
+   */
+  public WgsCoordinate roundToApproximate100m() {
+    var lat = DoubleUtils.roundTo3Decimals(latitude);
+    var lng = DoubleUtils.roundTo3Decimals(longitude);
     return new WgsCoordinate(lat, lng);
   }
 

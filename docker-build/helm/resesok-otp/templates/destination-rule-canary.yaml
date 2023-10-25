@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ include "service.name" . }}-canary
+spec:
+  host: {{ include "service.name" . }}-canary
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_REQUEST
+      warmupDurationSecs: 300s

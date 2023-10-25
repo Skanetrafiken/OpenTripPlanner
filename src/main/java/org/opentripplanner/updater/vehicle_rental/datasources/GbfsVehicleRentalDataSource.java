@@ -15,12 +15,15 @@ import org.entur.gbfs.v2_3.system_information.GBFSSystemInformation;
 import org.entur.gbfs.v2_3.vehicle_types.GBFSVehicleType;
 import org.entur.gbfs.v2_3.vehicle_types.GBFSVehicleTypes;
 import org.opentripplanner.framework.application.OTPFeature;
+import org.opentripplanner.framework.io.OtpHttpClient;
 import org.opentripplanner.framework.tostring.ToStringBuilder;
 import org.opentripplanner.service.vehiclerental.model.GeofencingZone;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleType;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalPlace;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalSystem;
 import org.opentripplanner.updater.vehicle_rental.datasources.params.GbfsVehicleRentalDataSourceParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by demory on 2017-03-14.
@@ -32,13 +35,21 @@ import org.opentripplanner.updater.vehicle_rental.datasources.params.GbfsVehicle
  */
 class GbfsVehicleRentalDataSource implements VehicleRentalDatasource {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GbfsVehicleRentalDataSource.class);
+
   private final GbfsVehicleRentalDataSourceParameters params;
 
+  private final OtpHttpClient otpHttpClient;
   private GbfsFeedLoader loader;
   private List<GeofencingZone> geofencingZones = List.of();
+  private boolean logGeofencingZonesDoesNotExistWarning = true;
 
-  public GbfsVehicleRentalDataSource(GbfsVehicleRentalDataSourceParameters parameters) {
+  public GbfsVehicleRentalDataSource(
+    GbfsVehicleRentalDataSourceParameters parameters,
+    OtpHttpClient otpHttpClient
+  ) {
     this.params = parameters;
+    this.otpHttpClient = otpHttpClient;
   }
 
   @Override
@@ -60,13 +71,7 @@ class GbfsVehicleRentalDataSource implements VehicleRentalDatasource {
     );
 
     // Get vehicle types
-    Map<String, RentalVehicleType> vehicleTypes = null;
-    GBFSVehicleTypes rawVehicleTypes = loader.getFeed(GBFSVehicleTypes.class);
-    if (rawVehicleTypes != null) {
-      GbfsVehicleTypeMapper vehicleTypeMapper = new GbfsVehicleTypeMapper(system.systemId);
-      List<GBFSVehicleType> gbfsVehicleTypes = rawVehicleTypes.getData().getVehicleTypes();
-      vehicleTypes = mapVehicleTypes(vehicleTypeMapper, gbfsVehicleTypes);
-    }
+    final Map<String, RentalVehicleType> vehicleTypes = getVehicleTypes(system);
 
     List<VehicleRentalPlace> stations = new LinkedList<>();
 
@@ -126,16 +131,26 @@ class GbfsVehicleRentalDataSource implements VehicleRentalDatasource {
 
     if (params.geofencingZones()) {
       var zones = loader.getFeed(GBFSGeofencingZones.class);
-
-      var mapper = new GbfsGeofencingZoneMapper(system.systemId);
-      this.geofencingZones = mapper.mapGeofencingZone(zones);
+      if (zones != null) {
+        var mapper = new GbfsGeofencingZoneMapper(system.systemId);
+        this.geofencingZones = mapper.mapGeofencingZone(zones);
+      } else {
+        if (logGeofencingZonesDoesNotExistWarning) {
+          LOG.warn(
+            "GeofencingZones is enabled in OTP, but no zones exist for network: {}",
+            params.network()
+          );
+        }
+        logGeofencingZonesDoesNotExistWarning = false;
+      }
     }
     return stations;
   }
 
   @Override
   public void setup() {
-    loader = new GbfsFeedLoader(params.url(), params.httpHeaders(), params.language());
+    loader =
+      new GbfsFeedLoader(params.url(), params.httpHeaders(), params.language(), otpHttpClient);
   }
 
   @Override
@@ -165,5 +180,15 @@ class GbfsVehicleRentalDataSource implements VehicleRentalDatasource {
       .map(vehicleTypeMapper::mapRentalVehicleType)
       .distinct()
       .collect(Collectors.toMap(v -> v.id.getId(), Function.identity()));
+  }
+
+  private Map<String, RentalVehicleType> getVehicleTypes(VehicleRentalSystem system) {
+    GBFSVehicleTypes rawVehicleTypes = loader.getFeed(GBFSVehicleTypes.class);
+    if (rawVehicleTypes != null) {
+      GbfsVehicleTypeMapper vehicleTypeMapper = new GbfsVehicleTypeMapper(system.systemId);
+      List<GBFSVehicleType> gbfsVehicleTypes = rawVehicleTypes.getData().getVehicleTypes();
+      return mapVehicleTypes(vehicleTypeMapper, gbfsVehicleTypes);
+    }
+    return Map.of();
   }
 }

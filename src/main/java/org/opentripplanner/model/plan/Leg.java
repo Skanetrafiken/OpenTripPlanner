@@ -19,7 +19,6 @@ import org.opentripplanner.model.transfer.ConstrainedTransfer;
 import org.opentripplanner.routing.alertpatch.TransitAlert;
 import org.opentripplanner.street.model.note.StreetNote;
 import org.opentripplanner.transit.model.basic.Accessibility;
-import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.network.Route;
 import org.opentripplanner.transit.model.organization.Agency;
 import org.opentripplanner.transit.model.organization.Operator;
@@ -254,13 +253,6 @@ public interface Leg {
    * The distance traveled while traversing the leg in meters.
    */
   double getDistanceMeters();
-
-  /**
-   * The GTFS pathway id
-   */
-  default FeedScopedId getPathwayId() {
-    return null;
-  }
 
   /**
    * Get the timezone offset in milliseconds.

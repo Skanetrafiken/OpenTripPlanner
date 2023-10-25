@@ -1,0 +1,10 @@
+rollouts:
+  maxUnavailable: 0
+  maxSurge: 3
+
+ENVIRONMENT: prod
+
+autoscaling:
+  minReplicas: 5
+  maxReplicas: 40
+  targetCPUUtilizationPercentage: 65

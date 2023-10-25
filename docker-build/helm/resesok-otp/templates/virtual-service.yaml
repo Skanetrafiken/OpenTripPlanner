@@ -1,0 +1,3 @@
+{{- include "tjp-service-lib.virtualservice" (list . "override.virtualservice") -}}
+{{- define "override.virtualservice" -}}
+{{- end -}}

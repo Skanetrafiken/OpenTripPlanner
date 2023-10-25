@@ -2,13 +2,16 @@ package org.opentripplanner.raptor.configure;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.IntPredicate;
 import javax.annotation.Nullable;
+import org.opentripplanner.framework.concurrent.OtpRequestThreadFactory;
 import org.opentripplanner.raptor.api.model.RaptorTripSchedule;
 import org.opentripplanner.raptor.api.request.RaptorRequest;
 import org.opentripplanner.raptor.api.request.RaptorTuningParameters;
 import org.opentripplanner.raptor.rangeraptor.DefaultRangeRaptorWorker;
 import org.opentripplanner.raptor.rangeraptor.context.SearchContext;
 import org.opentripplanner.raptor.rangeraptor.internalapi.Heuristics;
+import org.opentripplanner.raptor.rangeraptor.internalapi.PassThroughPointsService;
 import org.opentripplanner.raptor.rangeraptor.internalapi.RaptorWorker;
 import org.opentripplanner.raptor.rangeraptor.internalapi.RaptorWorkerResult;
 import org.opentripplanner.raptor.rangeraptor.internalapi.RaptorWorkerState;
@@ -31,6 +34,9 @@ public class RaptorConfig<T extends RaptorTripSchedule> {
   private final ExecutorService threadPool;
   private final RaptorTuningParameters tuningParameters;
 
+  /** The service is not final, because it depends on the request. */
+  private PassThroughPointsService passThroughPointsService = null;
+
   public RaptorConfig(RaptorTuningParameters tuningParameters) {
     this.tuningParameters = tuningParameters;
     this.threadPool = createNewThreadPool(tuningParameters.searchThreadPoolSize());
@@ -41,7 +47,9 @@ public class RaptorConfig<T extends RaptorTripSchedule> {
   }
 
   public SearchContext<T> context(RaptorTransitDataProvider<T> transit, RaptorRequest<T> request) {
-    return new SearchContext<>(request, tuningParameters, transit);
+    // The passThroughPointsService is needed to create the context, so we initialize it here.
+    this.passThroughPointsService = createPassThroughPointsService(request);
+    return new SearchContext<>(request, tuningParameters, transit, acceptC2AtDestination());
   }
 
   public RaptorWorker<T> createStdWorker(
@@ -59,7 +67,7 @@ public class RaptorConfig<T extends RaptorTripSchedule> {
     Heuristics heuristics
   ) {
     final SearchContext<T> context = context(transitData, request);
-    return new McRangeRaptorConfig<>(context)
+    return new McRangeRaptorConfig<>(context, passThroughPointsService)
       .createWorker(
         heuristics,
         (state, routingStrategy) -> createWorker(context, state, routingStrategy)
@@ -104,6 +112,10 @@ public class RaptorConfig<T extends RaptorTripSchedule> {
 
   /* private factory methods */
 
+  private static PassThroughPointsService createPassThroughPointsService(RaptorRequest<?> request) {
+    return McRangeRaptorConfig.passThroughPointsService(request.multiCriteria());
+  }
+
   private RaptorWorker<T> createWorker(
     SearchContext<T> ctx,
     RaptorWorkerState<T> workerState,
@@ -123,8 +135,16 @@ public class RaptorConfig<T extends RaptorTripSchedule> {
     );
   }
 
+  private IntPredicate acceptC2AtDestination() {
+    return passThroughPointsService.isNoop()
+      ? null
+      : passThroughPointsService.acceptC2AtDestination();
+  }
+
   @Nullable
   private ExecutorService createNewThreadPool(int size) {
-    return size > 0 ? Executors.newFixedThreadPool(size) : null;
+    return size > 0
+      ? Executors.newFixedThreadPool(size, OtpRequestThreadFactory.of("raptor-%d"))
+      : null;
   }
 }

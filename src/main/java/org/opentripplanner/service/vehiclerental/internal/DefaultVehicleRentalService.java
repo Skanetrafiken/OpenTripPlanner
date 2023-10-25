@@ -3,9 +3,10 @@ package org.opentripplanner.service.vehiclerental.internal;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.opentripplanner.service.vehiclerental.VehicleRentalRepository;
@@ -22,7 +23,7 @@ public class DefaultVehicleRentalService implements VehicleRentalService, Vehicl
   @Inject
   public DefaultVehicleRentalService() {}
 
-  private final Map<FeedScopedId, VehicleRentalPlace> rentalPlaces = new HashMap<>();
+  private final Map<FeedScopedId, VehicleRentalPlace> rentalPlaces = new ConcurrentHashMap<>();
 
   @Override
   public Collection<VehicleRentalPlace> getVehicleRentalPlaces() {
@@ -39,7 +40,7 @@ public class DefaultVehicleRentalService implements VehicleRentalService, Vehicl
     return rentalPlaces
       .values()
       .stream()
-      .filter(vehicleRentalPlace -> vehicleRentalPlace instanceof VehicleRentalVehicle)
+      .filter(VehicleRentalVehicle.class::isInstance)
       .map(VehicleRentalVehicle.class::cast)
       .toList();
   }
@@ -47,33 +48,26 @@ public class DefaultVehicleRentalService implements VehicleRentalService, Vehicl
   @Override
   public VehicleRentalVehicle getVehicleRentalVehicle(FeedScopedId id) {
     VehicleRentalPlace vehicleRentalPlace = rentalPlaces.get(id);
-    return vehicleRentalPlace instanceof VehicleRentalVehicle
-      ? (VehicleRentalVehicle) vehicleRentalPlace
+    return vehicleRentalPlace instanceof VehicleRentalVehicle vehicleRentalVehicle
+      ? vehicleRentalVehicle
       : null;
   }
 
   @Override
   public List<VehicleRentalStation> getVehicleRentalStations() {
-    return rentalPlaces
-      .values()
-      .stream()
-      .filter(vehicleRentalPlace -> vehicleRentalPlace instanceof VehicleRentalStation)
-      .map(VehicleRentalStation.class::cast)
-      .toList();
+    return getVehicleRentalStationsAsStream().toList();
   }
 
   @Override
   public VehicleRentalStation getVehicleRentalStation(FeedScopedId id) {
     VehicleRentalPlace vehicleRentalPlace = rentalPlaces.get(id);
-    return vehicleRentalPlace instanceof VehicleRentalStation
-      ? (VehicleRentalStation) vehicleRentalPlace
+    return vehicleRentalPlace instanceof VehicleRentalStation vehicleRentalStation
+      ? vehicleRentalStation
       : null;
   }
 
   @Override
   public void addVehicleRentalStation(VehicleRentalPlace vehicleRentalStation) {
-    // Remove old reference first, as adding will be a no-op if already present
-    rentalPlaces.remove(vehicleRentalStation.getId());
     rentalPlaces.put(vehicleRentalStation.getId(), vehicleRentalStation);
   }
 
@@ -102,7 +96,7 @@ public class DefaultVehicleRentalService implements VehicleRentalService, Vehicl
   }
 
   @Override
-  public List<VehicleRentalPlace> getVehicleRentalStationForEnvelope(
+  public List<VehicleRentalStation> getVehicleRentalStationForEnvelope(
     double minLon,
     double minLat,
     double maxLon,
@@ -113,10 +107,16 @@ public class DefaultVehicleRentalService implements VehicleRentalService, Vehicl
       new Coordinate(maxLon, maxLat)
     );
 
+    return getVehicleRentalStationsAsStream()
+      .filter(b -> envelope.contains(new Coordinate(b.getLongitude(), b.getLatitude())))
+      .toList();
+  }
+
+  private Stream<VehicleRentalStation> getVehicleRentalStationsAsStream() {
     return rentalPlaces
       .values()
       .stream()
-      .filter(b -> envelope.contains(new Coordinate(b.getLongitude(), b.getLatitude())))
-      .toList();
+      .filter(VehicleRentalStation.class::isInstance)
+      .map(VehicleRentalStation.class::cast);
   }
 }

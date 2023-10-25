@@ -22,6 +22,31 @@ public final class IntUtils {
   }
 
   /**
+   * Convert an integer array to a string of comma separated numbers. If the array is empty, then
+   * an empty string is returned.
+   */
+  public static String intArrayToString(int... values) {
+    var buf = new StringBuilder();
+    for (int it : values) {
+      buf.append(", ").append(it);
+    }
+    return buf.isEmpty() ? "" : buf.substring(2);
+  }
+
+  /**
+   * Round a given value from a 64 bit double to an 32 bit int - potential overflow is
+   * ignored. ONLY USE THIS FUNCTION IF THE DOUBLE IS GUARANTEED TO BE LESS THAN THE
+   * {@link Integer#MIN_VALUE}.
+   * <p>
+   * Use the {@link Math#round(double)} if you need support for large numbers.
+   * <p>
+   * This is just an alias for {@code (int) Math.round(value)}
+   */
+  public static int round(double value) {
+    return (int) Math.round(value);
+  }
+
+  /**
    * Create a new int array and initialize all values with the given {@code initialValue}.
    */
   public static int[] intArray(int size, int initialValue) {
@@ -59,5 +84,25 @@ public final class IntUtils {
     }
 
     return Math.sqrt(sum / v.size());
+  }
+
+  public static int requireNotNegative(int value) {
+    if (value < 0) {
+      throw new IllegalArgumentException("Negative value not expected: " + value);
+    }
+    return value;
+  }
+
+  public static int requireInRange(int value, int minInclusive, int maxInclusive) {
+    return requireInRange(value, minInclusive, maxInclusive, "value");
+  }
+
+  public static int requireInRange(int value, int minInclusive, int maxInclusive, String field) {
+    if (value < minInclusive || value > maxInclusive) {
+      throw new IllegalArgumentException(
+        "The %s is not in range[%d, %d]: %d".formatted(field, minInclusive, maxInclusive, value)
+      );
+    }
+    return value;
   }
 }
