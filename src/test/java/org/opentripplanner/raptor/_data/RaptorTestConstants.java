@@ -32,6 +32,7 @@ public interface RaptorTestConstants {
   int T00_01 = hm2time(0, 1);
   int T00_02 = hm2time(0, 2);
   int T00_10 = hm2time(0, 10);
+  int T00_12 = hm2time(0, 12);
   int T00_30 = hm2time(0, 30);
   int T00_40 = hm2time(0, 40);
   int T01_00 = hm2time(1, 0);
@@ -51,6 +52,10 @@ public interface RaptorTestConstants {
   int STOP_G = 7;
   int STOP_H = 8;
   int STOP_I = 9;
+  int STOP_J = 10;
+  int STOP_K = 11;
+  int STOP_L = 12;
+  int STOP_M = 13;
 
   // Stop position in pattern
   int STOP_POS_0 = 0;

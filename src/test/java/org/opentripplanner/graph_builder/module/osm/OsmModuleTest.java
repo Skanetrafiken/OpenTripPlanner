@@ -10,8 +10,6 @@ import static org.opentripplanner.street.model.StreetTraversalPermission.ALL;
 import static org.opentripplanner.street.model.StreetTraversalPermission.PEDESTRIAN;
 
 import java.io.File;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -37,22 +35,25 @@ import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.routing.impl.GraphPathFinder;
 import org.opentripplanner.street.model.edge.Edge;
 import org.opentripplanner.street.model.edge.StreetEdge;
+import org.opentripplanner.street.model.vertex.BarrierVertex;
 import org.opentripplanner.street.model.vertex.IntersectionVertex;
 import org.opentripplanner.street.model.vertex.VehicleParkingEntranceVertex;
 import org.opentripplanner.street.model.vertex.Vertex;
+import org.opentripplanner.street.model.vertex.VertexLabel;
 import org.opentripplanner.street.search.state.State;
+import org.opentripplanner.test.support.ResourceLoader;
 import org.opentripplanner.transit.model.framework.Deduplicator;
 
 public class OsmModuleTest {
+
+  private static final ResourceLoader RESOURCE_LOADER = ResourceLoader.of(OsmModuleTest.class);
 
   @Test
   public void testGraphBuilder() {
     var deduplicator = new Deduplicator();
     var gg = new Graph(deduplicator);
 
-    File file = new File(
-      URLDecoder.decode(getClass().getResource("map.osm.pbf").getFile(), StandardCharsets.UTF_8)
-    );
+    File file = RESOURCE_LOADER.file("map.osm.pbf");
 
     OsmProvider provider = new OsmProvider(file, true);
 
@@ -61,16 +62,16 @@ public class OsmModuleTest {
     osmModule.buildGraph();
 
     // Kamiennogorska at south end of segment
-    Vertex v1 = gg.getVertex("osm:node:280592578");
+    Vertex v1 = gg.getVertex(VertexLabel.osm(280592578));
 
     // Kamiennogorska at Mariana Smoluchowskiego
-    Vertex v2 = gg.getVertex("osm:node:288969929");
+    Vertex v2 = gg.getVertex(VertexLabel.osm(288969929));
 
     // Mariana Smoluchowskiego, north end
-    Vertex v3 = gg.getVertex("osm:node:280107802");
+    Vertex v3 = gg.getVertex(VertexLabel.osm(280107802));
 
     // Mariana Smoluchowskiego, south end (of segment connected to v2)
-    Vertex v4 = gg.getVertex("osm:node:288970952");
+    Vertex v4 = gg.getVertex(VertexLabel.osm(288970952));
 
     assertNotNull(v1);
     assertNotNull(v2);
@@ -110,32 +111,27 @@ public class OsmModuleTest {
     var deduplicator = new Deduplicator();
     var gg = new Graph(deduplicator);
 
-    File file = new File(
-      URLDecoder.decode(
-        getClass().getResource("NYC_small.osm.pbf").getFile(),
-        StandardCharsets.UTF_8
-      )
-    );
+    File file = RESOURCE_LOADER.file("NYC_small.osm.pbf");
     OsmProvider provider = new OsmProvider(file, true);
     OsmModule osmModule = OsmModule.of(provider, gg).withAreaVisibility(true).build();
 
     osmModule.buildGraph();
 
     // These vertices are labeled in the OSM file as having traffic lights.
-    IntersectionVertex iv1 = (IntersectionVertex) gg.getVertex("osm:node:1919595918");
-    IntersectionVertex iv2 = (IntersectionVertex) gg.getVertex("osm:node:42442273");
-    IntersectionVertex iv3 = (IntersectionVertex) gg.getVertex("osm:node:1919595927");
-    IntersectionVertex iv4 = (IntersectionVertex) gg.getVertex("osm:node:42452026");
+    IntersectionVertex iv1 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(1919595918));
+    IntersectionVertex iv2 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(42442273));
+    IntersectionVertex iv3 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(1919595927));
+    IntersectionVertex iv4 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(42452026));
     assertTrue(iv1.hasDrivingTrafficLight());
     assertTrue(iv2.hasDrivingTrafficLight());
     assertTrue(iv3.hasDrivingTrafficLight());
     assertTrue(iv4.hasDrivingTrafficLight());
 
     // These are not.
-    IntersectionVertex iv5 = (IntersectionVertex) gg.getVertex("osm:node:42435485");
-    IntersectionVertex iv6 = (IntersectionVertex) gg.getVertex("osm:node:42439335");
-    IntersectionVertex iv7 = (IntersectionVertex) gg.getVertex("osm:node:42436761");
-    IntersectionVertex iv8 = (IntersectionVertex) gg.getVertex("osm:node:42442291");
+    IntersectionVertex iv5 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(42435485));
+    IntersectionVertex iv6 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(42439335));
+    IntersectionVertex iv7 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(42436761));
+    IntersectionVertex iv8 = (IntersectionVertex) gg.getVertex(VertexLabel.osm(42442291));
     assertFalse(iv5.hasDrivingTrafficLight());
     assertFalse(iv6.hasDrivingTrafficLight());
     assertFalse(iv7.hasDrivingTrafficLight());
@@ -167,7 +163,6 @@ public class OsmModuleTest {
     OSMWithTags way = new OSMWay();
     way.addTag("highway", "footway");
     way.addTag("cycleway", "lane");
-    way.addTag("access", "no");
     way.addTag("surface", "gravel");
 
     WayPropertySet wayPropertySet = new WayPropertySet();
@@ -175,10 +170,10 @@ public class OsmModuleTest {
     // where there are no way specifiers, the default is used
     WayProperties wayData = wayPropertySet.getDataForWay(way);
     assertEquals(wayData.getPermission(), ALL);
-    assertEquals(wayData.getWalkSafetyFeatures().forward(), 1.0);
-    assertEquals(wayData.getWalkSafetyFeatures().back(), 1.0);
-    assertEquals(wayData.getBicycleSafetyFeatures().forward(), 1.0);
-    assertEquals(wayData.getBicycleSafetyFeatures().back(), 1.0);
+    assertEquals(wayData.walkSafety().forward(), 1.0);
+    assertEquals(wayData.walkSafety().back(), 1.0);
+    assertEquals(wayData.bicycleSafety().forward(), 1.0);
+    assertEquals(wayData.bicycleSafety().back(), 1.0);
 
     // add two equal matches: lane only...
     OsmSpecifier lane_only = new BestMatchSpecifier("cycleway=lane");
@@ -216,7 +211,7 @@ public class OsmModuleTest {
     wayPropertySet.setMixinProperties(gravel, gravel_is_dangerous);
 
     dataForWay = wayPropertySet.getDataForWay(way);
-    assertEquals(dataForWay.getBicycleSafetyFeatures().forward(), 1.5);
+    assertEquals(dataForWay.bicycleSafety().forward(), 1.5);
 
     // test a left-right distinction
     way = new OSMWay();
@@ -233,9 +228,9 @@ public class OsmModuleTest {
     wayPropertySet.addProperties(track_only, track_is_safest);
     dataForWay = wayPropertySet.getDataForWay(way);
     // right (with traffic) comes from track
-    assertEquals(0.25, dataForWay.getBicycleSafetyFeatures().forward());
+    assertEquals(0.25, dataForWay.bicycleSafety().forward());
     // left comes from lane
-    assertEquals(0.75, dataForWay.getBicycleSafetyFeatures().back());
+    assertEquals(0.75, dataForWay.bicycleSafety().back());
 
     way = new OSMWay();
     way.addTag("highway", "footway");
@@ -296,11 +291,36 @@ public class OsmModuleTest {
     graph
       .getVerticesOfType(VehicleParkingEntranceVertex.class)
       .stream()
-      .filter(v -> v.getLabel().contains("centroid"))
+      .filter(v -> v.getLabelString().contains("centroid"))
       .forEach(v -> {
         assertFalse(v.getOutgoing().isEmpty());
         assertFalse(v.getIncoming().isEmpty());
       });
+  }
+
+  /**
+   * Test that a barrier vertex at ending street will get no access limit
+   */
+  @Test
+  void testBarrierAtEnd() {
+    var deduplicator = new Deduplicator();
+    var graph = new Graph(deduplicator);
+
+    File file = RESOURCE_LOADER.file("accessno-at-end.pbf");
+    OsmProvider provider = new OsmProvider(file, false);
+    OsmModule loader = OsmModule.of(provider, graph).build();
+    loader.buildGraph();
+
+    Vertex start = graph.getVertex(VertexLabel.osm(1));
+    Vertex end = graph.getVertex(VertexLabel.osm(3));
+
+    assertNotNull(start);
+    assertNotNull(end);
+    assertEquals(end.getClass(), BarrierVertex.class);
+    var barrier = (BarrierVertex) end;
+
+    // assert that pruning removed traversal restrictions
+    assertEquals(barrier.getBarrierPermissions(), ALL);
   }
 
   @Nonnull
@@ -308,7 +328,7 @@ public class OsmModuleTest {
     var graph = new Graph();
     var providers = Stream
       .of("B+R.osm.pbf", "P+R.osm.pbf")
-      .map(f -> new File(getClass().getResource(f).getFile()))
+      .map(RESOURCE_LOADER::file)
       .map(f -> new OsmProvider(f, false))
       .toList();
     var module = OsmModule
@@ -333,12 +353,7 @@ public class OsmModuleTest {
     var deduplicator = new Deduplicator();
     var graph = new Graph(deduplicator);
 
-    File file = new File(
-      URLDecoder.decode(
-        getClass().getResource("usf_area.osm.pbf").getFile(),
-        StandardCharsets.UTF_8
-      )
-    );
+    File file = RESOURCE_LOADER.file("usf_area.osm.pbf");
     OsmProvider provider = new OsmProvider(file, false);
 
     OsmModule loader = OsmModule.of(provider, graph).withAreaVisibility(!skipVisibility).build();
@@ -349,8 +364,8 @@ public class OsmModuleTest {
 
     //This are vertices that can be connected only over edges on area (with correct permissions)
     //It tests if it is possible to route over area without visibility calculations
-    Vertex bottomV = graph.getVertex("osm:node:580290955");
-    Vertex topV = graph.getVertex("osm:node:559271124");
+    Vertex bottomV = graph.getVertex(VertexLabel.osm(580290955));
+    Vertex topV = graph.getVertex(VertexLabel.osm(559271124));
 
     GraphPathFinder graphPathFinder = new GraphPathFinder(null);
     List<GraphPath<State, Edge, Vertex>> pathList = graphPathFinder.graphPathFinderEntryPoint(

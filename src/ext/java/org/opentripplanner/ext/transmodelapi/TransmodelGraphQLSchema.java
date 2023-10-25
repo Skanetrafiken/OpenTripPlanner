@@ -3,7 +3,7 @@ package org.opentripplanner.ext.transmodelapi;
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
 import static org.opentripplanner.ext.transmodelapi.mapping.SeverityMapper.getTransmodelSeverity;
-import static org.opentripplanner.ext.transmodelapi.mapping.TransitIdMapper.mapIDsToDomain;
+import static org.opentripplanner.ext.transmodelapi.mapping.TransitIdMapper.mapIDsToDomainNullSafe;
 import static org.opentripplanner.ext.transmodelapi.model.EnumTypes.FILTER_PLACE_TYPE_ENUM;
 import static org.opentripplanner.ext.transmodelapi.model.EnumTypes.MULTI_MODAL_MODE;
 import static org.opentripplanner.ext.transmodelapi.model.EnumTypes.TRANSPORT_MODE;
@@ -52,6 +52,7 @@ import org.opentripplanner.ext.transmodelapi.model.framework.InfoLinkType;
 import org.opentripplanner.ext.transmodelapi.model.framework.MultilingualStringType;
 import org.opentripplanner.ext.transmodelapi.model.framework.NoticeType;
 import org.opentripplanner.ext.transmodelapi.model.framework.OperatorType;
+import org.opentripplanner.ext.transmodelapi.model.framework.PenaltyForStreetModeType;
 import org.opentripplanner.ext.transmodelapi.model.framework.PointsOnLinkType;
 import org.opentripplanner.ext.transmodelapi.model.framework.RentalVehicleTypeType;
 import org.opentripplanner.ext.transmodelapi.model.framework.ServerInfoType;
@@ -64,6 +65,7 @@ import org.opentripplanner.ext.transmodelapi.model.network.JourneyPatternType;
 import org.opentripplanner.ext.transmodelapi.model.network.LineType;
 import org.opentripplanner.ext.transmodelapi.model.network.PresentationType;
 import org.opentripplanner.ext.transmodelapi.model.network.StopToStopGeometryType;
+import org.opentripplanner.ext.transmodelapi.model.plan.ElevationProfileStepType;
 import org.opentripplanner.ext.transmodelapi.model.plan.LegType;
 import org.opentripplanner.ext.transmodelapi.model.plan.PathGuidanceType;
 import org.opentripplanner.ext.transmodelapi.model.plan.PlanPlaceType;
@@ -318,7 +320,8 @@ public class TransmodelGraphQLSchema {
       rentalVehicleType,
       quayType
     );
-    GraphQLObjectType pathGuidanceType = PathGuidanceType.create();
+    GraphQLObjectType elevationStepType = ElevationProfileStepType.create();
+    GraphQLObjectType pathGuidanceType = PathGuidanceType.create(elevationStepType);
     GraphQLObjectType legType = LegType.create(
       bookingArrangementType,
       interchangeType,
@@ -333,6 +336,7 @@ public class TransmodelGraphQLSchema {
       ptSituationElementType,
       placeType,
       pathGuidanceType,
+      elevationStepType,
       gqlUtil
     );
     GraphQLObjectType tripPatternType = TripPatternType.create(systemNoticeType, legType, gqlUtil);
@@ -347,11 +351,13 @@ public class TransmodelGraphQLSchema {
     );
 
     GraphQLInputObjectType durationPerStreetModeInput = StreetModeDurationInputType.create(gqlUtil);
+    GraphQLInputObjectType penaltyForStreetMode = PenaltyForStreetModeType.create(gqlUtil);
 
     GraphQLFieldDefinition tripQuery = TripQuery.create(
       routing,
       tripType,
       durationPerStreetModeInput,
+      penaltyForStreetMode,
       gqlUtil
     );
 
@@ -1291,7 +1297,7 @@ public class TransmodelGraphQLSchema {
               .build()
           )
           .dataFetcher(environment -> {
-            List<FeedScopedId> lineIds = mapIDsToDomain(
+            List<FeedScopedId> lineIds = mapIDsToDomainNullSafe(
               environment.getArgumentOrDefault("lines", List.of())
             );
             List<String> privateCodes = environment.getArgumentOrDefault("privateCodes", List.of());

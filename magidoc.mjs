@@ -1,7 +1,7 @@
 export default {
   introspection: {
     type: 'sdl',
-    paths: ['src/ext/resources/legacygraphqlapi/schema.graphqls'],
+    paths: ['src/main/resources/org/opentripplanner/apis/gtfs/schema.graphqls'],
   },
   website: {
     template: 'carbon-multi-page',
@@ -24,13 +24,12 @@ at http://localhost:8080/graphiql
 
 ![GraphiQL screenshot](https://docs.opentripplanner.org/en/dev-2.x/images/graphiql.png)
 
-## Activation
+## Configuration
 
-As of April '23 this API needs to be explicitly activated. Read the 
-[documentation](https://docs.opentripplanner.org/en/dev-2.x/sandbox/LegacyGraphQLApi/) about how to
-do it.
+This API is activated by default.
 
-This API will become activated by default in the future.
+To learn how to deactivate it, read the
+[documentation](https://docs.opentripplanner.org/en/dev-2.x/apis/GTFS-GraphQ-API/).
 `,
       }],
       appTitle: 'OTP GTFS GraphQL API',

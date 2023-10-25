@@ -1,5 +1,6 @@
 package org.opentripplanner.model.fare;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.opentripplanner.framework.lang.Sandbox;
 import org.opentripplanner.framework.tostring.ToStringBuilder;
@@ -60,14 +62,6 @@ public class ItineraryFares {
   @Deprecated
   private final Map<FareType, Money> fares = new HashMap<>();
 
-  public ItineraryFares(ItineraryFares aFare) {
-    if (aFare != null) {
-      itineraryProducts.addAll(aFare.itineraryProducts);
-    }
-  }
-
-  public ItineraryFares() {}
-
   public static ItineraryFares empty() {
     return new ItineraryFares();
   }
@@ -92,7 +86,6 @@ public class ItineraryFares {
    * <p>
    * @deprecated It only exists for backwards-compatibility.
    * Use {@link ItineraryFares#addFareProduct(Leg, FareProduct)},
-   * {@link ItineraryFares#addLegProducts(Collection)} or
    * {@link ItineraryFares#addItineraryProducts(Collection)} instead.
    */
   @Deprecated
@@ -107,29 +100,10 @@ public class ItineraryFares {
    * @deprecated Only exitst for backwards compatibility.
    * Use @{link {@link ItineraryFares#addItineraryProducts(Collection)}},
    * {@link ItineraryFares#addFareProduct(Leg, FareProduct)} or
-   * {@link ItineraryFares#addLegProducts(Collection)} instead.
    */
   @Deprecated
   public void addFareComponent(FareType fareType, List<FareComponent> components) {
     this.components.replaceValues(fareType, components);
-
-    for (var c : components) {
-      var firstLegStartTime = c.legs().get(0).getStartTime();
-      for (var leg : c.legs()) {
-        final FareProduct fareProduct = new FareProduct(
-          c.fareId(),
-          fareType.name(),
-          c.price(),
-          null,
-          null,
-          null
-        );
-        legProducts.put(
-          leg,
-          new FareProductUse(fareProduct.uniqueInstanceId(firstLegStartTime), fareProduct)
-        );
-      }
-    }
   }
 
   /**
@@ -198,22 +172,6 @@ public class ItineraryFares {
   }
 
   /**
-   * Add a complex set of fare products for a specific leg;
-   */
-  public void addLegProducts(Collection<LegProducts> legProducts) {
-    legProducts.forEach(lp -> {
-      var time = lp.leg().getStartTime();
-      var products = lp
-        .products()
-        .stream()
-        .map(LegProducts.ProductWithTransfer::product)
-        .map(fp -> new FareProductUse(fp.uniqueInstanceId(time), fp))
-        .toList();
-      this.legProducts.putAll(lp.leg(), products);
-    });
-  }
-
-  /**
    * Add a single fare product for a single leg.
    */
   public void addFareProduct(Leg leg, FareProduct fareProduct) {
@@ -221,5 +179,41 @@ public class ItineraryFares {
         leg,
         new FareProductUse(fareProduct.uniqueInstanceId(leg.getStartTime()), fareProduct)
       );
+  }
+
+  /**
+   * Add several fare products to a leg.
+   */
+  public void addFareProduct(Leg leg, Collection<FareProduct> fareProduct) {
+    fareProduct.forEach(fp -> addFareProduct(leg, fp));
+  }
+
+  /**
+   * Convert the fare received via the deprecated {@link FareComponent} to leg products. This
+   * inverts the relationship:
+   *   - fare component has several legs
+   *   - leg product is a mapping from leg to a list of fare products
+   */
+  @Nonnull
+  public Multimap<Leg, FareProductUse> legProductsFromComponents() {
+    Multimap<Leg, FareProductUse> legProductsFromComponents = HashMultimap.create();
+    for (var type : getFareTypes()) {
+      var components = getComponents(type);
+
+      for (var c : components) {
+        var firstLegStartTime = c.legs().get(0).getStartTime();
+        for (var leg : c.legs()) {
+          final FareProduct fareProduct = FareProduct
+            .of(c.fareId(), type.name(), c.price())
+            .build();
+
+          legProductsFromComponents.put(
+            leg,
+            new FareProductUse(fareProduct.uniqueInstanceId(firstLegStartTime), fareProduct)
+          );
+        }
+      }
+    }
+    return legProductsFromComponents;
   }
 }

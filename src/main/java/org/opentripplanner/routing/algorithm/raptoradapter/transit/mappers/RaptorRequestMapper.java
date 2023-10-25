@@ -3,25 +3,30 @@ package org.opentripplanner.routing.algorithm.raptoradapter.transit.mappers;
 import static org.opentripplanner.raptor.api.request.Optimization.PARALLEL;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import org.opentripplanner.framework.application.OTPFeature;
-import org.opentripplanner.raptor.api.RaptorConstants;
 import org.opentripplanner.raptor.api.model.RaptorAccessEgress;
+import org.opentripplanner.raptor.api.model.RaptorConstants;
 import org.opentripplanner.raptor.api.request.Optimization;
+import org.opentripplanner.raptor.api.request.PassThroughPoint;
 import org.opentripplanner.raptor.api.request.RaptorRequest;
 import org.opentripplanner.raptor.api.request.RaptorRequestBuilder;
 import org.opentripplanner.raptor.rangeraptor.SystemErrDebugLogger;
 import org.opentripplanner.routing.algorithm.raptoradapter.router.performance.PerformanceTimersForRaptor;
 import org.opentripplanner.routing.algorithm.raptoradapter.transit.TripSchedule;
 import org.opentripplanner.routing.api.request.RouteRequest;
+import org.opentripplanner.transit.model.site.StopLocation;
 
 public class RaptorRequestMapper {
 
   private final RouteRequest request;
   private final Collection<? extends RaptorAccessEgress> accessPaths;
   private final Collection<? extends RaptorAccessEgress> egressPaths;
+  private final Duration searchWindowAccessSlack;
   private final long transitSearchTimeZeroEpocSecond;
   private final boolean isMultiThreadedEnbled;
   private final MeterRegistry meterRegistry;
@@ -31,6 +36,7 @@ public class RaptorRequestMapper {
     boolean isMultiThreaded,
     Collection<? extends RaptorAccessEgress> accessPaths,
     Collection<? extends RaptorAccessEgress> egressPaths,
+    Duration searchWindowAccessSlack,
     long transitSearchTimeZeroEpocSecond,
     MeterRegistry meterRegistry
   ) {
@@ -38,6 +44,7 @@ public class RaptorRequestMapper {
     this.isMultiThreadedEnbled = isMultiThreaded;
     this.accessPaths = accessPaths;
     this.egressPaths = egressPaths;
+    this.searchWindowAccessSlack = searchWindowAccessSlack;
     this.transitSearchTimeZeroEpocSecond = transitSearchTimeZeroEpocSecond;
     this.meterRegistry = meterRegistry;
   }
@@ -48,6 +55,7 @@ public class RaptorRequestMapper {
     boolean isMultiThreaded,
     Collection<? extends RaptorAccessEgress> accessPaths,
     Collection<? extends RaptorAccessEgress> egressPaths,
+    Duration searchWindowAccessSlack,
     MeterRegistry meterRegistry
   ) {
     return new RaptorRequestMapper(
@@ -55,6 +63,7 @@ public class RaptorRequestMapper {
       isMultiThreaded,
       accessPaths,
       egressPaths,
+      searchWindowAccessSlack,
       transitSearchTimeZero.toEpochSecond(),
       meterRegistry
     )
@@ -99,12 +108,14 @@ public class RaptorRequestMapper {
     if (preferences.transfer().maxAdditionalTransfers() != null) {
       searchParams.numberOfAdditionalTransfers(preferences.transfer().maxAdditionalTransfers());
     }
+
     builder.withMultiCriteria(mcBuilder -> {
       preferences
         .transit()
         .raptor()
         .relaxGeneralizedCostAtDestination()
         .ifPresent(mcBuilder::withRelaxCostAtDestination);
+      mcBuilder.withPassThroughPoints(mapPassThroughPoints());
     });
 
     for (Optimization optimization : preferences.transit().raptor().optimizations()) {
@@ -147,6 +158,10 @@ public class RaptorRequestMapper {
       builder.searchParams().preferLateArrival(true);
     }
 
+    if (searchWindowAccessSlack.toSeconds() > 0) {
+      builder.searchParams().searchWindowAccessSlack(searchWindowAccessSlack);
+    }
+
     // Add this last, it depends on generating an alias from the set values
     builder.performanceTimers(
       new PerformanceTimersForRaptor(
@@ -157,6 +172,17 @@ public class RaptorRequestMapper {
     );
 
     return builder.build();
+  }
+
+  private List<PassThroughPoint> mapPassThroughPoints() {
+    return request
+      .getPassThroughPoints()
+      .stream()
+      .map(p -> {
+        final int[] stops = p.stopLocations().stream().mapToInt(StopLocation::getIndex).toArray();
+        return new PassThroughPoint(p.name(), stops);
+      })
+      .toList();
   }
 
   private int relativeTime(Instant time) {

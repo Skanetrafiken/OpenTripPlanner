@@ -161,6 +161,7 @@ public class EnumTypes {
     .value("lift", TransitMode.GONDOLA)
     .value("rail", TransitMode.RAIL)
     .value("metro", TransitMode.SUBWAY)
+    .value("taxi", TransitMode.TAXI)
     .value("tram", TransitMode.TRAM)
     .value("trolleybus", TransitMode.TROLLEYBUS)
     .value("monorail", TransitMode.MONORAIL)
@@ -189,40 +190,19 @@ public class EnumTypes {
     .value("all", "all", "Both multiModal parents and their mono modal child stop places.")
     .build();
 
-  public static final GraphQLEnumType OCCUPANCY_STATUS = GraphQLEnumType
-    .newEnum()
-    .name("OccupancyStatus")
-    .value(
-      "noData",
-      OccupancyStatus.NO_DATA,
-      "The vehicle or carriage doesn't have any occupancy data available."
+  public static final GraphQLEnumType OCCUPANCY_STATUS = createFromDocumentedEnum(
+    "OccupancyStatus",
+    List.of(
+      map("noData", OccupancyStatus.NO_DATA_AVAILABLE),
+      map("empty", OccupancyStatus.EMPTY),
+      map("manySeatsAvailable", OccupancyStatus.MANY_SEATS_AVAILABLE),
+      map("fewSeatsAvailable", OccupancyStatus.FEW_SEATS_AVAILABLE),
+      map("standingRoomOnly", OccupancyStatus.STANDING_ROOM_ONLY),
+      map("crushedStandingRoomOnly", OccupancyStatus.CRUSHED_STANDING_ROOM_ONLY),
+      map("full", OccupancyStatus.FULL),
+      map("notAcceptingPassengers", OccupancyStatus.NOT_ACCEPTING_PASSENGERS)
     )
-    .value(
-      "manySeatsAvailable",
-      OccupancyStatus.MANY_SEATS_AVAILABLE,
-      "The vehicle or carriage has a large number of seats available."
-    )
-    .value(
-      "fewSeatsAvailable",
-      OccupancyStatus.SEATS_AVAILABLE,
-      "The vehicle or carriage has a few seats available."
-    )
-    .value(
-      "standingRoomOnly",
-      OccupancyStatus.STANDING_ROOM_ONLY,
-      "The vehicle or carriage only has standing room available."
-    )
-    .value(
-      "full",
-      OccupancyStatus.FULL,
-      "The vehicle or carriage is considered full by most measures, but may still be allowing passengers to board."
-    )
-    .value(
-      "notAcceptingPassengers",
-      OccupancyStatus.NOT_ACCEPTING_PASSENGERS,
-      "The vehicle or carriage has no seats or standing room available."
-    )
-    .build();
+  );
 
   public static final GraphQLEnumType PURCHASE_WHEN = GraphQLEnumType
     .newEnum()
@@ -321,16 +301,6 @@ public class EnumTypes {
       "outsideServicePeriod",
       RoutingErrorCode.OUTSIDE_SERVICE_PERIOD,
       "The date specified is outside the range of data currently loaded into the system"
-    )
-    .value(
-      "processingTimeout",
-      RoutingErrorCode.PROCESSING_TIMEOUT,
-      "The routing request timed out."
-    )
-    .value(
-      "systemError",
-      RoutingErrorCode.SYSTEM_ERROR,
-      "An unknown error happened during the search. The details have been logged to the server logs"
     )
     .value(
       "walkingBetterThanTransit",
@@ -455,6 +425,7 @@ public class EnumTypes {
     .value("lift", TransitMode.GONDOLA)
     .value("rail", TransitMode.RAIL)
     .value("metro", TransitMode.SUBWAY)
+    .value("taxi", TransitMode.TAXI)
     .value("tram", TransitMode.TRAM)
     .value("trolleybus", TransitMode.TROLLEYBUS)
     .value("monorail", TransitMode.MONORAIL)

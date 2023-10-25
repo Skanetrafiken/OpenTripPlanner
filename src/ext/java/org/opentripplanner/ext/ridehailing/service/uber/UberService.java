@@ -8,7 +8,7 @@ import static java.util.Map.entry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.UriBuilder;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
 import java.time.Duration;
 import java.util.Currency;
 import java.util.List;
@@ -17,13 +17,14 @@ import javax.annotation.Nonnull;
 import org.opentripplanner.ext.ridehailing.CachingRideHailingService;
 import org.opentripplanner.ext.ridehailing.RideHailingServiceParameters;
 import org.opentripplanner.ext.ridehailing.model.ArrivalTime;
+import org.opentripplanner.ext.ridehailing.model.Ride;
 import org.opentripplanner.ext.ridehailing.model.RideEstimate;
 import org.opentripplanner.ext.ridehailing.model.RideEstimateRequest;
 import org.opentripplanner.ext.ridehailing.model.RideHailingProvider;
 import org.opentripplanner.ext.ridehailing.service.oauth.OAuthService;
 import org.opentripplanner.ext.ridehailing.service.oauth.UrlEncodedOAuthService;
 import org.opentripplanner.framework.geometry.WgsCoordinate;
-import org.opentripplanner.framework.io.HttpUtils;
+import org.opentripplanner.framework.io.OtpHttpClient;
 import org.opentripplanner.framework.json.ObjectMappers;
 import org.opentripplanner.transit.model.basic.Money;
 import org.slf4j.Logger;
@@ -43,6 +44,13 @@ public class UberService extends CachingRideHailingService {
   private final OAuthService oauthService;
   private final String timeEstimateUri;
   private final String priceEstimateUri;
+  private final List<String> bannedTypes;
+  /**
+   * Only a single product ID can be classified as wheelchair-accessible, but it would not
+   * be hard to change it, should the need arise.
+   */
+  private final String wheelchairAccessibleProductId;
+  private final OtpHttpClient otpHttpClient;
 
   public UberService(RideHailingServiceParameters config) {
     this(
@@ -53,14 +61,25 @@ public class UberService extends CachingRideHailingService {
         UriBuilder.fromUri("https://login.uber.com/oauth/v2/token").build()
       ),
       DEFAULT_PRICE_ESTIMATE_URI,
-      DEFAULT_TIME_ESTIMATE_URI
+      DEFAULT_TIME_ESTIMATE_URI,
+      config.bannedProductIds(),
+      config.wheelchairProductId()
     );
   }
 
-  UberService(OAuthService oauthService, String priceEstimateUri, String timeEstimateUri) {
+  UberService(
+    OAuthService oauthService,
+    String priceEstimateUri,
+    String timeEstimateUri,
+    List<String> bannedTypes,
+    String wheelchairAccessibleProductId
+  ) {
     this.oauthService = oauthService;
     this.priceEstimateUri = priceEstimateUri;
     this.timeEstimateUri = timeEstimateUri;
+    this.bannedTypes = bannedTypes;
+    this.wheelchairAccessibleProductId = wheelchairAccessibleProductId;
+    this.otpHttpClient = new OtpHttpClient();
   }
 
   @Override
@@ -69,7 +88,8 @@ public class UberService extends CachingRideHailingService {
   }
 
   @Override
-  public List<ArrivalTime> queryArrivalTimes(WgsCoordinate coord) throws IOException {
+  public List<ArrivalTime> queryArrivalTimes(WgsCoordinate coord, boolean wheelchairAccessible)
+    throws IOException {
     var uri = UriBuilder.fromUri(timeEstimateUri).build();
 
     var finalUri = uri;
@@ -83,9 +103,10 @@ public class UberService extends CachingRideHailingService {
     }
 
     LOG.info("Made arrival time request to Uber API at following URL: {}", uri);
-
-    InputStream responseStream = HttpUtils.openInputStream(finalUri, headers());
-    var response = MAPPER.readValue(responseStream, UberArrivalEstimateResponse.class);
+    UberArrivalEstimateResponse response = getUberEstimateResponse(
+      finalUri,
+      UberArrivalEstimateResponse.class
+    );
 
     LOG.debug("Received {} Uber arrival time estimates", response.times().size());
 
@@ -97,10 +118,10 @@ public class UberService extends CachingRideHailingService {
           RideHailingProvider.UBER,
           time.product_id(),
           time.localized_display_name(),
-          Duration.ofSeconds(time.estimate()),
-          productIsWheelchairAccessible(time.product_id())
+          Duration.ofSeconds(time.estimate())
         )
       )
+      .filter(a -> filterRides(a, wheelchairAccessible))
       .toList();
 
     if (arrivalTimes.isEmpty()) {
@@ -128,8 +149,10 @@ public class UberService extends CachingRideHailingService {
 
     LOG.info("Made price estimate request to Uber API at following URL: {}", uri);
 
-    InputStream responseStream = HttpUtils.openInputStream(finalUri, headers());
-    var response = MAPPER.readValue(responseStream, UberTripTimeEstimateResponse.class);
+    UberTripTimeEstimateResponse response = getUberEstimateResponse(
+      finalUri,
+      UberTripTimeEstimateResponse.class
+    );
 
     if (response.prices() == null) {
       throw new IOException("Unexpected response format");
@@ -145,14 +168,26 @@ public class UberService extends CachingRideHailingService {
         return new RideEstimate(
           RideHailingProvider.UBER,
           Duration.ofSeconds(price.duration()),
-          new Money(currency, price.low_estimate() * 100),
-          new Money(currency, price.high_estimate() * 100),
+          Money.ofFractionalAmount(currency, price.low_estimate()),
+          Money.ofFractionalAmount(currency, price.high_estimate()),
           price.product_id(),
-          price.display_name(),
-          productIsWheelchairAccessible(price.product_id())
+          price.display_name()
         );
       })
+      .filter(re -> filterRides(re, request.wheelchairAccessible()))
       .toList();
+  }
+
+  private <T> T getUberEstimateResponse(URI finalUri, Class<T> clazz) throws IOException {
+    return otpHttpClient.getAndMapAsJsonObject(finalUri, headers(), MAPPER, clazz);
+  }
+
+  private boolean filterRides(Ride a, boolean wheelchairAccessible) {
+    if (wheelchairAccessible) {
+      return a.rideType().equals(wheelchairAccessibleProductId);
+    } else {
+      return !bannedTypes.contains(a.rideType());
+    }
   }
 
   @Nonnull

@@ -15,20 +15,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.opentripplanner.ext.transmodelapi.model.EnumTypes;
 import org.opentripplanner.ext.transmodelapi.model.plan.JourneyWhiteListed;
 import org.opentripplanner.ext.transmodelapi.model.scalars.GeoJSONCoordinatesScalar;
 import org.opentripplanner.ext.transmodelapi.support.GqlUtil;
 import org.opentripplanner.framework.graphql.GraphQLUtils;
-import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.model.TripTimeOnDate;
 import org.opentripplanner.routing.stoptimes.ArrivalDeparture;
 import org.opentripplanner.transit.model.basic.Accessibility;
 import org.opentripplanner.transit.model.basic.TransitMode;
+import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.site.AreaStop;
 import org.opentripplanner.transit.model.site.GroupStop;
 import org.opentripplanner.transit.model.site.RegularStop;
@@ -67,17 +65,29 @@ public class QuayType {
             GraphQLArgument
               .newArgument()
               .name("lang")
+              .deprecate("Use 'language' instead")
               .description(
                 "Fetch the name in the language given. The language should be represented as a ISO-639 language code. If the translation does not exits, the default name is returned."
               )
               .type(Scalars.GraphQLString)
               .build()
           )
-          .dataFetcher(environment -> {
-            String lang = environment.getArgument("lang");
-            Locale locale = lang != null ? new Locale(lang) : null;
-            return (((StopLocation) environment.getSource()).getName().toString(locale));
-          })
+          .argument(
+            GraphQLArgument
+              .newArgument()
+              .name("language")
+              .description(
+                "Fetch the name in the language given. The language should be represented as a ISO-639 language code. If the translation does not exits, the default name is returned."
+              )
+              .type(Scalars.GraphQLString)
+              .build()
+          )
+          .dataFetcher(environment ->
+            (
+              ((StopLocation) environment.getSource()).getName()
+                .toString(GqlUtil.getLocale(environment))
+            )
+          )
           .build()
       )
       .field(
@@ -172,15 +182,15 @@ public class QuayType {
           .withDirective(gqlUtil.timingData)
           .description("List of lines servicing this quay")
           .type(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(lineType))))
-          .dataFetcher(environment -> {
-            return GqlUtil
+          .dataFetcher(environment ->
+            GqlUtil
               .getTransitService(environment)
               .getPatternsForStop(environment.getSource(), true)
               .stream()
-              .map(pattern -> pattern.getRoute())
+              .map(TripPattern::getRoute)
               .distinct()
-              .collect(Collectors.toList());
-          })
+              .toList()
+          )
           .build()
       )
       .field(
@@ -190,11 +200,9 @@ public class QuayType {
           .withDirective(gqlUtil.timingData)
           .description("List of journey patterns servicing this quay")
           .type(new GraphQLNonNull(new GraphQLList(journeyPatternType)))
-          .dataFetcher(environment -> {
-            return GqlUtil
-              .getTransitService(environment)
-              .getPatternsForStop(environment.getSource(), true);
-          })
+          .dataFetcher(environment ->
+            GqlUtil.getTransitService(environment).getPatternsForStop(environment.getSource(), true)
+          )
           .build()
       )
       .field(
@@ -305,13 +313,14 @@ public class QuayType {
             );
             Integer timeRangeInput = environment.getArgument("timeRange");
             Duration timeRange = Duration.ofSeconds(timeRangeInput.longValue());
-            RegularStop stop = environment.getSource();
+            StopLocation stop = environment.getSource();
 
             JourneyWhiteListed whiteListed = new JourneyWhiteListed(environment);
             Collection<TransitMode> transitModes = environment.getArgument("whiteListedModes");
 
-            Instant startTime = environment.containsArgument("startTime")
-              ? Instant.ofEpochMilli(environment.getArgument("startTime"))
+            Long startTimeInput = environment.getArgument("startTime");
+            Instant startTime = startTimeInput != null
+              ? Instant.ofEpochMilli(startTimeInput)
               : Instant.now();
 
             return StopPlaceType
@@ -331,7 +340,7 @@ public class QuayType {
               .sorted(TripTimeOnDate.compareByDeparture())
               .distinct()
               .limit(numberOfDepartures)
-              .collect(Collectors.toList());
+              .toList();
           })
           .build()
       )
@@ -341,12 +350,12 @@ public class QuayType {
           .name("situations")
           .description("Get all situations active for the quay.")
           .type(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(ptSituationElementType))))
-          .dataFetcher(env -> {
-            return GqlUtil
+          .dataFetcher(env ->
+            GqlUtil
               .getTransitService(env)
               .getTransitAlertService()
-              .getStopAlerts(((StopLocation) env.getSource()).getId());
-          })
+              .getStopAlerts(((StopLocation) env.getSource()).getId())
+          )
           .build()
       )
       .field(

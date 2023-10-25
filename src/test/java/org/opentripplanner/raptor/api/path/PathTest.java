@@ -176,7 +176,7 @@ public class PathTest implements RaptorTestConstants {
       .times(time("09:10"), time("09:20"))
       .build();
 
-    var tx = TransferConstraint.create().staySeated().build();
+    var tx = TransferConstraint.of().staySeated().build();
     TransitPathLeg<TestTripSchedule> leg2 = new TransitPathLeg<>(
       trip2,
       trip2.departure(0),
@@ -198,7 +198,7 @@ public class PathTest implements RaptorTestConstants {
       access.generalizedCost(),
       leg2.asTransitLeg()
     );
-    RaptorPath<TestTripSchedule> path = new Path<>(accessStart, leg1, TOTAL_COST);
+    RaptorPath<TestTripSchedule> path = new Path<>(accessStart, leg1, TOTAL_COST, 0);
     assertEquals(0, path.numberOfTransfers());
   }
 
@@ -255,7 +255,7 @@ public class PathTest implements RaptorTestConstants {
       access.generalizedCost(),
       leg2.asTransitLeg()
     );
-    RaptorPath<TestTripSchedule> path = new Path<>(accessStart, leg1, TOTAL_COST);
+    RaptorPath<TestTripSchedule> path = new Path<>(accessStart, leg1, TOTAL_COST, 0);
     assertEquals(1, path.numberOfTransfers());
   }
 }

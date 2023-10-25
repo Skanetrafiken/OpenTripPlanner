@@ -1,7 +1,10 @@
 package org.opentripplanner.ext.fares.impl;
 
+import static org.opentripplanner.transit.model.basic.Money.USD;
+
 import java.util.Map;
 import org.opentripplanner.routing.core.FareType;
+import org.opentripplanner.transit.model.basic.Money;
 
 /**
  * Class used to store all the fares for Sounder commuter rail.
@@ -11,7 +14,7 @@ import org.opentripplanner.routing.core.FareType;
  */
 class OrcaFaresData {
 
-  public static Map<String, Map<FareType, Float>> sounderFares = Map.ofEntries(
+  public static Map<String, Map<FareType, Money>> sounderFares = Map.ofEntries(
     entry("everett-mukilteo", 3.25f, 3.25f),
     entry("everett-edmonds", 4.0f, 4.0f),
     entry("everett-kingstreet", 5.0f, 5.0f),
@@ -55,7 +58,7 @@ class OrcaFaresData {
     entry("kent-kingstreet", 4.0f, 4.0f),
     entry("tukwila-kingstreet", 3.75f, 3.75f)
   );
-  public static Map<String, Map<FareType, Float>> linkFares = Map.ofEntries(
+  public static Map<String, Map<FareType, Money>> linkFares = Map.ofEntries(
     entry("northgate-roosevelt", 2.25f, 2.25f),
     entry("northgate-udistrict", 2.5f, 2.5f),
     entry("northgate-univofwashington", 2.5f, 2.5f),
@@ -232,39 +235,52 @@ class OrcaFaresData {
   );
 
   // Spaces have been removed from the route name because of inconsistencies in the WSF GTFS route dataset.
-  public static Map<String, Map<FareType, Float>> washingtonStateFerriesFares = Map.ofEntries(
-    sEntry("Seattle-BainbridgeIsland", 9.25f, 4.60f),
-    sEntry("Seattle-Bremerton", 9.25f, 4.60f),
-    sEntry("Mukilteo-Clinton", 5.65f, 2.80f),
-    sEntry("Fauntleroy-VashonIsland", 6.10f, 3.05f),
-    sEntry("Fauntleroy-Southworth", 7.20f, 3.60f),
-    sEntry("Edmonds-Kingston", 9.25f, 4.60f),
-    sEntry("PointDefiance-Tahlequah", 6.10f, 3.05f),
-    sEntry("Anacortes-FridayHarbor", 14.85f, 7.40f),
-    sEntry("Anacortes-LopezIsland", 14.85f, 7.40f),
-    sEntry("Anacortes-OrcasIsland", 14.85f, 7.40f),
-    sEntry("Anacortes-ShawIsland", 14.85f, 7.40f),
-    sEntry("Coupeville-PortTownsend", 3.85f, 1.90f),
-    sEntry("PortTownsend-Coupeville", 3.85f, 1.90f),
-    sEntry("Southworth-VashonIsland", 6.10f, 3.05f)
+  public static Map<String, Map<FareType, Money>> washingtonStateFerriesFares = Map.ofEntries(
+    sEntry("Seattle-BainbridgeIsland", 9.85f, 4.90f),
+    sEntry("Seattle-Bremerton", 9.85f, 4.90f),
+    sEntry("Mukilteo-Clinton", 6f, 3f),
+    sEntry("Fauntleroy-VashonIsland", 6.50f, 3.25f),
+    sEntry("Fauntleroy-Southworth", 7.70f, 3.85f),
+    sEntry("Edmonds-Kingston", 9.85f, 4.90f),
+    sEntry("PointDefiance-Tahlequah", 6.50f, 3.25f),
+    sEntry("Anacortes-FridayHarbor", 15.85f, 7.90f),
+    sEntry("Anacortes-LopezIsland", 15.85f, 7.90f),
+    sEntry("Anacortes-OrcasIsland", 15.85f, 7.90f),
+    sEntry("Anacortes-ShawIsland", 15.85f, 7.90f),
+    sEntry("Coupeville-PortTownsend", 4.10f, 2.05f),
+    sEntry("PortTownsend-Coupeville", 4.10f, 2.05f),
+    sEntry("Southworth-VashonIsland", 6.50f, 3.25f)
   );
 
-  private static Map.Entry<String, Map<FareType, Float>> entry(
+  private static Map.Entry<String, Map<FareType, Money>> entry(
     String name,
     float regularFare,
     float electronicRegularFare
   ) {
     return Map.entry(
       name,
-      Map.of(FareType.regular, regularFare, FareType.electronicRegular, electronicRegularFare)
+      Map.of(
+        FareType.regular,
+        Money.usDollars(regularFare),
+        FareType.electronicRegular,
+        Money.usDollars(electronicRegularFare)
+      )
     );
   }
 
-  private static Map.Entry<String, Map<FareType, Float>> sEntry(
+  private static Map.Entry<String, Map<FareType, Money>> sEntry(
     String name,
     float regularFare,
     float seniorFare
   ) {
-    return Map.entry(name, Map.of(FareType.regular, regularFare, FareType.senior, seniorFare));
+    return Map.entry(
+      name,
+      Map.of(
+        FareType.regular,
+        Money.usDollars(regularFare),
+        FareType.senior,
+        Money.usDollars(seniorFare)
+      )
+    );
   }
 }

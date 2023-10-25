@@ -1,6 +1,6 @@
 package org.opentripplanner.ext.transmodelapi.mapping;
 
-import static org.opentripplanner.ext.transmodelapi.mapping.TransitIdMapper.mapIDsToDomain;
+import static org.opentripplanner.ext.transmodelapi.mapping.TransitIdMapper.mapIDsToDomainNullSafe;
 
 import graphql.schema.DataFetchingEnvironment;
 import java.time.Duration;
@@ -17,6 +17,7 @@ import org.opentripplanner.ext.transmodelapi.support.GqlUtil;
 import org.opentripplanner.routing.api.request.RouteRequest;
 import org.opentripplanner.standalone.api.OtpServerRequestContext;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
+import org.opentripplanner.transit.service.TransitService;
 
 public class TripRequestMapper {
 
@@ -40,6 +41,13 @@ public class TripRequestMapper {
       "to",
       (Map<String, Object> v) -> request.setTo(GenericLocationMapper.toGenericLocation(v))
     );
+    final TransitService transitService = context.getTransitService();
+    callWith.argument(
+      "passThroughPoints",
+      (List<Map<String, Object>> v) -> {
+        request.setPassThroughPoints(PassThroughLocationMapper.toLocations(transitService, v));
+      }
+    );
 
     callWith.argument(
       "dateTime",
@@ -58,22 +66,23 @@ public class TripRequestMapper {
     callWith.argument(
       "preferred.authorities",
       (Collection<String> authorities) ->
-        request.journey().transit().setPreferredAgencies(mapIDsToDomain(authorities))
+        request.journey().transit().setPreferredAgencies(mapIDsToDomainNullSafe(authorities))
     );
     callWith.argument(
       "unpreferred.authorities",
       (Collection<String> authorities) ->
-        request.journey().transit().setUnpreferredAgencies(mapIDsToDomain(authorities))
+        request.journey().transit().setUnpreferredAgencies(mapIDsToDomainNullSafe(authorities))
     );
 
     callWith.argument(
       "preferred.lines",
-      (List<String> lines) -> request.journey().transit().setPreferredRoutes(mapIDsToDomain(lines))
+      (List<String> lines) ->
+        request.journey().transit().setPreferredRoutes(mapIDsToDomainNullSafe(lines))
     );
     callWith.argument(
       "unpreferred.lines",
       (List<String> lines) ->
-        request.journey().transit().setUnpreferredRoutes(mapIDsToDomain(lines))
+        request.journey().transit().setUnpreferredRoutes(mapIDsToDomainNullSafe(lines))
     );
 
     callWith.argument(
@@ -95,7 +104,8 @@ public class TripRequestMapper {
     var bannedTrips = new ArrayList<FeedScopedId>();
     callWith.argument(
       "banned.serviceJourneys",
-      (Collection<String> serviceJourneys) -> bannedTrips.addAll(mapIDsToDomain(serviceJourneys))
+      (Collection<String> serviceJourneys) ->
+        bannedTrips.addAll(mapIDsToDomainNullSafe(serviceJourneys))
     );
     if (!bannedTrips.isEmpty()) {
       request.journey().transit().setBannedTrips(bannedTrips);

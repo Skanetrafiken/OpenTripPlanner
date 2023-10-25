@@ -39,11 +39,13 @@
     "transitReluctanceForMode" : {
       "RAIL" : 0.85
     },
-    "maxAccessEgressDurationForMode": {
-      "BIKE_RENTAL": "20m"
+    "accessEgress": {
+      "maxDurationForMode": {
+	"BIKE_RENTAL": "20m"
+      }
     },
     "itineraryFilters" : {
-      "transitGeneralizedCostLimit" : "3600 + 2.5 x",
+      "transitGeneralizedCostLimit" : "1h + 2.5 x",
       "bikeRentalDistanceRatio": 0.3
     },
     "carDecelerationSpeed": 2.9,
@@ -90,7 +92,7 @@
     // SIRI SX service alerts
     {
       "type": "siri-sx-updater",
-      "frequencySec": 60,
+      "frequency": "1m",
       "url": "https://example.com",
       "feedId": "EN",
       "blockReadinessUntilInitialized": true
@@ -106,8 +108,8 @@
     // SIRI ET updater
     {
       "type": "siri-et-updater",
-      "frequencySec": 20,
-      "previewIntervalMinutes": 180,
+      "frequency": "20s",
+      "previewInterval": "3h",
       "url": "https://example.com",
       "feedId": "EN",
       "blockReadinessUntilInitialized": true

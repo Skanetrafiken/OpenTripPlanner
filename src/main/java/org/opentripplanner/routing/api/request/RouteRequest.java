@@ -7,8 +7,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import org.opentripplanner.framework.time.DateUtils;
 import org.opentripplanner.model.GenericLocation;
 import org.opentripplanner.model.plan.SortOrder;
@@ -16,6 +20,10 @@ import org.opentripplanner.model.plan.pagecursor.PageCursor;
 import org.opentripplanner.model.plan.pagecursor.PageType;
 import org.opentripplanner.routing.api.request.preference.RoutingPreferences;
 import org.opentripplanner.routing.api.request.request.JourneyRequest;
+import org.opentripplanner.routing.api.response.InputField;
+import org.opentripplanner.routing.api.response.RoutingError;
+import org.opentripplanner.routing.api.response.RoutingErrorCode;
+import org.opentripplanner.routing.error.RoutingValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +55,12 @@ public class RouteRequest implements Cloneable, Serializable {
 
   private GenericLocation to;
 
+  private List<PassThroughPoint> passThroughPoints = Collections.emptyList();
+
   private Instant dateTime = Instant.now();
+
+  @Nullable
+  private Duration maxSearchWindow;
 
   private Duration searchWindow;
 
@@ -199,6 +212,33 @@ public class RouteRequest implements Cloneable, Serializable {
     return pageCursor.type == PageType.NEXT_PAGE;
   }
 
+  /**
+   * Validate that the routing request contains both an origin and a destination. Origin and
+   * destination can be specified either by a reference to a stop place or by geographical
+   * coordinates. Origin and destination are required in a one-to-one search, but not in a
+   * many-to-one or one-to-many.
+   * TODO - Refactor and make separate requests for one-to-one and the other searches.
+   *
+   * @throws RoutingValidationException if either origin or destination is missing.
+   */
+  public void validateOriginAndDestination() {
+    List<RoutingError> routingErrors = new ArrayList<>(2);
+
+    if (from == null || !from.isSpecified()) {
+      routingErrors.add(
+        new RoutingError(RoutingErrorCode.LOCATION_NOT_FOUND, InputField.FROM_PLACE)
+      );
+    }
+
+    if (to == null || !to.isSpecified()) {
+      routingErrors.add(new RoutingError(RoutingErrorCode.LOCATION_NOT_FOUND, InputField.TO_PLACE));
+    }
+
+    if (!routingErrors.isEmpty()) {
+      throw new RoutingValidationException(routingErrors);
+    }
+  }
+
   public String toString(String sep) {
     return (
       from +
@@ -262,12 +302,20 @@ public class RouteRequest implements Cloneable, Serializable {
     this.to = to;
   }
 
+  public List<PassThroughPoint> getPassThroughPoints() {
+    return passThroughPoints;
+  }
+
+  public void setPassThroughPoints(final List<PassThroughPoint> passThroughPoints) {
+    this.passThroughPoints = passThroughPoints;
+  }
+
   /**
    * This is the time/duration in seconds from the earliest-departure-time(EDT) to
    * latest-departure-time(LDT). In case of a reverse search it will be the time from earliest to
    * latest arrival time (LAT - EAT).
    * <p>
-   * All optimal travels that depart within the search window is guarantied to be found.
+   * All optimal travels that depart within the search window is guaranteed to be found.
    * <p>
    * This is sometimes referred to as the Range Raptor Search Window - but could be used in a none
    * Transit search as well; Hence this is named search-window and not raptor-search-window. Do not
@@ -286,7 +334,27 @@ public class RouteRequest implements Cloneable, Serializable {
   }
 
   public void setSearchWindow(Duration searchWindow) {
+    if (searchWindow != null) {
+      if (hasMaxSearchWindow() && searchWindow.toSeconds() > maxSearchWindow.toSeconds()) {
+        throw new IllegalArgumentException("The search window cannot exceed " + maxSearchWindow);
+      }
+      if (searchWindow.isNegative()) {
+        throw new IllegalArgumentException("The search window must be a positive duration");
+      }
+    }
     this.searchWindow = searchWindow;
+  }
+
+  private boolean hasMaxSearchWindow() {
+    return maxSearchWindow != null;
+  }
+
+  public Duration maxSearchWindow() {
+    return maxSearchWindow;
+  }
+
+  public void setMaxSearchWindow(@Nullable Duration maxSearchWindow) {
+    this.maxSearchWindow = maxSearchWindow;
   }
 
   public Locale locale() {

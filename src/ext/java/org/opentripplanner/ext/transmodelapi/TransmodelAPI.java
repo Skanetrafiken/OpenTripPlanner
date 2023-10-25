@@ -1,7 +1,6 @@
 package org.opentripplanner.ext.transmodelapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import graphql.ExecutionResult;
 import graphql.schema.GraphQLSchema;
 import io.micrometer.core.instrument.Tag;
 import jakarta.ws.rs.BadRequestException;
@@ -18,15 +17,11 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
-import org.opentripplanner.api.json.GraphQLResponseSerializer;
 import org.opentripplanner.ext.transmodelapi.mapping.TransitIdMapper;
 import org.opentripplanner.ext.transmodelapi.support.GqlUtil;
 import org.opentripplanner.routing.api.request.RouteRequest;
@@ -104,22 +99,27 @@ public class TransmodelAPI {
       throw new BadRequestException("No query found in body");
     }
 
-    String query = (String) queryParameters.get("query");
+    if (!(queryParameters.get("query") instanceof String query)) {
+      throw new BadRequestException("Invalid format for query");
+    }
+
     Object queryVariables = queryParameters.getOrDefault("variables", null);
-    String operationName = (String) queryParameters.getOrDefault("operationName", null);
     Map<String, Object> variables;
-    if (queryVariables instanceof Map) {
-      variables = (Map) queryVariables;
-    } else if (queryVariables instanceof String && !((String) queryVariables).isEmpty()) {
+    if (queryVariables instanceof Map queryVariablesAsMap) {
+      variables = queryVariablesAsMap;
+    } else if (
+      queryVariables instanceof String queryVariablesAsString && !queryVariablesAsString.isEmpty()
+    ) {
       try {
-        variables = deserializer.readValue((String) queryVariables, Map.class);
+        variables = deserializer.readValue(queryVariablesAsString, Map.class);
       } catch (IOException e) {
         throw new BadRequestException("Variables must be a valid json object");
       }
     } else {
-      variables = new HashMap<>();
+      variables = Collections.emptyMap();
     }
-    return index.getGraphQLResponse(
+    String operationName = (String) queryParameters.getOrDefault("operationName", null);
+    return index.executeGraphQL(
       query,
       serverContext,
       variables,
@@ -137,7 +137,7 @@ public class TransmodelAPI {
     @HeaderParam("OTPMaxResolves") @DefaultValue("1000000") int maxResolves,
     @Context HttpHeaders headers
   ) {
-    return index.getGraphQLResponse(
+    return index.executeGraphQL(
       query,
       serverContext,
       null,
@@ -145,58 +145,6 @@ public class TransmodelAPI {
       maxResolves,
       getTagsFromHeaders(headers)
     );
-  }
-
-  @POST
-  @Path("/graphql/batch")
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response getGraphQLBatch(
-    List<HashMap<String, Object>> queries,
-    @HeaderParam("OTPTimeout") @DefaultValue("10000") int timeout,
-    @HeaderParam("OTPMaxResolves") @DefaultValue("1000000") int maxResolves,
-    @Context HttpHeaders headers
-  ) {
-    List<Callable<ExecutionResult>> futures = new ArrayList<>();
-
-    for (Map<String, Object> query : queries) {
-      Map<String, Object> variables;
-      if (query.get("variables") instanceof Map) {
-        variables = (Map) query.get("variables");
-      } else if (
-        query.get("variables") instanceof String && ((String) query.get("variables")).length() > 0
-      ) {
-        try {
-          variables = deserializer.readValue((String) query.get("variables"), Map.class);
-        } catch (IOException e) {
-          throw new BadRequestException("Variables must be a valid json object");
-        }
-      } else {
-        variables = null;
-      }
-      String operationName = (String) query.getOrDefault("operationName", null);
-
-      futures.add(() ->
-        index.getGraphQLExecutionResult(
-          (String) query.get("query"),
-          serverContext,
-          variables,
-          operationName,
-          maxResolves,
-          getTagsFromHeaders(headers)
-        )
-      );
-    }
-
-    try {
-      List<Future<ExecutionResult>> results = index.threadPool.invokeAll(futures);
-      return Response
-        .status(Response.Status.OK)
-        .entity(GraphQLResponseSerializer.serializeBatch(queries, results))
-        .build();
-    } catch (InterruptedException e) {
-      LOG.error("Batch query interrupted", e);
-      throw new RuntimeException(e);
-    }
   }
 
   private static Iterable<Tag> getTagsFromHeaders(HttpHeaders headers) {

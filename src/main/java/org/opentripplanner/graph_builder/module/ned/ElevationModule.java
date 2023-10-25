@@ -18,16 +18,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.api.coverage.Coverage;
+import org.geotools.api.coverage.PointOutsideCoverageException;
+import org.geotools.api.referencing.operation.TransformException;
+import org.geotools.geometry.Position2D;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
-import org.opengis.coverage.Coverage;
-import org.opengis.coverage.PointOutsideCoverageException;
-import org.opengis.referencing.operation.TransformException;
 import org.opentripplanner.framework.geometry.EncodedPolyline;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.lang.IntUtils;
 import org.opentripplanner.framework.logging.ProgressTracker;
 import org.opentripplanner.framework.time.DurationUtils;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
@@ -39,7 +40,7 @@ import org.opentripplanner.graph_builder.services.ned.ElevationGridCoverageFacto
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.street.model.edge.Edge;
 import org.opentripplanner.street.model.edge.StreetEdge;
-import org.opentripplanner.street.model.edge.StreetElevationExtension;
+import org.opentripplanner.street.model.edge.StreetElevationExtensionBuilder;
 import org.opentripplanner.street.model.vertex.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -508,7 +509,12 @@ public class ElevationModule implements GraphBuilderModule {
 
   private void setEdgeElevationProfile(StreetEdge ee, PackedCoordinateSequence elevPCS) {
     try {
-      StreetElevationExtension.addToEdge(ee, elevPCS, false);
+      StreetElevationExtensionBuilder
+        .of(ee)
+        .withElevationProfile(elevPCS)
+        .withComputed(false)
+        .build()
+        .ifPresent(ee::setElevationExtension);
       if (ee.isElevationFlattened()) {
         issueStore.add(new ElevationFlattened(ee));
       }
@@ -558,7 +564,7 @@ public class ElevationModule implements GraphBuilderModule {
       // GeoTIFFs in various projections. Note that GeoTools defaults to strict EPSG axis ordering of (lat, long)
       // for DefaultGeographicCRS.WGS84, but OTP is using (long, lat) throughout and assumes unprojected DEM
       // rasters to also use (long, lat).
-      coverage.evaluate(new DirectPosition2D(GeometryUtils.WGS84_XY, x, y), values);
+      coverage.evaluate(new Position2D(GeometryUtils.WGS84_XY, x, y), values);
     } catch (PointOutsideCoverageException e) {
       nPointsOutsideDEM.incrementAndGet();
       throw e;
@@ -590,8 +596,8 @@ public class ElevationModule implements GraphBuilderModule {
   private double getApproximateEllipsoidToGeoidDifference(double y, double x)
     throws TransformException {
     int geoidDifferenceCoordinateValueMultiplier = 100;
-    int xVal = (int) Math.round(x * geoidDifferenceCoordinateValueMultiplier);
-    int yVal = (int) Math.round(y * geoidDifferenceCoordinateValueMultiplier);
+    int xVal = IntUtils.round(x * geoidDifferenceCoordinateValueMultiplier);
+    int yVal = IntUtils.round(y * geoidDifferenceCoordinateValueMultiplier);
     // create a hash value that can be used to look up the value for the given rounded coordinate. The expected
     // value of xVal should never be less than -18000 (-180 * 100) or more than 18000 (180 * 100), so multiply the
     // yVal by a prime number of a magnitude larger so that there won't be any hash collisions.

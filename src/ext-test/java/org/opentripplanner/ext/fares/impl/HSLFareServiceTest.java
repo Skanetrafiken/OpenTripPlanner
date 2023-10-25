@@ -1,11 +1,13 @@
 package org.opentripplanner.ext.fares.impl;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.opentripplanner.model.plan.TestItineraryBuilder.newItinerary;
 import static org.opentripplanner.transit.model._data.TransitModelForTest.FEED_ID;
 
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,7 +39,7 @@ public class HSLFareServiceTest implements PlanTestConstants {
     Assertions.assertArrayEquals(
       expectedFareIds.toArray(),
       fareService
-        .getCost(i)
+        .calculateFares(i)
         .getComponents(FareType.regular)
         .stream()
         .map(FareComponent::fareId)
@@ -56,6 +58,12 @@ public class HSLFareServiceTest implements PlanTestConstants {
     Agency agency2 = Agency
       .of(new FeedScopedId(FEED_ID, "AG2"))
       .withName("Agency 2")
+      .withTimezone("Europe/Helsinki")
+      .build();
+
+    Agency agency3 = Agency
+      .of(new FeedScopedId("FEED2", "AG3"))
+      .withName("Agency 3")
       .withTimezone("Europe/Helsinki")
       .build();
 
@@ -84,7 +92,7 @@ public class HSLFareServiceTest implements PlanTestConstants {
     float ABCD_PRICE = 5.70f;
     float D_PRICE = 2.80f;
 
-    HSLFareServiceImpl hslFareService = new HSLFareServiceImpl();
+    HSLFareService hslFareService = new HSLFareService();
     int fiveMinutes = 60 * 5;
 
     // Fare attributes
@@ -141,7 +149,14 @@ public class HSLFareServiceTest implements PlanTestConstants {
 
     FareAttribute fareAttributeD2 = FareAttribute
       .of(new FeedScopedId(FEED_ID, "D2"))
+      .setCurrencyType("EUR")
       .setAgency(agency2.getId())
+      .build();
+
+    FareAttribute fareAttributeAgency3 = FareAttribute
+      .of(new FeedScopedId("FEED2", "attribute"))
+      .setCurrencyType("EUR")
+      .setAgency(agency3.getId())
       .build();
 
     // Fare rule sets
@@ -180,6 +195,9 @@ public class HSLFareServiceTest implements PlanTestConstants {
     ruleSetD2.addContains("D");
     ruleSetD2.setAgency(agency2.getId());
 
+    FareRuleSet ruleSetAgency3 = new FareRuleSet(fareAttributeAgency3);
+    ruleSetAgency3.addContains("B");
+
     hslFareService.addFareRules(
       FareType.regular,
       List.of(
@@ -190,7 +208,8 @@ public class HSLFareServiceTest implements PlanTestConstants {
         ruleSetBCD,
         ruleSetABCD,
         ruleSetD,
-        ruleSetD2
+        ruleSetD2,
+        ruleSetAgency3
       )
     );
 
@@ -205,6 +224,13 @@ public class HSLFareServiceTest implements PlanTestConstants {
       .of(new FeedScopedId(FEED_ID, "R2"))
       .withAgency(agency2)
       .withLongName(new NonLocalizedString("Route agency 2"))
+      .withMode(TransitMode.BUS)
+      .build();
+
+    Route routeAgency3 = Route
+      .of(new FeedScopedId("FEED2", "R3"))
+      .withAgency(agency3)
+      .withLongName(new NonLocalizedString("Route agency 3"))
       .withMode(TransitMode.BUS)
       .build();
 
@@ -348,6 +374,86 @@ public class HSLFareServiceTest implements PlanTestConstants {
       Arguments.of("Ride with agency 2", hslFareService, d2, List.of(fareAttributeD2.getId()))
     );
 
+    // Itineraries within zone A
+    Itinerary A1_A2_F = newItinerary(A1, T11_06)
+      .bus(1, T11_06, T11_12, A2)
+      .bus(1, T11_06, T11_12, F)
+      .build();
+
+    args.add(
+      Arguments.of(
+        "Bus ride within zone A, then another one outside of HSL's area",
+        hslFareService,
+        A1_A2_F,
+        List.of(fareAttributeAB.getId())
+      )
+    );
+
+    // Multifeed case
+    Itinerary A1_A2_2 = newItinerary(A1, T11_06)
+      .bus(routeAgency3, 1, T11_06, T11_14, A2)
+      .bus(routeAgency1, 2, T11_30, T11_50, A1)
+      .build();
+
+    args.add(
+      Arguments.of(
+        "Bus ride within zone A with two legs using different agencies from different feeds ",
+        hslFareService,
+        A1_A2_2,
+        List.of(fareAttributeAB.getId())
+      )
+    );
+
+    Itinerary i = newItinerary(D1, T11_06)
+      .bus(routeAgency1, 1, T11_06, T11_10, D2)
+      .walk(10, D1)
+      .bus(routeAgency2, 2, T11_20, T11_30, D2)
+      .build();
+
+    args.add(
+      Arguments.of(
+        "Multi-agency itinerary",
+        hslFareService,
+        i,
+        List.of(fareAttributeD.getId(), fareAttributeD2.getId())
+      )
+    );
+
+    Itinerary i2 = newItinerary(B1)
+      .bus(routeAgency1, 1, T11_06, T11_12, B1)
+      .bus(routeAgency3, 1, T11_14, T11_15, B2)
+      .build();
+
+    args.add(
+      Arguments.of(
+        "",
+        hslFareService,
+        i2,
+        List.of(fareAttributeAB.getId(), fareAttributeAgency3.getId())
+      )
+    );
     return args;
+  }
+
+  @Test
+  void unknownFare() {
+    FareAttribute fareAttributeAB = FareAttribute
+      .of(new FeedScopedId(FEED_ID, "AB"))
+      .setCurrencyType("EUR")
+      .setPrice(2.80f)
+      .setTransferDuration(60 * 5)
+      .build();
+
+    FareRuleSet ruleSetAB = new FareRuleSet(fareAttributeAB);
+
+    var service = new HSLFareService();
+    service.addFareRules(FareType.regular, List.of(ruleSetAB));
+
+    // outside HSL's fare zones, should return null
+    Itinerary outsideHsl = newItinerary(PlanTestConstants.D, T11_06)
+      .bus(1, T11_20, T11_30, PlanTestConstants.E)
+      .build();
+    var result = service.calculateFares(outsideHsl);
+    assertNull(result);
   }
 }
