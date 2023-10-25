@@ -1,9 +1,12 @@
-FROM openjdk:17.0.2-slim-buster
+FROM tjpcrprod.azurecr.io/temurin.jre21.jammy:2023-10-24
 
-RUN apt update > /dev/null 2>&1
-RUN apt -y install jq ca-certificates curl apt-transport-https lsb-release gnupg > /dev/null 2>&1
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-RUN apt-get -y install zip unzip
+RUN apt update > /dev/null 2>&1 && \
+  apt -y install jq ca-certificates curl apt-transport-https lsb-release gnupg > /dev/null 2>&1 && \
+  curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
+  apt-get -y install zip unzip && \
+  apt autoremove -y && \
+  apt clean && \
+  rm -rf /var/lib/apt/lists/*
 
 # install application insights
 RUN mkdir /code
