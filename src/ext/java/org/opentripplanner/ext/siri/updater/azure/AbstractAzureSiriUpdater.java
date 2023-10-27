@@ -149,7 +149,7 @@ public abstract class AbstractAzureSiriUpdater implements GraphUpdater {
       subscriptionName
     );
 
-    Thread shutdownHook = new Thread(this::teardown, "azur-siri-updater-shutdown");
+    Thread shutdownHook = new Thread(this::teardownInternal, "azur-siri-updater-shutdown");
     boolean added = ApplicationShutdownSupport.addShutdownHook(
       shutdownHook,
       shutdownHook.getName()
@@ -157,16 +157,18 @@ public abstract class AbstractAzureSiriUpdater implements GraphUpdater {
     if (!added) {
       // Handling corner case when instance is being shut down before it has been initialized
       LOG.info("Instance is already shutting down - cleaning up immediately.");
-      teardown();
+      teardownInternal();
     }
   }
 
-  @Override
-  public void teardown() {
-    eventProcessor.stop();
+  private void teardownInternal() {
+    eventProcessor.close();
     serviceBusAdmin.deleteSubscription(topicName, subscriptionName).block();
     LOG.info("Subscription {} deleted on topic {}", subscriptionName, topicName);
   }
+
+  @Override
+  public void teardown() {}
 
   @Override
   public boolean isPrimed() {
