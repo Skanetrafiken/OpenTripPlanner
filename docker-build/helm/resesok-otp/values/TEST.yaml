@@ -8,6 +8,6 @@ rollouts:
 ENVIRONMENT: test
 
 autoscaling:
-  minReplicas: 1
+  minReplicas: 2
   maxReplicas: 2
   targetCPUUtilizationPercentage: 65
