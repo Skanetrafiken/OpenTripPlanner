@@ -8,16 +8,16 @@ data:
     {
       "routingDefaults": {
         "itineraryFilters": {
-          "filterItinerariesWithSameFirstOrLastTrip": true,
+          "filterItinerariesWithSameFirstOrLastTrip": false,
           "transitGeneralizedCostLimit": {
-            "costLimitFunction": "3600 + 2.0 x",
+            "costLimitFunction": "900 + 1.5 x",
             "intervalRelaxFactor": 0.4
           },
           "nonTransitGeneralizedCostLimit": "8800 + 2.0 x"
         },
         "transferSlack": 180,
         "waitReluctance": 1,
-        "walkReluctance": 11,
+        "walkReluctance": 2,
         "maxDirectStreetDuration": "3700s",
         "maxAccessEgressDuration": "PT50M"
       },
