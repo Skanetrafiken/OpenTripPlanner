@@ -1,15 +1,18 @@
 {
 	"areaVisibility": true,
-	"parentStopLinking": true,
 	"platformEntriesLinking": true,
-	"osmWayPropertySet": "norway",
-	"islandWithoutStopsMaxSize": 5,
-	"islandWithStopsMaxSize": 5,
 	"dataImportReport": true,
-	"maxTransferDurationSeconds": 1504,
+	"maxTransferDuration": "PT1504S",
 	"maxStopToShapeSnapDistance": 500,
 	"transitModelTimeZone": "Europe/Stockholm",
-	"timeZone": "Europe/Stockholm",
+	"islandPruning": {
+		"islandWithoutStopsMaxSize": 5,
+		"islandWithStopsMaxSize": 2
+	},
+	"osmDefaults": {
+		"timeZone": "Europe/Stockholm",
+		"osmTagMapping": "norway"
+	},
 	"netexDefaults": {
 		"feedId": "ST",
 		"sharedFilePattern": "ST_stops.xml",

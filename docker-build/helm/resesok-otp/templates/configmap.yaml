@@ -19,7 +19,9 @@ data:
         "waitReluctance": 1,
         "walkReluctance": 2,
         "maxDirectStreetDuration": "3700s",
-        "maxAccessEgressDuration": "PT50M"
+        "accessEgress": {
+          "maxDuration": "PT50M"
+        }
       },
       "transit": {
         "pagingSearchWindowAdjustments": [
