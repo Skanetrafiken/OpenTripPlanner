@@ -120,11 +120,6 @@ stages:
             reportDirectory: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/**/*.*
             summaryFileLocation: $(System.DefaultWorkingDirectory)/target/site/jacoco-ut/jacoco.xml
 
-        - task: Bash@3
-          displayName: 'Copy data to docker build directory'
-          inputs:
-            filePath: docker-build/docker/copy-docker-data.sh
-
         - template: as-a-service/build.yaml@Common
           parameters:
             azureSubscription: 'ST IKT DEV'

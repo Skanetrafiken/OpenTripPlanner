@@ -51,9 +51,6 @@ fi
 export applicationInsightsKey=${applicationInsightsKey:1:-1}
 export APPLICATIONINSIGHTS_CONNECTION_STRING="InstrumentationKey=$applicationInsightsKey;"
 
-#applicationinsights.json needs to be in the same folder as insights agent
-mv /code/appInsights/applicationinsights.json /code/appInsights/applicationinsights.json
-
 # Attempt to download graph from azure storage
 downloadFromAzureStorage $SA_NAME $GRAPH_CONTAINER $GRAPH_NAME $FILE_ZIP_PATH
 
