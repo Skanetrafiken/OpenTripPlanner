@@ -9,6 +9,8 @@ data:
       "routingDefaults": {
         "itineraryFilters": {
           "filterItinerariesWithSameFirstOrLastTrip": false,
+          // This basically disables the similarity-filter
+          "groupSimilarityKeepOne": 0.99,
           "transitGeneralizedCostLimit": {
             "costLimitFunction": "900 + 1.5 x",
             "intervalRelaxFactor": 0.4
@@ -18,15 +20,15 @@ data:
         "transferSlack": 180,
         "waitReluctance": 1,
         "walkReluctance": 2,
+        "walkBoardCost": 300,
+        "transferPenalty": 300,
         "maxDirectStreetDuration": "3700s",
         "accessEgress": {
           "maxDuration": "PT50M"
         }
       },
       "transit": {
-        "pagingSearchWindowAdjustments": [
-          "12h",
-          "0h"],
+        "pagingSearchWindowAdjustments": [ "12h", "0h"],
         "dynamicSearchWindow": {
           "maxWindow": "PT24H"
         },
