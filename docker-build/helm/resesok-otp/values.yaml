@@ -50,6 +50,7 @@ trip:
   environment:
     OTP_SERVER_HOST: "localhost:8080/otp"
     OTP_SERVER_PROTOCOL: "http"
+    APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL: "DEBUG"
 
   resources:
     limits:
