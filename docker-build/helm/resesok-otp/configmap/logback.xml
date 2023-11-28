@@ -1,4 +1,4 @@
-<configuration>
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
 
   <!--
     This suppresses the meta-log entries about Logback configuration (how Java).
@@ -17,13 +17,9 @@
       <pattern>%d{HH:mm:ss.SSS} %level \(%F:%L\) %msg%n</pattern>
     </encoder>
   </appender>
-  <appender name="aiAppender"
-            class="com.microsoft.applicationinsights.logback.ApplicationInsightsAppender">
-  </appender>
   <!-- Change this to debug to let more messages through. -->
   <root level="info">
     <appender-ref ref="stdout" />
-    <appender-ref ref="aiAppender" />
   </root>
   <logger name="com.azure" level="warn" />
   <logger name="ch.qos.logback" level="warn"/>

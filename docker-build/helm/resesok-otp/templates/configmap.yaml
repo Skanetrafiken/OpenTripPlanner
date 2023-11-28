@@ -76,3 +76,5 @@ data:
     }
   otp-config.json: |+
 {{ .Files.Get "configmap/otp-config.json" | indent 4 }}
+  logback.xml: |+
+{{ .Files.Get "configmap/logback.xml" | indent 4 }}

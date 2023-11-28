@@ -53,6 +53,12 @@ spec:
               subPath: {{ .subPath }}
               readOnly: {{ .readOnly }}
           {{- end }}
+            {{/* This has to be mounted separatly because we dont want to include any subPath so that
+                  file content inside pod changes dynamically without us needing to trigger a restart - */}}
+            - name: resesok-otp-logback-volume
+              mountPath: /logback
+              readOnly: false
+
           resources:
             {{- toYaml .Values.otp.resources | nindent 12 }}
         - name: resesok-trip

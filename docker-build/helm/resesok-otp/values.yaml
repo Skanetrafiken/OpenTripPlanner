@@ -108,6 +108,14 @@ otp:
       items:
         - key: "otp-config.json"
           path: "otp-config.json"
+    - name: resesok-otp-logback-volume
+      mountPath: /logback
+      subPath: ""
+      configMap: resesok-otp-config
+      readOnly: false
+      items:
+        - key: "logback.xml"
+          path: "logback.xml"
 
   realtime:
     enabled: true

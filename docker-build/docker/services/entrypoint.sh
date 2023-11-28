@@ -50,6 +50,7 @@ fi
 # Cut of " chars and set as environment variable
 export applicationInsightsKey=${applicationInsightsKey:1:-1}
 export APPLICATIONINSIGHTS_CONNECTION_STRING="InstrumentationKey=$applicationInsightsKey;"
+export APPLICATIONINSIGHTS_CONFIGURATION_FILE=/code/appInsights/applicationinsights.json
 
 # Attempt to download graph from azure storage
 downloadFromAzureStorage $SA_NAME $GRAPH_CONTAINER $GRAPH_NAME $FILE_ZIP_PATH
@@ -91,4 +92,4 @@ cd /code || exit 1
 
 log_info "Start java OTP jar"
 
-exec java -javaagent:/code/appInsights/applicationinsights-agent.jar -Xms5120m -Xmx10500m -jar $OTP_JAR_PATH --load $GRAPH_DATA_PATH
+exec java -javaagent:/code/appInsights/applicationinsights-agent.jar -Xms5120m -Xmx10500m -Dlogback.configurationFile=/logback/logback.xml -jar $OTP_JAR_PATH --load $GRAPH_DATA_PATH

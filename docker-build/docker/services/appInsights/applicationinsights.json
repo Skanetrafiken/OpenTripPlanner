@@ -1,10 +1,12 @@
 {
-  "preview": {
-    "openTelemetryApiSupport": true,
-    "instrumentation": {
-        "grizzly": {
-            "enabled": true
-        }
+  "openTelemetryApiSupport": true,
+  "instrumentation": {
+    "grizzly": {
+      "enabled": true
+    },
+    "logging": {
+      "level": "DEBUG",
+      "threshold": "DEBUG"
     }
   }
 }
