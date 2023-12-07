@@ -130,6 +130,7 @@ stages:
               - name: resesok-otp
                 source: docker-build/docker
                 context: .
+                args: '--build-arg "APPLICATION_VERSION=$(buildVersion)"'
                 tags:
                   - $(buildVersion)
 

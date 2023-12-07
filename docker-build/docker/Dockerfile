@@ -1,5 +1,7 @@
 FROM tjpcrprod.azurecr.io/temurin.jre21.jammy:2023-10-24
 
+ARG APPLICATION_VERSION="UnknownVersion"
+
 RUN apt-get update && \
     apt-get -y install jq ca-certificates curl apt-transport-https lsb-release gnupg zip unzip && \
     curl -sL https://aka.ms/InstallAzureCLIDeb | bash && \
@@ -19,6 +21,7 @@ WORKDIR /code
 
 EXPOSE 8080
 
+ENV APPLICATION_VERSION=$APPLICATION_VERSION
 ENV ENVOY_ADMIN_API="http://127.0.0.1:15000"
 ENV ISTIO_QUIT_API="http://127.0.0.1:15020"
 ENV APPLICATIONINSIGHTS_ROLE_NAME="OpenTripPlanner"
