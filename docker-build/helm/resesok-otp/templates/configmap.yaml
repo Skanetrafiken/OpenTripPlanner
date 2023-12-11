@@ -19,7 +19,9 @@ data:
         "waitReluctance": 1,
         "walkReluctance": 11,
         "maxDirectStreetDuration": "3700s",
-        "maxAccessEgressDuration": "PT50M"
+        "maxAccessEgressDuration": "PT50M",
+        "transferPenalty": 300,
+        "walkBoardCost": 300
       },
       "transit": {
         "pagingSearchWindowAdjustments": [
