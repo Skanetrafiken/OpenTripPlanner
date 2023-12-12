@@ -8,5 +8,8 @@
       "level": "DEBUG",
       "threshold": "DEBUG"
     }
+  },
+  "customDimensions": {
+    "service.version": "${APPLICATION_VERSION}"
   }
 }

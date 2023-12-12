@@ -44,7 +44,7 @@ spec:
             successThreshold: 1
             timeoutSeconds: 20
             httpGet:
-              path: otp/routers/ready
+              path: /otp/actuators/health
               port: otpport
           volumeMounts:
           {{- range .Values.otp.configmapMounts }}
