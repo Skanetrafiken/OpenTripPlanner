@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resesok-trip
+  namespace: {{ .Release.Namespace }}
+  labels:
+    spring.cloud.kubernetes.config: "true"
+data:
+  application.yaml: |-
+    logging:
+      level:
+        se.skanetrafiken.trip: {{ .Values.logLevel }}

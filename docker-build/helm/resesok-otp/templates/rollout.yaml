@@ -66,12 +66,28 @@ spec:
           image: "{{ .Values.trip.image.repository }}:{{ .Values.trip.image.tag }}"
           imagePullPolicy: IfNotPresent
           env:
+            - name: "APPLICATION_INSIGHTS_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: ApplicationInsightsKey
+            - name: SPRING_RABBITMQ_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: rabbitMqUsername
+            - name: SPRING_RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}
+                  key: rabbitMqPassword
             - name: "ENVIRONMENT"
               value: {{ .Values.ENVIRONMENT | quote }}
             {{- range $key, $value := .Values.trip.environment }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
+
           ports:
             - name: tripport
               containerPort: {{ required "A valid .Values.trip.containerPort entry required!" .Values.trip.containerPort }}

@@ -30,7 +30,7 @@ jobs:
               inputs:
                 azureSubscription: 'ST IKT ${{ upper(parameters.environment) }}'
                 KeyVaultName: 'journeyplanner-kv-${{ lower(parameters.environment) }}'
-                SecretsFilter: serviceBusConnectionString
+                SecretsFilter: ApplicationInsightsKey,serviceBusConnectionString,rabbitmqUsername,rabbitmqPassword
 
             - template: as-a-service/deploy.yaml@Common
               parameters:
@@ -50,3 +50,6 @@ jobs:
                     - trip.image.tag=$(tripVersion)
                     - otp.image.tag=$(otpVersion)
                     - otp.realtime.serviceBusConnectionString=$(serviceBusConnectionString)
+                    - ApplicationInsightsKey=$(ApplicationInsightsKey)
+                    - rabbitmq.username=$(rabbitmqUsername)
+                    - rabbitmq.password=$(rabbitmqPassword)

@@ -3,6 +3,14 @@ identityClientId: "This secret should be set from build pipeline"
 identityResourceId: "This secret should be set from build pipeline"
 
 ENVIRONMENT: "set by Azure Pipeline"
+# secrets.yaml
+ApplicationInsightsKey: "Set by Azure Pipeline"
+rabbitmq:
+  username: "Set by Azure Pipeline"
+  password: "Set by Azure Pipeline"
+
+# configmap
+logLevel: "ERROR"
 
 ## todo This is probably the "old way".
 azureIdentity:
@@ -51,6 +59,8 @@ trip:
     OTP_SERVER_HOST: "localhost:8080/otp"
     OTP_SERVER_PROTOCOL: "http"
     APPLICATIONINSIGHTS_INSTRUMENTATION_LOGGING_LEVEL: "DEBUG"
+    SPRING_RABBITMQ_PORT: "5672"
+    SPRING_RABBITMQ_HOST: "resesok-rabbitmq"
 
   resources:
     limits:
