@@ -46,6 +46,10 @@ spec:
             httpGet:
               path: /otp/actuators/health
               port: otpport
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]
           volumeMounts:
           {{- range .Values.otp.configmapMounts }}
             - name: {{ .name }}
@@ -118,6 +122,10 @@ spec:
             httpGet:
               path: /status?api-version=1
               port: tripport
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sleep", "5"]
           volumeMounts: []
           resources:
             {{- toYaml .Values.trip.resources | nindent 12 }}
