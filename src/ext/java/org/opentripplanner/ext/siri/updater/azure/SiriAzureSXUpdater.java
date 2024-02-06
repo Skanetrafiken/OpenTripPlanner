@@ -121,7 +121,7 @@ public class SiriAzureSXUpdater extends AbstractAzureSiriUpdater implements Tran
     return siri;
   }
 
-  private void processMessage(String message, String id) {
+  protected void processMessage(String message, String id) {
     try {
       Siri siri = getSiri(message, id);
       if (siri == null) {

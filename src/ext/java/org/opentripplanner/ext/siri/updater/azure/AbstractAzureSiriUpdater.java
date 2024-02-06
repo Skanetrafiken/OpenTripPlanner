@@ -11,9 +11,13 @@ import com.azure.messaging.servicebus.administration.ServiceBusAdministrationCli
 import com.azure.messaging.servicebus.administration.models.CreateSubscriptionOptions;
 import com.google.common.base.Preconditions;
 import com.google.common.io.CharStreams;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
@@ -91,6 +95,10 @@ public abstract class AbstractAzureSiriUpdater implements GraphUpdater {
     this.saveResultOnGraph = saveResultOnGraph;
   }
 
+  protected void processMessage(String message, String id) {
+
+  }
+
   @Override
   public void run() {
     Objects.requireNonNull(topicName, "'topic' must be set");
@@ -115,17 +123,17 @@ public abstract class AbstractAzureSiriUpdater implements GraphUpdater {
     options.setDefaultMessageTimeToLive(Duration.of(25, ChronoUnit.HOURS));
     options.setAutoDeleteOnIdle(Duration.ofDays(1));
 
-    // Make sure there is no old subscription on serviceBus
-    if (
-      Boolean.TRUE.equals(
-        serviceBusAdmin.getSubscriptionExists(topicName, subscriptionName).block()
-      )
-    ) {
-      LOG.info("Subscription {} already exists", subscriptionName);
-      serviceBusAdmin.deleteSubscription(topicName, subscriptionName).block();
-      LOG.info("Service Bus deleted subscription {}.", subscriptionName);
-    }
-    serviceBusAdmin.createSubscription(topicName, subscriptionName, options).block();
+//    // Make sure there is no old subscription on serviceBus
+//    if (
+//      Boolean.TRUE.equals(
+//        serviceBusAdmin.getSubscriptionExists(topicName, subscriptionName).block()
+//      )
+//    ) {
+//      LOG.info("Subscription {} already exists", subscriptionName);
+//      serviceBusAdmin.deleteSubscription(topicName, subscriptionName).block();
+//      LOG.info("Service Bus deleted subscription {}.", subscriptionName);
+//    }
+//    serviceBusAdmin.createSubscription(topicName, subscriptionName, options).block();
 
     LOG.info("Service Bus created subscription {}", subscriptionName);
 
@@ -142,22 +150,39 @@ public abstract class AbstractAzureSiriUpdater implements GraphUpdater {
         .processMessage(messageConsumer)
         .buildProcessorClient();
 
-    eventProcessor.start();
-    LOG.info(
-      "Service Bus processor started for topic {} and subscription {}",
-      topicName,
-      subscriptionName
-    );
+//    eventProcessor.start();
 
-    ApplicationShutdownSupport.addShutdownHook(
-      "azure-siri-updater-shutdown",
-      () -> {
-        LOG.info("Calling shutdownHook on AbstractAzureSiriUpdater");
-        eventProcessor.close();
-        serviceBusAdmin.deleteSubscription(topicName, subscriptionName).block();
-        LOG.info("Subscription '{}' deleted on topic '{}'.", subscriptionName, topicName);
+    try {
+      Path path = Paths.get("/home/bartosz/Desktop/et_validation_results/et-1707137173445.xml");
+      String string = null;
+      string = Files.readString(path);
+
+      while (true) {
+        Thread.sleep(10);
+        processMessage(string, "dd");
       }
-    );
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+
+//    LOG.info(
+//      "Service Bus processor started for topic {} and subscription {}",
+//      topicName,
+//      subscriptionName
+//    );
+//
+//    ApplicationShutdownSupport.addShutdownHook(
+//      "azure-siri-updater-shutdown",
+//      () -> {
+//        LOG.info("Calling shutdownHook on AbstractAzureSiriUpdater");
+//        eventProcessor.close();
+//        serviceBusAdmin.deleteSubscription(topicName, subscriptionName).block();
+//        LOG.info("Subscription '{}' deleted on topic '{}'.", subscriptionName, topicName);
+//      }
+//    );
   }
 
   @Override

@@ -243,6 +243,13 @@ public class EnumTypes {
       RealTimeState.MODIFIED,
       "The service journey information has been updated and resulted in a different journey pattern compared to the journey pattern of the scheduled service journey."
     )
+//    .value(
+//      "deleted",
+//      RealTimeState.DELETED,
+//      "Trip was Either it has been set as deleted in the real-time feed, or it has been " +
+//        "replaced by another trip on another pattern. If the trip is visible to the end user, " +
+//        "it indicates that there is something wrong with realtime module"
+//    )
     .build();
 
   public static final GraphQLEnumType RELATIVE_DIRECTION = GraphQLEnumType

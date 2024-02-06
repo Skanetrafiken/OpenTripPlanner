@@ -3,8 +3,12 @@ package org.opentripplanner.ext.siri.updater.azure;
 import com.azure.messaging.servicebus.ServiceBusErrorContext;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
 import jakarta.xml.bind.JAXBException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -84,7 +88,13 @@ public class SiriAzureETUpdater extends AbstractAzureSiriUpdater {
       startTime = Instant.now();
       LOG.info("Fetching initial Siri ET data from {}, timeout is {}ms", uri, timeout);
       final long t1 = System.currentTimeMillis();
-      String string = fetchInitialData(uri);
+      Path path = Paths.get("/home/bartosz/Desktop/et.xml");
+      String string = null;
+      try {
+        string = Files.readString(path);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
       final long t2 = System.currentTimeMillis();
 
       LOG.info(
@@ -98,7 +108,8 @@ public class SiriAzureETUpdater extends AbstractAzureSiriUpdater {
     }
   }
 
-  private void processMessage(String message, String id) {
+  @Override
+  protected void processMessage(String message, String id) {
     try {
       List<EstimatedTimetableDeliveryStructure> updates = getUpdates(message, id);
 

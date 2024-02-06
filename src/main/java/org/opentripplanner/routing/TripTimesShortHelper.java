@@ -18,6 +18,7 @@ public class TripTimesShortHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(TripTimesShortHelper.class);
 
+  // This is for service journey endpoint
   public static List<TripTimeOnDate> getTripTimesShort(
     TransitService transitService,
     Trip trip,
