@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.opentripplanner.ext.flex.FlexIndex;
 import org.opentripplanner.ext.flex.trip.FlexTrip;
 import org.opentripplanner.framework.application.OTPFeature;
@@ -122,6 +123,7 @@ public class TransitModelIndex {
     return agencyForId.get(id);
   }
 
+  @Nullable
   public Route getRouteForId(FeedScopedId id) {
     return routeForId.get(id);
   }

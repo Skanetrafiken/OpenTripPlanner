@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,7 @@ public record SubMode(String name, int index) implements Serializable {
    * The builders in the transit model take care of calling this method, so there is no
    * reason to call this method outside the transit model package.
    */
-  public static SubMode getOrBuildAndCacheForever(String name) {
+  public static SubMode getOrBuildAndCacheForever(@Nullable String name) {
     if (name == null) {
       return UNKNOWN;
     }

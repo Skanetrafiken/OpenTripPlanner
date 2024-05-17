@@ -4,6 +4,7 @@ import static java.lang.Boolean.TRUE;
 
 import java.time.ZonedDateTime;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.opentripplanner.ext.siri.mapper.OccupancyMapper;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.framework.time.ServiceDateUtils;
@@ -57,7 +58,7 @@ public class TimetableHelper {
     boolean isLastStop,
     boolean isJourneyPredictionInaccurate,
     CallWrapper call,
-    OccupancyEnumeration journeyOccupancy
+    @Nullable OccupancyEnumeration journeyOccupancy
   ) {
     if (call.getActualDepartureTime() != null || call.getActualArrivalTime() != null) {
       //Flag as recorded

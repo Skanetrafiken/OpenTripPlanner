@@ -12,11 +12,13 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.opentripplanner.ext.siri.mapper.SiriTransportModeMapper;
+import org.opentripplanner.ext.siri.updates.AddTripUpdate;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.model.calendar.CalendarServiceData;
 import org.opentripplanner.transit.model._data.TransitModelForTest;
@@ -112,23 +114,26 @@ class AddedTripBuilderTest {
     var addedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      getCalls(10),
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          getCalls(10),
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(addedTrip.isSuccess(), "Trip creation should succeed");
 
@@ -241,23 +246,26 @@ class AddedTripBuilderTest {
     var firstAddedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      getCalls(10),
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          getCalls(10),
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(firstAddedTrip.isSuccess(), "Trip creation should succeed");
     var firstTrip = firstAddedTrip.successValue().tripTimes().getTrip();
@@ -267,23 +275,26 @@ class AddedTripBuilderTest {
     var secondAddedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      tripId2,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      getCalls(11),
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          tripId2,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          getCalls(11),
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(secondAddedTrip.isSuccess(), "Trip creation should succeed");
 
@@ -318,23 +329,26 @@ class AddedTripBuilderTest {
     var addedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      REPLACED_ROUTE.getId().getId(),
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      getCalls(10),
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          REPLACED_ROUTE.getId().getId(),
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          getCalls(10),
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(addedTrip.isSuccess(), "Trip creation should succeed");
 
@@ -349,23 +363,26 @@ class AddedTripBuilderTest {
     var addedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      null,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      null,
-      getCalls(10),
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.empty(),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.empty(),
+          getCalls(10),
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(addedTrip.isSuccess(), "Trip creation should succeed");
 
@@ -385,37 +402,6 @@ class AddedTripBuilderTest {
       "submode should be unknown, when ro replacing route is found"
     );
     assertNotEquals(REPLACED_ROUTE, route, "Should not re-use replaced route");
-  }
-
-  @Test
-  void testAddedTripFailOnMissingServiceId() {
-    var addedTrip = new AddedTripBuilder(
-      TRANSIT_MODEL,
-      ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      null,
-      TRANSIT_MODE,
-      SUB_MODE,
-      getCalls(0),
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
-    )
-      .build();
-
-    assertTrue(addedTrip.isFailure(), "Trip creation should fail");
-    assertEquals(
-      UpdateError.UpdateErrorType.NO_START_DATE,
-      addedTrip.failureValue().errorType(),
-      "Trip creation should fail without start date"
-    );
   }
 
   @Test
@@ -447,23 +433,26 @@ class AddedTripBuilderTest {
     var addedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      calls,
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          calls,
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(addedTrip.isFailure(), "Trip creation should fail");
     assertEquals(
@@ -486,23 +475,26 @@ class AddedTripBuilderTest {
     var addedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      calls,
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          calls,
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(addedTrip.isFailure(), "Trip creation should fail");
     assertEquals(
@@ -533,23 +525,26 @@ class AddedTripBuilderTest {
     var addedTrip = new AddedTripBuilder(
       TRANSIT_MODEL,
       ENTITY_RESOLVER,
-      AbstractTransitEntity::getId,
-      TRIP_ID,
-      OPERATOR,
-      LINE_REF,
-      REPLACED_ROUTE,
-      SERVICE_DATE,
-      TRANSIT_MODE,
-      SUB_MODE,
-      calls,
-      false,
-      null,
-      false,
-      SHORT_NAME,
-      HEADSIGN,
-      List.of()
+      AbstractTransitEntity::getId
     )
-      .build();
+      .handleAddTripUpdate(
+        new AddTripUpdate(
+          TRIP_ID,
+          Optional.of(OPERATOR),
+          LINE_REF,
+          Optional.of(REPLACED_ROUTE),
+          SERVICE_DATE,
+          TRANSIT_MODE,
+          Optional.of(SUB_MODE),
+          calls,
+          false,
+          Optional.empty(),
+          false,
+          SHORT_NAME,
+          HEADSIGN,
+          List.of()
+        )
+      );
 
     assertTrue(addedTrip.isFailure(), "Trip creation should fail");
     assertEquals(

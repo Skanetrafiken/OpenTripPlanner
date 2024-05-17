@@ -263,6 +263,23 @@ class SiriTimetableSnapshotSourceTest {
   }
 
   @Test
+  void testNoDate() {
+    var env = new RealtimeTestEnvironment();
+
+    // New journey with no way to figure out the service date since it has no calls
+    var updates = new SiriEtBuilder(env.getDateTimeHelper())
+      .withEstimatedVehicleJourneyCode("newJourney")
+      .withIsExtraJourney(true)
+      .withOperatorRef(env.operator1Id.getId())
+      .withLineRef(env.route1Id.getId())
+      .buildEstimatedTimetableDeliveries();
+
+    var result = env.applyEstimatedTimetable(updates);
+
+    assertFailure(result, UpdateError.UpdateErrorType.NO_START_DATE);
+  }
+
+  @Test
   void testReplaceJourneyWithoutEstimatedVehicleJourneyCode() {
     var env = new RealtimeTestEnvironment();
 

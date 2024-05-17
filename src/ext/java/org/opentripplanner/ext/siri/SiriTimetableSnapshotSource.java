@@ -200,14 +200,17 @@ public class SiriTimetableSnapshotSource implements TimetableSnapshotProvider {
       shouldAddNewTrip = shouldAddNewTrip(journey, entityResolver);
       Result<TripUpdate, UpdateError> result;
       if (shouldAddNewTrip) {
-        result =
-          new AddedTripBuilder(
-            journey,
-            transitModel,
-            entityResolver,
-            tripPatternIdGenerator::generateUniqueTripPatternId
-          )
-            .build();
+        var builder = new AddedTripBuilder(
+          transitModel,
+          entityResolver,
+          tripPatternIdGenerator::generateUniqueTripPatternId
+        );
+        var addedTrip = builder.parseEt(journey);
+        if (addedTrip.isFailure()) {
+          result = addedTrip.toFailureResult();
+        } else {
+          result = builder.handleAddTripUpdate(addedTrip.successValue());
+        }
       } else {
         result = handleModifiedTrip(fuzzyTripMatcher, entityResolver, journey);
       }

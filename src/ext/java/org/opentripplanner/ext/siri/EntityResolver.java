@@ -200,10 +200,12 @@ public class EntityResolver {
   /**
    * Resolve a {@link Route} from a line id.
    */
+  @Nullable
   public Route resolveRoute(String lineRef) {
     return transitService.getRouteForId(resolveId(lineRef));
   }
 
+  @Nullable
   public Operator resolveOperator(String operatorRef) {
     return transitService.getOperatorForId(resolveId(operatorRef));
   }

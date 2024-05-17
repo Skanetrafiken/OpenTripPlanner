@@ -3,6 +3,7 @@ package org.opentripplanner.ext.siri;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import uk.org.siri.siri20.ArrivalBoardingActivityEnumeration;
 import uk.org.siri.siri20.CallStatusEnumeration;
 import uk.org.siri.siri20.DepartureBoardingActivityEnumeration;
@@ -83,6 +84,7 @@ public interface CallWrapper {
     }
 
     @Override
+    @Nullable
     public OccupancyEnumeration getOccupancy() {
       return call.getOccupancy();
     }

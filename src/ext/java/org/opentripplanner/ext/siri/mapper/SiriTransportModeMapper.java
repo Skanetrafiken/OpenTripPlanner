@@ -1,15 +1,18 @@
 package org.opentripplanner.ext.siri.mapper;
 
 import java.util.List;
+import javax.annotation.Nullable;
 import org.opentripplanner.transit.model.basic.TransitMode;
 import uk.org.siri.siri20.VehicleModesEnumeration;
 
 public class SiriTransportModeMapper {
 
   /**
-   * Maps first SIRI-VehicleMode to OTP-mode
+   * Maps first SIRI-VehicleMode to OTP-mode. Defaults to BUS for null or empty list.
    */
-  public static TransitMode mapTransitMainMode(List<VehicleModesEnumeration> vehicleModes) {
+  public static TransitMode mapTransitMainMode(
+    @Nullable List<VehicleModesEnumeration> vehicleModes
+  ) {
     if (vehicleModes == null || vehicleModes.isEmpty()) {
       return TransitMode.BUS;
     }

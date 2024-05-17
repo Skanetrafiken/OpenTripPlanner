@@ -23,7 +23,10 @@ import org.opentripplanner.transit.model.organization.Operator;
 public final class Route extends AbstractTransitEntity<Route, RouteBuilder> implements LogInfo {
 
   private final Agency agency;
+
+  @Nullable
   private final Operator operator;
+
   private final Branding branding;
   private final List<GroupOfRoutes> groupsOfRoutes;
   private final String shortName;

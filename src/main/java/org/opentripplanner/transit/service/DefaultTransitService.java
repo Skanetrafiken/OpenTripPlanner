@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.locationtech.jts.geom.Envelope;
 import org.opentripplanner.ext.flex.FlexIndex;
 import org.opentripplanner.framework.application.OTPRequestTimeoutException;
@@ -177,6 +178,7 @@ public class DefaultTransitService implements TransitEditorService {
   }
 
   @Override
+  @Nullable
   public Route getRouteForId(FeedScopedId id) {
     return this.transitModelIndex.getRouteForId(id);
   }
@@ -211,6 +213,7 @@ public class DefaultTransitService implements TransitEditorService {
   }
 
   @Override
+  @Nullable
   public Operator getOperatorForId(FeedScopedId id) {
     return this.transitModelIndex.getOperatorForId().get(id);
   }
