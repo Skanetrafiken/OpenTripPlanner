@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 import org.opentripplanner.TestOtpModel;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.algorithm.GraphRoutingTest;
 import org.opentripplanner.street.model.vertex.TransitStopVertex;
 import org.opentripplanner.transit.service.StopModel;
@@ -38,7 +38,7 @@ class DirectGraphFinderTest extends GraphRoutingTest {
     var ns2 = new NearbyStop(S2.getStop(), 1112, null, null);
 
     var subject = new DirectGraphFinder(stopModel::findRegularStops);
-    var coordinate = new Coordinate(19.000, 47.500);
+    var coordinate = new WgsCoordinate(47.500, 19.000);
     assertEquals(List.of(ns1), subject.findClosestStops(coordinate, 100));
 
     assertEquals(List.of(ns1, ns2), subject.findClosestStops(coordinate, 2000));

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.algorithm.GraphRoutingTest;
 import org.opentripplanner.routing.vehicle_parking.VehicleParking;
 import org.opentripplanner.service.vehiclerental.street.VehicleRentalPlaceVertex;
@@ -124,7 +124,7 @@ class StreetGraphFinderTest extends GraphRoutingTest {
   void findClosestStops() {
     var ns1 = new NearbyStop(S1.getStop(), 0, null, null);
     var ns2 = new NearbyStop(S2.getStop(), 100, null, null);
-    var coordinate = new Coordinate(19.000, 47.500);
+    var coordinate = new WgsCoordinate(47.500, 19.000);
 
     assertEquals(List.of(ns1), simplify(graphFinder.findClosestStops(coordinate, 10)));
 

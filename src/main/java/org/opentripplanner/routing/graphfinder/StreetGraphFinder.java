@@ -4,9 +4,9 @@ import static java.lang.Integer.min;
 
 import java.util.Comparator;
 import java.util.List;
-import org.locationtech.jts.geom.Coordinate;
 import org.opentripplanner.astar.spi.SkipEdgeStrategy;
 import org.opentripplanner.astar.spi.TraverseVisitor;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.model.GenericLocation;
 import org.opentripplanner.routing.api.request.RouteRequest;
 import org.opentripplanner.routing.api.request.StreetMode;
@@ -33,11 +33,11 @@ public class StreetGraphFinder implements GraphFinder {
   }
 
   @Override
-  public List<NearbyStop> findClosestStops(Coordinate coordinate, double radiusMeters) {
+  public List<NearbyStop> findClosestStops(WgsCoordinate coordinate, double radiusMeters) {
     StopFinderTraverseVisitor visitor = new StopFinderTraverseVisitor(radiusMeters);
     findClosestUsingStreets(
-      coordinate.getY(),
-      coordinate.getX(),
+      coordinate.latitude(),
+      coordinate.longitude(),
       visitor,
       visitor.getSkipEdgeStrategy()
     );

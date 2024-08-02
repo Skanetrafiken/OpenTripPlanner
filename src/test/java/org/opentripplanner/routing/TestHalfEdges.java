@@ -20,6 +20,7 @@ import org.opentripplanner._support.time.ZoneIds;
 import org.opentripplanner.astar.model.GraphPath;
 import org.opentripplanner.astar.model.ShortestPathTree;
 import org.opentripplanner.framework.geometry.GeometryUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.graph_builder.module.TestStreetLinkerModule;
 import org.opentripplanner.model.GenericLocation;
@@ -598,7 +599,9 @@ public class TestHalfEdges {
     GraphFinder graphFinder = new DirectGraphFinder(transitModel.getStopModel()::findRegularStops);
     Set<DisposableEdgeCollection> tempEdges = new HashSet<>();
     // test that the local stop finder finds stops
-    assertTrue(graphFinder.findClosestStops(new Coordinate(-74.005000001, 40.01), 100).size() > 0);
+    assertTrue(
+      graphFinder.findClosestStops(new WgsCoordinate(40.01, -74.005000001), 100).size() > 0
+    );
 
     // test that the closest vertex finder returns the closest vertex
     TemporaryStreetLocation some = (TemporaryStreetLocation) finder.getVertexForLocationForTest(
@@ -681,13 +684,13 @@ public class TestHalfEdges {
     Edge edge = outgoing.iterator().next();
 
     Vertex midpoint = edge.getToVertex();
-    assertTrue(Math.abs(midpoint.getJtsCoordinate().y - 40.01) < 0.00000001);
+    assertTrue(Math.abs(midpoint.getLat() - 40.01) < 0.00000001);
 
     outgoing = station2.getOutgoing();
     assertEquals(2, outgoing.size());
     edge = outgoing.iterator().next();
 
     Vertex station2point = edge.getToVertex();
-    assertTrue(Math.abs(station2point.getJtsCoordinate().x - -74.002) < 0.00000001);
+    assertTrue(Math.abs(station2point.getLon() - -74.002) < 0.00000001);
   }
 }

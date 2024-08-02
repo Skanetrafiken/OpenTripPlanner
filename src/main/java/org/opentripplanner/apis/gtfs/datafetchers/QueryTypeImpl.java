@@ -38,6 +38,7 @@ import org.opentripplanner.ext.fares.impl.DefaultFareService;
 import org.opentripplanner.ext.fares.impl.GtfsFaresService;
 import org.opentripplanner.ext.fares.model.FareRuleSet;
 import org.opentripplanner.framework.application.OTPFeature;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.time.ServiceDateUtils;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.gtfs.mapping.DirectionMapper;
@@ -749,7 +750,7 @@ public class QueryTypeImpl implements GraphQLDataFetchers.GraphQLQueryType {
         stops =
           getGraphFinder(environment)
             .findClosestStops(
-              new Coordinate(args.getGraphQLLon(), args.getGraphQLLat()),
+              new WgsCoordinate(args.getGraphQLLat(), args.getGraphQLLon()),
               args.getGraphQLRadius()
             );
       } catch (RoutingValidationException e) {

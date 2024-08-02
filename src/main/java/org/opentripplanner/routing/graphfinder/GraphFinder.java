@@ -3,8 +3,8 @@ package org.opentripplanner.routing.graphfinder;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.transit.model.basic.TransitMode;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
@@ -35,7 +35,7 @@ public interface GraphFinder {
    * @param coordinate   Origin
    * @param radiusMeters Search radius from the origin in meters
    */
-  List<NearbyStop> findClosestStops(Coordinate coordinate, double radiusMeters);
+  List<NearbyStop> findClosestStops(WgsCoordinate coordinate, double radiusMeters);
 
   /**
    * Search closest places, including stops, bike rental stations, bike and car parking etc, from a

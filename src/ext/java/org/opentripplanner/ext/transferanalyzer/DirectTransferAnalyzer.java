@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.locationtech.jts.geom.Coordinate;
 import org.opentripplanner.ext.transferanalyzer.annotations.TransferCouldNotBeRouted;
 import org.opentripplanner.ext.transferanalyzer.annotations.TransferRoutingDistanceTooLong;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.graph_builder.model.GraphBuilderModule;
 import org.opentripplanner.routing.graph.Graph;
@@ -80,7 +80,7 @@ public class DirectTransferAnalyzer implements GraphBuilderModule {
       }
 
       /* Find nearby stops by euclidean distance */
-      Coordinate c0 = originStopVertex.getJtsCoordinate();
+      WgsCoordinate c0 = originStopVertex.getCoordinate();
       Map<RegularStop, NearbyStop> stopsEuclidean = nearbyStopFinderEuclidian
         .findClosestStops(c0, radiusMeters)
         .stream()

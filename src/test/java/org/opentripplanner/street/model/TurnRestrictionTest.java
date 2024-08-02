@@ -191,10 +191,7 @@ public class TurnRestrictionTest {
     var labelA = vA.getLabel();
     var labelB = vB.getLabel();
     String name = String.format("%s_%s", labelA, labelB);
-    Coordinate[] coords = new Coordinate[2];
-    coords[0] = vA.getJtsCoordinate();
-    coords[1] = vB.getJtsCoordinate();
-    LineString geom = GeometryUtils.getGeometryFactory().createLineString(coords);
+    LineString geom = GeometryUtils.makeLineString(vA.getCoordinate(), vB.getCoordinate());
 
     StreetTraversalPermission perm = StreetTraversalPermission.ALL;
     return new StreetEdgeBuilder<>()

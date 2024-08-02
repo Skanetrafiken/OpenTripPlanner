@@ -33,7 +33,6 @@ import javax.annotation.Nonnull;
 import org.glassfish.jersey.message.internal.OutboundJaxrsResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.locationtech.jts.geom.Coordinate;
 import org.opentripplanner._support.text.I18NStrings;
 import org.opentripplanner._support.time.ZoneIds;
 import org.opentripplanner.ext.fares.FaresToItineraryMapper;
@@ -440,7 +439,7 @@ class GraphQLIntegrationTest {
 
   private static final GraphFinder finder = new GraphFinder() {
     @Override
-    public List<NearbyStop> findClosestStops(Coordinate coordinate, double radiusMeters) {
+    public List<NearbyStop> findClosestStops(WgsCoordinate coordinate, double radiusMeters) {
       return null;
     }
 

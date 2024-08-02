@@ -51,6 +51,7 @@ import org.opentripplanner.ext.restapi.model.ApiTrip;
 import org.opentripplanner.ext.restapi.model.ApiTripShort;
 import org.opentripplanner.ext.restapi.model.ApiTripTimeShort;
 import org.opentripplanner.framework.geometry.EncodedPolyline;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.time.ServiceDateUtils;
 import org.opentripplanner.model.StopTimesInPattern;
 import org.opentripplanner.model.TripTimeOnDate;
@@ -201,7 +202,7 @@ public class IndexAPI {
       radius = Math.min(radius, MAX_STOP_SEARCH_RADIUS);
 
       return new DirectGraphFinder(serverContext.transitService()::findRegularStops)
-        .findClosestStops(new Coordinate(lon, lat), radius)
+        .findClosestStops(new WgsCoordinate(lat, lon), radius)
         .stream()
         .map(it -> StopMapper.mapToApiShort(it.stop, it.distance))
         .collect(Collectors.toList());

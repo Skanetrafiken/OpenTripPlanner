@@ -99,6 +99,7 @@ import org.opentripplanner.apis.transmodel.model.timetable.ServiceJourneyType;
 import org.opentripplanner.apis.transmodel.model.timetable.TimetabledPassingTimeType;
 import org.opentripplanner.apis.transmodel.model.timetable.TripMetadataType;
 import org.opentripplanner.apis.transmodel.support.GqlUtil;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.model.plan.legreference.LegReference;
 import org.opentripplanner.model.plan.legreference.LegReferenceSerializer;
 import org.opentripplanner.routing.alertpatch.TransitAlert;
@@ -767,9 +768,9 @@ public class TransmodelGraphQLSchema {
                 GqlUtil
                   .getGraphFinder(environment)
                   .findClosestStops(
-                    new Coordinate(
-                      environment.getArgument("longitude"),
-                      environment.getArgument("latitude")
+                    new WgsCoordinate(
+                      environment.getArgument("latitude"),
+                      environment.getArgument("longitude")
                     ),
                     environment.getArgument("radius")
                   )

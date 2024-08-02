@@ -7,6 +7,7 @@ import java.util.function.Function;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.transit.model.basic.TransitMode;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.site.RegularStop;
@@ -29,16 +30,16 @@ public class DirectGraphFinder implements GraphFinder {
    * independent of streets. If the origin vertex is a StopVertex, the result will include it.
    */
   @Override
-  public List<NearbyStop> findClosestStops(Coordinate coordinate, double radiusMeters) {
+  public List<NearbyStop> findClosestStops(WgsCoordinate coordinate, double radiusMeters) {
     List<NearbyStop> stopsFound = new ArrayList<>();
-    Envelope envelope = new Envelope(coordinate);
+    Envelope envelope = new Envelope(coordinate.asJtsCoordinate());
     envelope.expandBy(
-      SphericalDistanceLibrary.metersToLonDegrees(radiusMeters, coordinate.y),
+      SphericalDistanceLibrary.metersToLonDegrees(radiusMeters, coordinate.latitude()),
       SphericalDistanceLibrary.metersToDegrees(radiusMeters)
     );
     for (RegularStop it : queryNearbyStops.apply(envelope)) {
       double distance = Math.round(
-        SphericalDistanceLibrary.distance(coordinate, it.getCoordinate().asJtsCoordinate())
+        SphericalDistanceLibrary.distance(coordinate, it.getCoordinate())
       );
       if (distance < radiusMeters) {
         NearbyStop sd = new NearbyStop(it, distance, null, null);

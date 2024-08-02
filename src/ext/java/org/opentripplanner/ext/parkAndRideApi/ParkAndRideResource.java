@@ -86,10 +86,7 @@ public class ParkAndRideResource {
     if (maxTransitDistance == null) {
       return true;
     } else {
-      var stops = graphFinder.findClosestStops(
-        lot.getCoordinate().asJtsCoordinate(),
-        maxTransitDistance
-      );
+      var stops = graphFinder.findClosestStops(lot.getCoordinate(), maxTransitDistance);
       return !stops.isEmpty();
     }
   }
