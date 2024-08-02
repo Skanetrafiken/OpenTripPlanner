@@ -157,8 +157,8 @@ public class StreetSearchRequest implements AStarRequest {
    */
   public boolean isCloseToStartOrEnd(Vertex vertex) {
     return (
-      (fromEnvelope != null && fromEnvelope.intersects(vertex.getCoordinate())) ||
-      (toEnvelope != null && toEnvelope.intersects(vertex.getCoordinate()))
+      (fromEnvelope != null && fromEnvelope.intersects(vertex.getJtsCoordinate())) ||
+      (toEnvelope != null && toEnvelope.intersects(vertex.getJtsCoordinate()))
     );
   }
 

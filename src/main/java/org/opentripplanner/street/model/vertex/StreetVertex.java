@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.framework.i18n.LocalizedString;
 import org.opentripplanner.street.model.edge.Edge;
@@ -28,6 +29,10 @@ public abstract class StreetVertex extends Vertex {
 
   StreetVertex(double x, double y) {
     super(x, y);
+  }
+
+  StreetVertex(WgsCoordinate coordinate) {
+    super(coordinate);
   }
 
   /**

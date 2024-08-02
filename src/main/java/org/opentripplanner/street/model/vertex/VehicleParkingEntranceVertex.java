@@ -21,7 +21,7 @@ public class VehicleParkingEntranceVertex extends Vertex {
   private final VehicleParkingEntrance parkingEntrance;
 
   public VehicleParkingEntranceVertex(VehicleParkingEntrance parkingEntrance) {
-    super(parkingEntrance.getCoordinate().longitude(), parkingEntrance.getCoordinate().latitude());
+    super(parkingEntrance.getCoordinate());
     this.parkingEntrance = parkingEntrance;
   }
 

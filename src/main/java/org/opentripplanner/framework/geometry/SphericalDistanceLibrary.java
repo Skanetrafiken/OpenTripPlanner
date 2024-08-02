@@ -30,6 +30,10 @@ public abstract class SphericalDistanceLibrary {
     return distance(from.y, from.x, to.y, to.x);
   }
 
+  public static double distance(WgsCoordinate from, WgsCoordinate to) {
+    return distance(from.latitude(), from.longitude(), to.latitude(), to.longitude());
+  }
+
   /**
    * @see SphericalDistanceLibrary#fastDistance(double, double, double, double)
    */

@@ -30,6 +30,7 @@ public final class WgsCoordinate implements Serializable {
     DoubleUtils.requireInRange(longitude, LON_MIN, LON_MAX, "longitude");
 
     // Normalize coordinates to precision around ~ 1 centimeters (7 decimals)
+    // The main reason for this is to avoid rounding issues on different hardware in the snapshot tests
     this.latitude = DoubleUtils.roundTo7Decimals(latitude);
     this.longitude = DoubleUtils.roundTo7Decimals(longitude);
   }

@@ -20,6 +20,6 @@ public record IsolatedStop(Vertex vertex) implements DataImportIssue {
 
   @Override
   public Geometry getGeometry() {
-    return GeometryUtils.getGeometryFactory().createPoint(vertex.getCoordinate());
+    return GeometryUtils.getGeometryFactory().createPoint(vertex.getJtsCoordinate());
   }
 }

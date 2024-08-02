@@ -63,7 +63,7 @@ public class CalculateWorldEnvelopeModule implements GraphBuilderModule {
     var e = WorldEnvelope.of();
 
     for (Vertex v : vertices) {
-      var c = v.getCoordinate();
+      var c = v.getJtsCoordinate();
       e.expandToIncludeStreetEntities(c.y, c.x);
       progressTracker.step(msg -> LOG.info(msg));
     }

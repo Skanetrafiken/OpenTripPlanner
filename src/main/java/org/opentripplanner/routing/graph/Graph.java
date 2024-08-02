@@ -334,7 +334,7 @@ public class Graph implements Serializable {
    * Calculates convexHull of all the vertices during build time
    */
   public void calculateConvexHull() {
-    convexHull = GeometryUtils.makeConvexHull(getVertices(), Vertex::getCoordinate);
+    convexHull = GeometryUtils.makeConvexHull(getVertices(), Vertex::getJtsCoordinate);
   }
 
   /**

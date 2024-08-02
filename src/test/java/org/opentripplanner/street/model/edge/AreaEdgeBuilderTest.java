@@ -3,7 +3,6 @@ package org.opentripplanner.street.model.edge;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.i18n.I18NString;
@@ -20,8 +19,7 @@ class AreaEdgeBuilderTest {
 
   private static final I18NString NAME = I18NString.of("area-edge-name");
   private static final LineString GEOMETRY = GeometryUtils
-    .getGeometryFactory()
-    .createLineString(new Coordinate[] { FROM_VERTEX.getCoordinate(), TO_VERTEX.getCoordinate() });
+    .makeLineString(FROM_VERTEX.getCoordinate(), TO_VERTEX.getCoordinate());
 
   private static final AreaEdgeList AREA = new AreaEdgeList(null, null);
 

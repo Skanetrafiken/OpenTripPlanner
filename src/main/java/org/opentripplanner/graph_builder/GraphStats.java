@@ -177,7 +177,7 @@ public class GraphStats {
             LinearLocation ll = new LinearLocation(seg, frac);
             c = lil.extractPoint(ll);
           } else {
-            c = v.getCoordinate();
+            c = v.getJtsCoordinate();
           }
           // perturb
           double distance = random.nextDouble() * radius;

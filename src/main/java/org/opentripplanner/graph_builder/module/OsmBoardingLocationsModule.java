@@ -89,7 +89,7 @@ public class OsmBoardingLocationsModule implements GraphBuilderModule {
       // only connect transit stops that are not part of a pathway network
       if (!ts.hasPathways()) {
         if (!connectVertexToStop(ts, streetIndex)) {
-          LOG.debug("Could not connect {} at {}", ts.getStop().getCode(), ts.getCoordinate());
+          LOG.debug("Could not connect {} at {}", ts.getStop().getCode(), ts.getJtsCoordinate());
         } else {
           successes++;
         }
@@ -101,9 +101,9 @@ public class OsmBoardingLocationsModule implements GraphBuilderModule {
   private boolean connectVertexToStop(TransitStopVertex ts, StreetIndex index) {
     var stopCode = ts.getStop().getCode();
     var stopId = ts.getStop().getId().getId();
-    Envelope envelope = new Envelope(ts.getCoordinate());
+    Envelope envelope = new Envelope(ts.getJtsCoordinate());
 
-    double xscale = Math.cos(ts.getCoordinate().y * Math.PI / 180);
+    double xscale = Math.cos(ts.getJtsCoordinate().y * Math.PI / 180);
     envelope.expandBy(searchRadiusDegrees / xscale, searchRadiusDegrees);
 
     // if the boarding location is an OSM node it's generated in the OSM processing step but we need
@@ -183,7 +183,9 @@ public class OsmBoardingLocationsModule implements GraphBuilderModule {
   }
 
   private StreetEdge linkBoardingLocationToStreetNetwork(StreetVertex from, StreetVertex to) {
-    var line = GeometryUtils.makeLineString(List.of(from.getCoordinate(), to.getCoordinate()));
+    var line = GeometryUtils.makeLineString(
+      List.of(from.getJtsCoordinate(), to.getJtsCoordinate())
+    );
     return new StreetEdgeBuilder<>()
       .withFromVertex(from)
       .withToVertex(to)

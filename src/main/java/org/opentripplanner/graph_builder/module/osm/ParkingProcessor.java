@@ -464,7 +464,7 @@ class ParkingProcessor {
             )
           )
           .name(entranceName)
-          .coordinate(new WgsCoordinate(access.vertex().getCoordinate()))
+          .coordinate(new WgsCoordinate(access.vertex().getJtsCoordinate()))
           .vertex(access.vertex())
           .walkAccessible(access.vertex().isConnectedToWalkingEdge())
           .carAccessible(access.vertex().isConnectedToDriveableEdge())

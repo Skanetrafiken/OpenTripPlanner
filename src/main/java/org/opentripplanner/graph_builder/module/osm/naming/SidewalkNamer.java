@@ -131,8 +131,8 @@ public class SidewalkNamer implements EdgeNamer {
   private Coordinate computeEnvelopeCenter() {
     var envelope = new Envelope();
     unnamedSidewalks.forEach(e -> {
-      envelope.expandToInclude(e.edge.getFromVertex().getCoordinate());
-      envelope.expandToInclude(e.edge.getToVertex().getCoordinate());
+      envelope.expandToInclude(e.edge.getFromVertex().getJtsCoordinate());
+      envelope.expandToInclude(e.edge.getToVertex().getJtsCoordinate());
     });
     return envelope.centre();
   }

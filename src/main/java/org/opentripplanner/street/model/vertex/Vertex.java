@@ -29,6 +29,7 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   public static final I18NString NO_NAME = I18NString.of("(no name provided)");
   private static final Logger LOG = LoggerFactory.getLogger(Vertex.class);
 
+  // TODO: replace these with a WgsCoordinate
   private final double x;
   private final double y;
 
@@ -44,15 +45,20 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
     this.y = y;
   }
 
+  protected Vertex(WgsCoordinate coord) {
+    this.x = coord.longitude();
+    this.y = coord.latitude();
+  }
+
   /* PUBLIC METHODS */
 
   @Override
   public String toString() {
     var sb = new StringBuilder();
     sb.append("{").append(this.getLabel());
-    if (this.getCoordinate() != null) {
-      sb.append(" lat,lng=").append(this.getCoordinate().y);
-      sb.append(",").append(this.getCoordinate().x);
+    if (this.getJtsCoordinate() != null) {
+      sb.append(" lat,lng=").append(this.getJtsCoordinate().y);
+      sb.append(",").append(this.getJtsCoordinate().x);
     }
     if (!rentalRestrictions.toList().isEmpty()) {
       sb.append(", traversalExtension=").append(rentalRestrictions);
@@ -115,16 +121,6 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   }
 
   /** Get the longitude of the vertex */
-  public final double getX() {
-    return getLon();
-  }
-
-  /** Get the latitude of the vertex */
-  public final double getY() {
-    return getLat();
-  }
-
-  /** Get the longitude of the vertex */
   public final double getLon() {
     return x;
   }
@@ -163,8 +159,13 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
     return getLabel().toString();
   }
 
-  public Coordinate getCoordinate() {
-    return new Coordinate(getX(), getY());
+  public Coordinate getJtsCoordinate() {
+    return new Coordinate(x, y);
+  }
+
+  public WgsCoordinate getCoordinate() {
+    // TODO: this might throw
+    return new WgsCoordinate(y, x);
   }
 
   public List<StreetEdge> getIncomingStreetEdges() {
@@ -212,8 +213,7 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
    * @see org.opentripplanner.framework.geometry.WgsCoordinate#sameLocation(WgsCoordinate)
    **/
   public boolean sameLocation(Vertex other) {
-    return new WgsCoordinate(getLat(), getLon())
-      .sameLocation(new WgsCoordinate(other.getLat(), other.getLon()));
+    return getCoordinate().sameLocation(other.getCoordinate());
   }
 
   public boolean rentalTraversalBanned(State currentState) {

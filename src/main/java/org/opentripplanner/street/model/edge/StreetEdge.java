@@ -628,7 +628,7 @@ public class StreetEdge
    * edge will be removed from the graph.
    */
   public SplitStreetEdge splitDestructively(SplitterVertex v) {
-    SplitLineString geoms = GeometryUtils.splitGeometryAtPoint(getGeometry(), v.getCoordinate());
+    SplitLineString geoms = GeometryUtils.splitGeometryAtPoint(getGeometry(), v.getJtsCoordinate());
 
     StreetEdgeBuilder<?> seb1 = new StreetEdgeBuilder<>()
       .withFromVertex((StreetVertex) fromv)
@@ -709,7 +709,7 @@ public class StreetEdge
     DisposableEdgeCollection tempEdges,
     LinkingDirection direction
   ) {
-    SplitLineString geoms = GeometryUtils.splitGeometryAtPoint(getGeometry(), v.getCoordinate());
+    SplitLineString geoms = GeometryUtils.splitGeometryAtPoint(getGeometry(), v.getJtsCoordinate());
 
     StreetEdge e1 = null;
     StreetEdge e2 = null;
@@ -754,20 +754,20 @@ public class StreetEdge
     LineString parent = getGeometry();
     LineString head = GeometryUtils.getInteriorSegment(
       parent,
-      getFromVertex().getCoordinate(),
-      from.getCoordinate()
+      getFromVertex().getJtsCoordinate(),
+      from.getJtsCoordinate()
     );
     LineString tail = GeometryUtils.getInteriorSegment(
       parent,
-      to.getCoordinate(),
-      getToVertex().getCoordinate()
+      to.getJtsCoordinate(),
+      getToVertex().getJtsCoordinate()
     );
 
     if (parent.getLength() > head.getLength() + tail.getLength()) {
       LineString partial = GeometryUtils.getInteriorSegment(
         parent,
-        from.getCoordinate(),
-        to.getCoordinate()
+        from.getJtsCoordinate(),
+        to.getJtsCoordinate()
       );
 
       double startRatio = head.getLength() / parent.getLength();

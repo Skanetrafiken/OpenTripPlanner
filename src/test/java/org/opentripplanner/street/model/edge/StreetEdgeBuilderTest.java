@@ -23,7 +23,9 @@ class StreetEdgeBuilderTest {
   private static final double LENGTH = 10.5;
   private static final LineString GEOMETRY = GeometryUtils
     .getGeometryFactory()
-    .createLineString(new Coordinate[] { FROM_VERTEX.getCoordinate(), TO_VERTEX.getCoordinate() });
+    .createLineString(
+      new Coordinate[] { FROM_VERTEX.getJtsCoordinate(), TO_VERTEX.getJtsCoordinate() }
+    );
 
   private static final boolean WHEELCHAIR_ACCESSIBLE = false;
   private static final boolean BACK = false;

@@ -55,8 +55,8 @@ public class TemporaryConcreteEdge extends Edge implements TemporaryEdge {
   @Override
   public double getDistanceMeters() {
     return SphericalDistanceLibrary.distance(
-      getFromVertex().getCoordinate(),
-      getToVertex().getCoordinate()
+      getFromVertex().getJtsCoordinate(),
+      getToVertex().getJtsCoordinate()
     );
   }
 }

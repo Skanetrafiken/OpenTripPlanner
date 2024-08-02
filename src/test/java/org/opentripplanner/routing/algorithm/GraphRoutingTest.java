@@ -117,9 +117,7 @@ public abstract class GraphRoutingTest {
       return new StreetEdgeBuilder<>()
         .withFromVertex(from)
         .withToVertex(to)
-        .withGeometry(
-          GeometryUtils.makeLineString(from.getLat(), from.getLon(), to.getLat(), to.getLon())
-        )
+        .withGeometry(GeometryUtils.makeLineString(from.getJtsCoordinate(), to.getJtsCoordinate()))
         .withName(String.format("%s%s street", from.getLabel(), to.getLabel()))
         .withMeterLength(length)
         .withPermission(permissions)
@@ -147,7 +145,7 @@ public abstract class GraphRoutingTest {
           .withFromVertex(from)
           .withToVertex(to)
           .withGeometry(
-            GeometryUtils.makeLineString(from.getLat(), from.getLon(), to.getLat(), to.getLon())
+            GeometryUtils.makeLineString(from.getJtsCoordinate(), to.getJtsCoordinate())
           )
           .withName(String.format("%s%s street", from.getDefaultName(), to.getDefaultName()))
           .withMeterLength(length)
@@ -157,9 +155,7 @@ public abstract class GraphRoutingTest {
         new StreetEdgeBuilder<>()
           .withFromVertex(to)
           .withToVertex(from)
-          .withGeometry(
-            GeometryUtils.makeLineString(to.getLat(), to.getLon(), from.getLat(), from.getLon())
-          )
+          .withGeometry(GeometryUtils.makeLineString(to.getJtsCoordinate(), to.getJtsCoordinate()))
           .withName(String.format("%s%s street", from.getDefaultName(), to.getDefaultName()))
           .withMeterLength(length)
           .withPermission(reversePermissions)
@@ -429,7 +425,7 @@ public abstract class GraphRoutingTest {
         builder
           .entranceId(TransitModelForTest.id(id))
           .name(new NonLocalizedString(id))
-          .coordinate(new WgsCoordinate(streetVertex.getCoordinate()))
+          .coordinate(new WgsCoordinate(streetVertex.getJtsCoordinate()))
           .vertex(streetVertex)
           .carAccessible(carAccessible)
           .walkAccessible(walkAccessible);

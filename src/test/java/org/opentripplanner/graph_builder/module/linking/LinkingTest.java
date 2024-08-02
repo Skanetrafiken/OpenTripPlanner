@@ -51,9 +51,9 @@ public class LinkingTest {
       StreetVertex v0 = StreetModelForTest.intersectionVertex("zero", x, y);
       StreetVertex v1 = StreetModelForTest.intersectionVertex("one", x + delta, y + delta);
       LineString geom = gf.createLineString(
-        new Coordinate[] { v0.getCoordinate(), v1.getCoordinate() }
+        new Coordinate[] { v0.getJtsCoordinate(), v1.getJtsCoordinate() }
       );
-      double dist = SphericalDistanceLibrary.distance(v0.getCoordinate(), v1.getCoordinate());
+      double dist = SphericalDistanceLibrary.distance(v0.getJtsCoordinate(), v1.getJtsCoordinate());
       StreetEdge s0 = new StreetEdgeBuilder<>()
         .withFromVertex(v0)
         .withToVertex(v1)
@@ -141,8 +141,7 @@ public class LinkingTest {
       for (int i = 0; i < stls1.size(); i++) {
         Vertex v1 = stls1.get(i).getToVertex();
         Vertex v2 = stls2.get(i).getToVertex();
-        assertEquals(v1.getLat(), v2.getLat(), 1e-10);
-        assertEquals(v1.getLon(), v2.getLon(), 1e-10);
+        assertEquals(v1.getCoordinate(), v2.getCoordinate());
       }
     }
   }

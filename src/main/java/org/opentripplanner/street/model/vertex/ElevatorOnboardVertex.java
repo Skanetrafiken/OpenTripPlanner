@@ -11,7 +11,7 @@ public class ElevatorOnboardVertex extends StreetVertex {
   private final String label;
 
   public ElevatorOnboardVertex(Vertex sourceVertex, String label, @Nullable String level) {
-    super(sourceVertex.getX(), sourceVertex.getY());
+    super(sourceVertex.getCoordinate());
     this.level = level;
     this.label = label;
   }

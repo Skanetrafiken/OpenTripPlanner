@@ -47,7 +47,7 @@ public class DegreeGridNEDTileSource implements NEDTileSource {
     HashSet<IntCoordinate> tiles = new HashSet<>();
 
     for (Vertex v : graph.getVertices()) {
-      Coordinate coord = v.getCoordinate();
+      Coordinate coord = v.getJtsCoordinate();
       tiles.add(new IntCoordinate((int) coord.x, (int) coord.y));
     }
 

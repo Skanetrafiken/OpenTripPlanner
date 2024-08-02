@@ -14,7 +14,7 @@ class FlexLocationAdder {
 
   static void addFlexLocations(StreetEdge edge, IntersectionVertex v0, StopModel stopModel) {
     if (edge.getPermission().allows(StreetTraversalPermission.PEDESTRIAN_AND_CAR)) {
-      Point p = GeometryUtils.getGeometryFactory().createPoint(v0.getCoordinate());
+      Point p = GeometryUtils.getGeometryFactory().createPoint(v0.getJtsCoordinate());
       Envelope env = p.getEnvelopeInternal();
       for (AreaStop areaStop : stopModel.findAreaStops(env)) {
         if (!areaStop.getGeometry().disjoint(p)) {

@@ -23,6 +23,6 @@ public record ParkAndRideEntranceRemoved(VehicleParkingEntrance vehicleParkingEn
   public Geometry getGeometry() {
     return GeometryUtils
       .getGeometryFactory()
-      .createPoint(vehicleParkingEntrance.getVertex().getCoordinate());
+      .createPoint(vehicleParkingEntrance.getVertex().getJtsCoordinate());
   }
 }

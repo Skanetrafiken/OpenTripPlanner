@@ -320,7 +320,7 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
 
   public void zoomToVertex(Vertex v) {
     Envelope e = new Envelope();
-    e.expandToInclude(v.getCoordinate());
+    e.expandToInclude(v.getJtsCoordinate());
     e.expandBy(0.002);
     modelBounds = e;
     drawLevel = DRAW_ALL;
@@ -348,14 +348,14 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
 
     // int xminx, xmax, ymin, ymax;
     for (Vertex v : graph.getVertices()) {
-      Coordinate c = v.getCoordinate();
+      Coordinate c = v.getJtsCoordinate();
       env = new Envelope(c);
       vertexIndex.insert(env, v);
       for (Edge e : v.getOutgoing()) {
         var edgeGeometry = e.getGeometry();
         if (edgeGeometry == null) {
           edgeIndex.insert(
-            new Envelope(e.getFromVertex().getCoordinate(), e.getToVertex().getCoordinate()),
+            new Envelope(e.getFromVertex().getJtsCoordinate(), e.getToVertex().getJtsCoordinate()),
             e
           );
         } else {
@@ -396,7 +396,7 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
   }
 
   public void highlightVertex(Vertex v) {
-    highlightCoordinate(v.getCoordinate());
+    highlightCoordinate(v.getJtsCoordinate());
   }
 
   public void enqueueHighlightedEdge(Edge de) {
@@ -441,14 +441,14 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
     Edge e = anno.getReferencedEdge();
     if (e != null) {
       this.enqueueHighlightedEdge(e);
-      env.expandToInclude(e.getFromVertex().getCoordinate());
-      env.expandToInclude(e.getToVertex().getCoordinate());
+      env.expandToInclude(e.getFromVertex().getJtsCoordinate());
+      env.expandToInclude(e.getToVertex().getJtsCoordinate());
     }
 
     ArrayList<Vertex> vertices = new ArrayList<>();
     Vertex v = anno.getReferencedVertex();
     if (v != null) {
-      env.expandToInclude(v.getCoordinate());
+      env.expandToInclude(v.getJtsCoordinate());
       vertices.add(v);
     }
 
@@ -545,8 +545,8 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
     }
 
     Coordinate[] coordinates = new Coordinate[] {
-      edge.getFromVertex().getCoordinate(),
-      edge.getToVertex().getCoordinate(),
+      edge.getFromVertex().getJtsCoordinate(),
+      edge.getToVertex().getJtsCoordinate(),
     };
     return GeometryUtils.getGeometryFactory().createLineString(coordinates);
   }
@@ -658,8 +658,8 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
     drawVertex(v, 8);
     str += " " + shortDateFormat.format(Instant.ofEpochSecond(s.getTimeSeconds()));
     str += " [" + (int) s.getWeight() + "]";
-    double x = toScreenX(v.getX()) + 10;
-    double y = toScreenY(v.getY());
+    double x = toScreenX(v.getLon()) + 10;
+    double y = toScreenY(v.getLat());
     double dy = y - lastLabelY;
     if (dy == 0) {
       y = lastLabelY + 20;
@@ -676,7 +676,7 @@ public class ShowGraph extends PApplet implements MouseWheelListener {
   }
 
   private void drawVertex(Vertex v, double r) {
-    drawCoordinate(v.getCoordinate(), r);
+    drawCoordinate(v.getJtsCoordinate(), r);
   }
 
   private boolean drawSPT() {

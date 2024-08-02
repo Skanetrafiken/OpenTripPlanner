@@ -283,7 +283,7 @@ public class LinkStopToPlatformTest {
     String nameString
   ) {
     LineString line = geometryFactory.createLineString(
-      new Coordinate[] { v1.getCoordinate(), v2.getCoordinate() }
+      new Coordinate[] { v1.getJtsCoordinate(), v2.getJtsCoordinate() }
     );
     I18NString name = new LocalizedString(nameString);
     return new AreaEdgeBuilder()

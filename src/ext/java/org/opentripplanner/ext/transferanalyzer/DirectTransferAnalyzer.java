@@ -80,7 +80,7 @@ public class DirectTransferAnalyzer implements GraphBuilderModule {
       }
 
       /* Find nearby stops by euclidean distance */
-      Coordinate c0 = originStopVertex.getCoordinate();
+      Coordinate c0 = originStopVertex.getJtsCoordinate();
       Map<RegularStop, NearbyStop> stopsEuclidean = nearbyStopFinderEuclidian
         .findClosestStops(c0, radiusMeters)
         .stream()

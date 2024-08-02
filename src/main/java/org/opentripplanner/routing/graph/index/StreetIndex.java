@@ -108,7 +108,7 @@ public class StreetIndex {
 
       /* forward edges and vertices */
       Vertex edgeLocation;
-      if (SphericalDistanceLibrary.distance(nearestPoint, fromv.getCoordinate()) < 1) {
+      if (SphericalDistanceLibrary.distance(nearestPoint, fromv.getJtsCoordinate()) < 1) {
         // no need to link to area edges caught on-end
         edgeLocation = fromv;
 
@@ -117,7 +117,7 @@ public class StreetIndex {
         } else {
           tempEdges.addEdge(TemporaryFreeEdge.createTemporaryFreeEdge(location, edgeLocation));
         }
-      } else if (SphericalDistanceLibrary.distance(nearestPoint, tov.getCoordinate()) < 1) {
+      } else if (SphericalDistanceLibrary.distance(nearestPoint, tov.getJtsCoordinate()) < 1) {
         // no need to link to area edges caught on-end
         edgeLocation = tov;
 
@@ -318,8 +318,8 @@ public class StreetIndex {
     LineString geometry = e.getGeometry();
     if (geometry == null) {
       Coordinate[] coordinates = new Coordinate[] {
-        e.getFromVertex().getCoordinate(),
-        e.getToVertex().getCoordinate(),
+        e.getFromVertex().getJtsCoordinate(),
+        e.getToVertex().getJtsCoordinate(),
       };
       geometry = GeometryUtils.getGeometryFactory().createLineString(coordinates);
     }
@@ -413,7 +413,7 @@ public class StreetIndex {
         LineString geometry = edgeGeometryOrStraightLine(e);
         edgeSpatialIndex.insert(geometry, e, Scope.PERMANENT);
       }
-      Envelope env = new Envelope(gv.getCoordinate());
+      Envelope env = new Envelope(gv.getJtsCoordinate());
       verticesTree.insert(env, gv);
 
       //noinspection Convert2MethodRef

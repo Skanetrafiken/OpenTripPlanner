@@ -161,7 +161,10 @@ public abstract class StreetTransitEntityLink<T extends Vertex>
   }
 
   public LineString getGeometry() {
-    Coordinate[] coordinates = new Coordinate[] { fromv.getCoordinate(), tov.getCoordinate() };
+    Coordinate[] coordinates = new Coordinate[] {
+      fromv.getJtsCoordinate(),
+      tov.getJtsCoordinate(),
+    };
     return GeometryUtils.getGeometryFactory().createLineString(coordinates);
   }
 

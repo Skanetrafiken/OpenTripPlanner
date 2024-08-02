@@ -35,7 +35,9 @@ public class GeofencingZonesLayerBuilder extends LayerBuilder<Vertex> {
       .stream()
       .filter(se -> !(se.rentalRestrictions() instanceof NoRestriction))
       .map(vertex -> {
-        Geometry geometry = GeometryUtils.getGeometryFactory().createPoint(vertex.getCoordinate());
+        Geometry geometry = GeometryUtils
+          .getGeometryFactory()
+          .createPoint(vertex.getJtsCoordinate());
         geometry.setUserData(vertex);
         return geometry;
       })

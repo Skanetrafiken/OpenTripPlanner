@@ -28,10 +28,13 @@ public class DirectFlexPathCalculator implements FlexPathCalculator {
     int boardStopPosition,
     int alightStopPosition
   ) {
-    double distance = SphericalDistanceLibrary.distance(fromv.getCoordinate(), tov.getCoordinate());
+    double distance = SphericalDistanceLibrary.distance(
+      fromv.getJtsCoordinate(),
+      tov.getJtsCoordinate()
+    );
     LineString geometry = GeometryUtils
       .getGeometryFactory()
-      .createLineString(new Coordinate[] { fromv.getCoordinate(), tov.getCoordinate() });
+      .createLineString(new Coordinate[] { fromv.getJtsCoordinate(), tov.getJtsCoordinate() });
 
     return new FlexPath(
       (int) distance,

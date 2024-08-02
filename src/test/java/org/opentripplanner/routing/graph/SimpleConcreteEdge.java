@@ -1,7 +1,6 @@
 package org.opentripplanner.routing.graph;
 
 import javax.annotation.Nonnull;
-import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.street.model.edge.Edge;
@@ -43,8 +42,8 @@ public class SimpleConcreteEdge extends Edge {
   @Override
   public double getDistanceMeters() {
     return SphericalDistanceLibrary.distance(
-      getFromVertex().getCoordinate(),
-      getToVertex().getCoordinate()
+      getFromVertex().getJtsCoordinate(),
+      getToVertex().getJtsCoordinate()
     );
   }
 }

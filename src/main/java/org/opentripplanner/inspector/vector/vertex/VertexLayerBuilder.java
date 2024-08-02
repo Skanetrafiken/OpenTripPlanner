@@ -28,7 +28,9 @@ public class VertexLayerBuilder extends LayerBuilder<Vertex> {
       .getVerticesForEnvelope(query)
       .stream()
       .map(vertex -> {
-        Geometry geometry = GeometryUtils.getGeometryFactory().createPoint(vertex.getCoordinate());
+        Geometry geometry = GeometryUtils
+          .getGeometryFactory()
+          .createPoint(vertex.getJtsCoordinate());
         geometry.setUserData(vertex);
         return geometry;
       })

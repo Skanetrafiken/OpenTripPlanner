@@ -50,13 +50,13 @@ public class StreetLocation extends StreetVertex {
 
   @Override
   public int hashCode() {
-    return getCoordinate().hashCode();
+    return getJtsCoordinate().hashCode();
   }
 
   public boolean equals(Object o) {
     if (o instanceof StreetLocation) {
       StreetLocation other = (StreetLocation) o;
-      return other.getCoordinate().equals(getCoordinate());
+      return other.getJtsCoordinate().equals(getJtsCoordinate());
     }
     return false;
   }

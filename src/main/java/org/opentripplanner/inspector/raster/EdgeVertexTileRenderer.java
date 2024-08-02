@@ -131,8 +131,8 @@ public class EdgeVertexTileRenderer implements TileRenderer {
       boolean hasGeom = true;
       if (edgeGeom == null) {
         Coordinate[] coordinates = new Coordinate[] {
-          edge.getFromVertex().getCoordinate(),
-          edge.getToVertex().getCoordinate(),
+          edge.getFromVertex().getJtsCoordinate(),
+          edge.getToVertex().getJtsCoordinate(),
         };
         edgeGeom = GeometryUtils.getGeometryFactory().createLineString(coordinates);
         hasGeom = false;
@@ -203,7 +203,7 @@ public class EdgeVertexTileRenderer implements TileRenderer {
 
     // Render all vertices
     for (Vertex vertex : vertices) {
-      Point point = GeometryUtils.getGeometryFactory().createPoint(vertex.getCoordinate());
+      Point point = GeometryUtils.getGeometryFactory().createPoint(vertex.getJtsCoordinate());
       var vvAttrsOp = evRenderer.renderVertex(vertex);
 
       if (vvAttrsOp.isEmpty()) {

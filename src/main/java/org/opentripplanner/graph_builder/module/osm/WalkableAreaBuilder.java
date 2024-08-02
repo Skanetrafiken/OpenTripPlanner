@@ -248,7 +248,7 @@ class WalkableAreaBuilder {
             List<OsmVertex> endpointsWithin = platformLinkingEndpoints
               .stream()
               .filter(t ->
-                outerRing.jtsPolygon.contains(geometryFactory.createPoint(t.getCoordinate()))
+                outerRing.jtsPolygon.contains(geometryFactory.createPoint(t.getJtsCoordinate()))
               )
               .toList();
             platformLinkingVertices.addAll(endpointsWithin);
@@ -358,8 +358,8 @@ class WalkableAreaBuilder {
           IntersectionVertex endEndpoint = vertexBuilder.getVertexForOsmNode(nodeJ, areaEntity);
 
           Coordinate[] coordinates = new Coordinate[] {
-            startEndpoint.getCoordinate(),
-            endEndpoint.getCoordinate(),
+            startEndpoint.getJtsCoordinate(),
+            endEndpoint.getJtsCoordinate(),
           };
           LineString line = geometryFactory.createLineString(coordinates);
           if (polygon.contains(line)) {
@@ -478,8 +478,8 @@ class WalkableAreaBuilder {
     List<Area> intersects = new ArrayList<>();
 
     Coordinate[] coordinates = new Coordinate[] {
-      startEndpoint.getCoordinate(),
-      endEndpoint.getCoordinate(),
+      startEndpoint.getJtsCoordinate(),
+      endEndpoint.getJtsCoordinate(),
     };
     GeometryFactory geometryFactory = GeometryUtils.getGeometryFactory();
     LineString line = geometryFactory.createLineString(coordinates);
@@ -509,8 +509,8 @@ class WalkableAreaBuilder {
         .getCarSpeedForWay(areaEntity, false);
 
       double length = SphericalDistanceLibrary.distance(
-        startEndpoint.getCoordinate(),
-        endEndpoint.getCoordinate()
+        startEndpoint.getJtsCoordinate(),
+        endEndpoint.getJtsCoordinate()
       );
 
       String label =
@@ -578,7 +578,7 @@ class WalkableAreaBuilder {
       return Set.of(street, backStreet);
     } else {
       // take the part that intersects with the start vertex
-      Coordinate startCoordinate = startEndpoint.getCoordinate();
+      Coordinate startCoordinate = startEndpoint.getJtsCoordinate();
       Point startPoint = geometryFactory.createPoint(startCoordinate);
       Set<AreaEdge> edges = new HashSet<>();
       for (Area area : intersects) {
@@ -682,7 +682,7 @@ class WalkableAreaBuilder {
       boolean isEndpoint = true;
       for (Edge se : osmVertex.getOutgoing()) {
         if (
-          !se.getToVertex().getCoordinate().equals(start.getCoordinate()) &&
+          !se.getToVertex().getJtsCoordinate().equals(start.getJtsCoordinate()) &&
           !(se instanceof AreaEdge)
         ) {
           isEndpoint = false;

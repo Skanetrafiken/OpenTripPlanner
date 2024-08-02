@@ -77,8 +77,8 @@ public class DirectStreetRouter {
     // TODO This currently only calculates the distances between the first fromVertex
     //      and the first toVertex
     double distance = SphericalDistanceLibrary.distance(
-      vertexContainer.getFromVertices().iterator().next().getCoordinate(),
-      vertexContainer.getToVertices().iterator().next().getCoordinate()
+      vertexContainer.getFromVertices().iterator().next().getJtsCoordinate(),
+      vertexContainer.getToVertices().iterator().next().getJtsCoordinate()
     );
     return distance < calculateDistanceMaxLimit(request, maxCarSpeed);
   }

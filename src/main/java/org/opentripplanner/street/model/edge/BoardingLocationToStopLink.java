@@ -40,6 +40,6 @@ public class BoardingLocationToStopLink extends StreetTransitEntityLink<TransitS
 
   @Override
   public LineString getGeometry() {
-    return GeometryUtils.makeLineString(List.of(fromv.getCoordinate(), tov.getCoordinate()));
+    return GeometryUtils.makeLineString(List.of(fromv.getJtsCoordinate(), tov.getJtsCoordinate()));
   }
 }

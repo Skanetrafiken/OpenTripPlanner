@@ -175,8 +175,8 @@ public class PathwayEdge extends Edge implements BikeWalkableEdge, WheelchairTra
 
   public LineString getGeometry() {
     Coordinate[] coordinates = new Coordinate[] {
-      getFromVertex().getCoordinate(),
-      getToVertex().getCoordinate(),
+      getFromVertex().getJtsCoordinate(),
+      getToVertex().getJtsCoordinate(),
     };
     return GeometryUtils.getGeometryFactory().createLineString(coordinates);
   }

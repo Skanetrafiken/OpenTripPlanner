@@ -144,9 +144,9 @@ public class TemporaryVerticesContainerTest {
 
   private void createStreetEdge(StreetVertex v0, StreetVertex v1, String name) {
     LineString geom = gf.createLineString(
-      new Coordinate[] { v0.getCoordinate(), v1.getCoordinate() }
+      new Coordinate[] { v0.getJtsCoordinate(), v1.getJtsCoordinate() }
     );
-    double dist = SphericalDistanceLibrary.distance(v0.getCoordinate(), v1.getCoordinate());
+    double dist = SphericalDistanceLibrary.distance(v0.getJtsCoordinate(), v1.getJtsCoordinate());
     new StreetEdgeBuilder<>()
       .withFromVertex(v0)
       .withToVertex(v1)

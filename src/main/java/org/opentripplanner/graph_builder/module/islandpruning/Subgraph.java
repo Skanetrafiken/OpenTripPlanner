@@ -73,12 +73,12 @@ class Subgraph {
   double vertexDistanceFromSubgraph(Vertex v, double searchRadius) {
     double d1 = streetVertexSet
       .stream()
-      .map(x -> SphericalDistanceLibrary.distance(x.getCoordinate(), v.getCoordinate()))
+      .map(x -> SphericalDistanceLibrary.distance(x.getJtsCoordinate(), v.getJtsCoordinate()))
       .min(Double::compareTo)
       .orElse(searchRadius);
     double d2 = stopsVertexSet
       .stream()
-      .map(x -> SphericalDistanceLibrary.distance(x.getCoordinate(), v.getCoordinate()))
+      .map(x -> SphericalDistanceLibrary.distance(x.getJtsCoordinate(), v.getJtsCoordinate()))
       .min(Double::compareTo)
       .orElse(searchRadius);
     return Math.min(d1, d2);
@@ -90,17 +90,17 @@ class Subgraph {
   // distances between graph edges. This is good enough for our heuristics.
   double distanceFromOtherGraph(StreetIndex index, double searchRadius) {
     Vertex v = getRepresentativeVertex();
-    double xscale = Math.cos(v.getCoordinate().y * Math.PI / 180);
+    double xscale = Math.cos(v.getJtsCoordinate().y * Math.PI / 180);
     double searchRadiusDegrees = SphericalDistanceLibrary.metersToDegrees(searchRadius);
 
     Envelope envelope = new Envelope();
 
     for (Iterator<Vertex> vIter = streetIterator(); vIter.hasNext();) {
       Vertex vx = vIter.next();
-      envelope.expandToInclude(vx.getCoordinate());
+      envelope.expandToInclude(vx.getJtsCoordinate());
     }
     for (TransitStopVertex vx : stopsVertexSet) {
-      envelope.expandToInclude(vx.getCoordinate());
+      envelope.expandToInclude(vx.getJtsCoordinate());
     }
     envelope.expandBy(searchRadiusDegrees / xscale, searchRadiusDegrees);
 
@@ -121,7 +121,7 @@ class Subgraph {
     GeometryFactory geometryFactory = GeometryUtils.getGeometryFactory();
 
     Consumer<Vertex> vertexAdder = vertex ->
-      points.add(geometryFactory.createPoint(vertex.getCoordinate()));
+      points.add(geometryFactory.createPoint(vertex.getJtsCoordinate()));
     streetIterator().forEachRemaining(vertexAdder);
     stopIterator().forEachRemaining(vertexAdder);
 

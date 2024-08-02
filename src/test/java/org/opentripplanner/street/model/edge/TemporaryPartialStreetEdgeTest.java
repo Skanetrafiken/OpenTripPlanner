@@ -275,8 +275,8 @@ public class TemporaryPartialStreetEdgeTest {
     var labelB = vB.getLabel();
     String name = String.format("%s_%s", labelA, labelB);
     Coordinate[] coords = new Coordinate[2];
-    coords[0] = vA.getCoordinate();
-    coords[1] = vB.getCoordinate();
+    coords[0] = vA.getJtsCoordinate();
+    coords[1] = vB.getJtsCoordinate();
     LineString geom = GeometryUtils.getGeometryFactory().createLineString(coords);
 
     return new StreetEdgeBuilder<>()

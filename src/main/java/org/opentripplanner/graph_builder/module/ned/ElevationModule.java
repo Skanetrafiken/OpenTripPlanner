@@ -29,6 +29,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
 import org.opentripplanner.framework.geometry.EncodedPolyline;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.lang.IntUtils;
 import org.opentripplanner.framework.logging.ProgressTracker;
 import org.opentripplanner.framework.time.DurationUtils;
@@ -345,7 +346,7 @@ public class ElevationModule implements GraphBuilderModule {
         try {
           elevations.put(
             vertex,
-            elevation - getApproximateEllipsoidToGeoidDifference(vertex.getY(), vertex.getX())
+            elevation - getApproximateEllipsoidToGeoidDifference(vertex.getLon(), vertex.getLat())
           );
         } catch (TransformException e) {
           LOG.error(
@@ -592,7 +593,7 @@ public class ElevationModule implements GraphBuilderModule {
 
     var elevation =
       (values[0] * gridCoverageFactory.elevationUnitMultiplier()) -
-      (includeEllipsoidToGeoidDifference ? getApproximateEllipsoidToGeoidDifference(y, x) : 0);
+      (includeEllipsoidToGeoidDifference ? getApproximateEllipsoidToGeoidDifference(x, y) : 0);
 
     minElevation = Math.min(minElevation, elevation);
     maxElevation = Math.max(maxElevation, elevation);
@@ -610,10 +611,10 @@ public class ElevationModule implements GraphBuilderModule {
    * almost no affect on performance to have this level of detail. See this image for an approximate
    * mapping of these difference values: https://earth-info.nga.mil/GandG/images/ww15mgh2.gif
    *
-   * @param y latitude
    * @param x longitude
+   * @param y latitude
    */
-  private double getApproximateEllipsoidToGeoidDifference(double y, double x)
+  private double getApproximateEllipsoidToGeoidDifference(double x, double y)
     throws TransformException {
     int geoidDifferenceCoordinateValueMultiplier = 100;
     int xVal = IntUtils.round(x * geoidDifferenceCoordinateValueMultiplier);

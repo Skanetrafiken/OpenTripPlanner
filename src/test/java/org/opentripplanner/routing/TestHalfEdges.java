@@ -214,8 +214,8 @@ public class TestHalfEdges {
       tempEdges
     );
 
-    assertTrue(start.getX() < end.getX());
-    assertTrue(start.getY() < end.getY());
+    assertTrue(start.getLon() < end.getLon());
+    assertTrue(start.getLat() < end.getLat());
 
     Collection<Edge> edges = end.getIncoming();
 
@@ -419,8 +419,8 @@ public class TestHalfEdges {
 
     DisposableEdgeCollection connection = SameEdgeAdjuster.adjust(start, end, graph);
 
-    assertEquals(start.getX(), end.getX(), 0.0001);
-    assertTrue(start.getY() < end.getY());
+    assertEquals(start.getCoordinate().longitude(), end.getCoordinate().longitude(), 0.0001);
+    assertTrue(start.getCoordinate().latitude() < end.getCoordinate().latitude());
 
     Collection<Edge> edges = end.getIncoming();
 
@@ -476,8 +476,8 @@ public class TestHalfEdges {
 
     DisposableEdgeCollection connection = SameEdgeAdjuster.adjust(start, end, graph);
 
-    assertEquals(start.getX(), end.getX(), 0.001);
-    assertTrue(start.getY() > end.getY());
+    assertEquals(start.getLon(), end.getLon(), 0.001);
+    assertTrue(start.getLat() > end.getLat());
 
     Collection<Edge> edges = end.getIncoming();
     assertEquals(1, edges.size());
@@ -681,13 +681,13 @@ public class TestHalfEdges {
     Edge edge = outgoing.iterator().next();
 
     Vertex midpoint = edge.getToVertex();
-    assertTrue(Math.abs(midpoint.getCoordinate().y - 40.01) < 0.00000001);
+    assertTrue(Math.abs(midpoint.getJtsCoordinate().y - 40.01) < 0.00000001);
 
     outgoing = station2.getOutgoing();
     assertEquals(2, outgoing.size());
     edge = outgoing.iterator().next();
 
     Vertex station2point = edge.getToVertex();
-    assertTrue(Math.abs(station2point.getCoordinate().x - -74.002) < 0.00000001);
+    assertTrue(Math.abs(station2point.getJtsCoordinate().x - -74.002) < 0.00000001);
   }
 }

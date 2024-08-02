@@ -232,7 +232,7 @@ public class VertexLinker {
   ) {
     final double radiusDeg = SphericalDistanceLibrary.metersToDegrees(radiusMeters);
 
-    Envelope env = new Envelope(vertex.getCoordinate());
+    Envelope env = new Envelope(vertex.getJtsCoordinate());
 
     // Perform a simple local equirectangular projection, so distances are expressed in degrees latitude.
     final double xscale = Math.cos(vertex.getLat() * Math.PI / 180);
@@ -371,7 +371,7 @@ public class VertexLinker {
       // if vertex is inside an area, no need to snap to nearest edge and split it
       if (this.addExtraEdgesToAreas && edge instanceof AreaEdge aEdge) {
         AreaEdgeList ael = aEdge.getArea();
-        if (ael.getGeometry().contains(GEOMETRY_FACTORY.createPoint(vertex.getCoordinate()))) {
+        if (ael.getGeometry().contains(GEOMETRY_FACTORY.createPoint(vertex.getJtsCoordinate()))) {
           // do not relink again to the area when many edges are equally close
           if (!linkedAreas.add(ael)) {
             return null;
@@ -542,7 +542,7 @@ public class VertexLinker {
     // for the comparison.
     Coordinate[] nearestPoints = DistanceOp.nearestPoints(
       polygon,
-      GEOMETRY_FACTORY.createPoint(newVertex.getCoordinate())
+      GEOMETRY_FACTORY.createPoint(newVertex.getJtsCoordinate())
     );
 
     int added = 0;
@@ -560,7 +560,7 @@ public class VertexLinker {
       i = (int) Math.floor(sum_i);
 
       LineString newGeometry = GEOMETRY_FACTORY.createLineString(
-        new Coordinate[] { nearestPoints[0], v.getCoordinate() }
+        new Coordinate[] { nearestPoints[0], v.getJtsCoordinate() }
       );
 
       // ensure that new edge does not leave the bounds of the original area, or
@@ -619,7 +619,7 @@ public class VertexLinker {
       return;
     }
     LineString line = GEOMETRY_FACTORY.createLineString(
-      new Coordinate[] { from.getCoordinate(), to.getCoordinate() }
+      new Coordinate[] { from.getJtsCoordinate(), to.getJtsCoordinate() }
     );
 
     NamedArea hit = null;
@@ -633,7 +633,10 @@ public class VertexLinker {
     }
     if (hit != null) {
       // If more than one area intersects, we pick one by random for the name & properties
-      double length = SphericalDistanceLibrary.distance(to.getCoordinate(), from.getCoordinate());
+      double length = SphericalDistanceLibrary.distance(
+        to.getJtsCoordinate(),
+        from.getJtsCoordinate()
+      );
 
       // apply consistent NoThru restrictions
       // if all joining edges are nothru, then the new edge should be as well

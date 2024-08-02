@@ -109,8 +109,8 @@ class GenericEdgeUpdater {
   private void updateEdge(StreetEdge streetEdge) {
     Vertex fromVertex = streetEdge.getFromVertex();
     Vertex toVertex = streetEdge.getToVertex();
-    Coordinate fromCoordinate = fromVertex.getCoordinate();
-    Coordinate toCoordinate = toVertex.getCoordinate();
+    Coordinate fromCoordinate = fromVertex.getJtsCoordinate();
+    Coordinate toCoordinate = toVertex.getJtsCoordinate();
 
     HashMap<String, float[]> edgeGenericDataValues = new HashMap<>();
     for (Map.Entry<String, Array> variableValues : genericVariablesData.entrySet()) {

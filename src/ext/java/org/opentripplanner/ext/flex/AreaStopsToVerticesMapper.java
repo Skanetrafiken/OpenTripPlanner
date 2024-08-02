@@ -90,7 +90,7 @@ public class AreaStopsToVerticesMapper implements GraphBuilderModule {
       .filter(StreetVertex::isEligibleForCarPickupDropoff)
       .filter(vertx -> {
         // The street index overselects, so need to check for exact geometry inclusion
-        Point p = GeometryUtils.getGeometryFactory().createPoint(vertx.getCoordinate());
+        Point p = GeometryUtils.getGeometryFactory().createPoint(vertx.getJtsCoordinate());
         return areaStop.getGeometry().intersects(p);
       })
       .map(vertx -> new MatchResult(vertx, areaStop));

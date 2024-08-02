@@ -44,8 +44,8 @@ public final class TemporaryPartialStreetEdge extends StreetEdge implements Temp
    * Returns true if this edge is trivial - beginning and ending at the same point.
    */
   public boolean isTrivial() {
-    Coordinate fromCoord = this.getFromVertex().getCoordinate();
-    Coordinate toCoord = this.getToVertex().getCoordinate();
+    Coordinate fromCoord = this.getFromVertex().getJtsCoordinate();
+    Coordinate toCoord = this.getToVertex().getJtsCoordinate();
     return fromCoord.equals(toCoord);
   }
 

@@ -98,6 +98,6 @@ public class StreetVehicleParkingLink extends Edge {
 
   @Override
   public LineString getGeometry() {
-    return GeometryUtils.makeLineString(fromv.getCoordinate(), tov.getCoordinate());
+    return GeometryUtils.makeLineString(fromv.getJtsCoordinate(), tov.getJtsCoordinate());
   }
 }
