@@ -81,7 +81,7 @@ public class Place {
   public static Place normal(Vertex vertex, I18NString name) {
     return new Place(
       name,
-      WgsCoordinate.creatOptionalCoordinate(vertex.getLat(), vertex.getLon()),
+      vertex.getWgsCoordinate(),
       VertexType.NORMAL,
       null,
       null,
@@ -107,7 +107,7 @@ public class Place {
     // coordinates.
     return new Place(
       name,
-      WgsCoordinate.creatOptionalCoordinate(vertex.getLat(), vertex.getLon()),
+      vertex.getWgsCoordinate(),
       VertexType.TRANSIT,
       stop,
       null,
@@ -118,7 +118,7 @@ public class Place {
   public static Place forVehicleRentalPlace(VehicleRentalPlaceVertex vertex) {
     return new Place(
       vertex.getName(),
-      WgsCoordinate.creatOptionalCoordinate(vertex.getLat(), vertex.getLon()),
+      vertex.getWgsCoordinate(),
       VertexType.VEHICLERENTAL,
       null,
       vertex.getStation(),
@@ -140,7 +140,7 @@ public class Place {
       .hasRealTimeDataForMode(traverseMode, request.wheelchair());
     return new Place(
       vertex.getName(),
-      WgsCoordinate.creatOptionalCoordinate(vertex.getLat(), vertex.getLon()),
+      vertex.getWgsCoordinate(),
       VertexType.VEHICLEPARKING,
       null,
       null,

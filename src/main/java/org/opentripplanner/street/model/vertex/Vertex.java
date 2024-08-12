@@ -155,6 +155,10 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
     return new Coordinate(x, y);
   }
 
+  public WgsCoordinate getWgsCoordinate() {
+    return new WgsCoordinate(y, x);
+  }
+
   public List<StreetEdge> getIncomingStreetEdges() {
     List<StreetEdge> result = new ArrayList<>();
     for (Edge out : this.getIncoming()) {
@@ -200,8 +204,7 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
    * @see org.opentripplanner.framework.geometry.WgsCoordinate#sameLocation(WgsCoordinate)
    **/
   public boolean sameLocation(Vertex other) {
-    return new WgsCoordinate(getLat(), getLon())
-      .sameLocation(new WgsCoordinate(other.getLat(), other.getLon()));
+    return getWgsCoordinate().sameLocation(other.getWgsCoordinate());
   }
 
   public boolean rentalTraversalBanned(State currentState) {
