@@ -150,7 +150,7 @@ public class StreetIndex {
   public List<Vertex> getVerticesForEnvelope(Envelope envelope) {
     List<Vertex> vertices = verticesTree.query(envelope);
     // Here we assume vertices list modifiable
-    vertices.removeIf(v -> !envelope.contains(new Coordinate(v.getLon(), v.getLat())));
+    vertices.removeIf(v -> !envelope.contains(v.getCoordinate()));
     return vertices;
   }
 

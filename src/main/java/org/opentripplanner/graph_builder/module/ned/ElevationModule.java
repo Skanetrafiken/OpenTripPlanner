@@ -345,7 +345,7 @@ public class ElevationModule implements GraphBuilderModule {
         try {
           elevations.put(
             vertex,
-            elevation - getApproximateEllipsoidToGeoidDifference(vertex.getY(), vertex.getX())
+            elevation - getApproximateEllipsoidToGeoidDifference(vertex.getLat(), vertex.getLon())
           );
         } catch (TransformException e) {
           LOG.error(

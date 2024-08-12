@@ -10,7 +10,7 @@ public class ElevatorOffboardVertex extends StreetVertex {
   private final String label;
 
   public ElevatorOffboardVertex(Vertex sourceVertex, String label, String level) {
-    super(sourceVertex.getX(), sourceVertex.getY());
+    super(sourceVertex.getLon(), sourceVertex.getLat());
     this.level = level;
     this.label = label;
   }

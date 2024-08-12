@@ -50,10 +50,8 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   public String toString() {
     var sb = new StringBuilder();
     sb.append("{").append(this.getLabel());
-    if (this.getCoordinate() != null) {
-      sb.append(" lat,lng=").append(this.getCoordinate().y);
-      sb.append(",").append(this.getCoordinate().x);
-    }
+    sb.append(" lat,lng=").append(this.y);
+    sb.append(",").append(this.x);
     if (!rentalRestrictions.toList().isEmpty()) {
       sb.append(", traversalExtension=").append(rentalRestrictions);
     }
@@ -115,16 +113,6 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   }
 
   /** Get the longitude of the vertex */
-  public final double getX() {
-    return getLon();
-  }
-
-  /** Get the latitude of the vertex */
-  public final double getY() {
-    return getLat();
-  }
-
-  /** Get the longitude of the vertex */
   public final double getLon() {
     return x;
   }
@@ -164,7 +152,7 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   }
 
   public Coordinate getCoordinate() {
-    return new Coordinate(getX(), getY());
+    return new Coordinate(x, y);
   }
 
   public List<StreetEdge> getIncomingStreetEdges() {

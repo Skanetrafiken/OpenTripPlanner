@@ -60,7 +60,7 @@ class CalculateWorldEnvelopeModuleTest {
 
     @Override
     public VertexLabel getLabel() {
-      return VertexLabel.string("%s/%s".formatted(getX(), getY()));
+      return VertexLabel.string("%s/%s".formatted(getLon(), getLat()));
     }
 
     @Nonnull
