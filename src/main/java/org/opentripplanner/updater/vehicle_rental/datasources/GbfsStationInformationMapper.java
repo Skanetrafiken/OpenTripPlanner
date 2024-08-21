@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.mobilitydata.gbfs.v2_3.station_information.GBFSRentalUris;
 import org.mobilitydata.gbfs.v2_3.station_information.GBFSStation;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleType;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalStation;
@@ -55,8 +56,7 @@ public class GbfsStationInformationMapper {
     }
     rentalStation.id = new FeedScopedId(system.systemId, station.getStationId());
     rentalStation.system = system;
-    rentalStation.longitude = station.getLon();
-    rentalStation.latitude = station.getLat();
+    rentalStation.coordinate = new WgsCoordinate(station.getLat(), station.getLon());
     rentalStation.name = new NonLocalizedString(station.getName());
     rentalStation.shortName = station.getShortName();
     rentalStation.address = station.getAddress();

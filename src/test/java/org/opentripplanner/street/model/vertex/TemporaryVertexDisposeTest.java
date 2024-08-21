@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.street.model.edge.FreeEdge;
 
@@ -223,7 +224,7 @@ public class TemporaryVertexDisposeTest {
     private final String label;
 
     private V(String label) {
-      super(ANY_LOC, ANY_LOC);
+      super(new WgsCoordinate(ANY_LOC, ANY_LOC));
       this.label = label;
     }
 

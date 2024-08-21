@@ -17,6 +17,7 @@ import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.TestOtpModel;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.graph_builder.module.osm.OsmModule;
 import org.opentripplanner.openstreetmap.OsmProvider;
@@ -45,11 +46,10 @@ public class LinkingTest {
   @Test
   public void testSplitting() {
     GeometryFactory gf = GeometryUtils.getGeometryFactory();
-    double x = -122.123;
-    double y = 37.363;
+    WgsCoordinate coord = new WgsCoordinate(37.363, -122.123);
     for (double delta = 0; delta <= 2; delta += 0.005) {
-      StreetVertex v0 = StreetModelForTest.intersectionVertex("zero", x, y);
-      StreetVertex v1 = StreetModelForTest.intersectionVertex("one", x + delta, y + delta);
+      StreetVertex v0 = StreetModelForTest.intersectionVertex("zero", coord);
+      StreetVertex v1 = StreetModelForTest.intersectionVertex("one", coord.add(delta, delta));
       LineString geom = gf.createLineString(
         new Coordinate[] { v0.getCoordinate(), v1.getCoordinate() }
       );
@@ -78,14 +78,12 @@ public class LinkingTest {
 
       SplitterVertex sv0 = new SplitterVertex(
         "split",
-        x + delta * splitVal,
-        y + delta * splitVal,
+        coord.add(delta * splitVal, delta * splitVal),
         new NonLocalizedString("split")
       );
       SplitterVertex sv1 = new SplitterVertex(
         "split",
-        x + delta * splitVal,
-        y + delta * splitVal,
+        coord.add(delta * splitVal, delta * splitVal),
         new NonLocalizedString("split")
       );
 

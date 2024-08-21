@@ -8,6 +8,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.api.request.StreetMode;
 import org.opentripplanner.routing.core.VehicleRoutingOptimizeType;
 import org.opentripplanner.routing.util.ElevationUtils;
@@ -38,8 +39,8 @@ public class StreetEdgeScooterTraversalTest {
     var rentalVertex = StreetModelForTest.rentalVertex(formFactor);
     var vehicleRentalEdge = VehicleRentalEdge.createVehicleRentalEdge(rentalVertex, formFactor);
 
-    StreetVertex v1 = StreetModelForTest.intersectionVertex("v1", c1.x, c1.y);
-    StreetVertex v2 = StreetModelForTest.intersectionVertex("v2", c2.x, c2.y);
+    StreetVertex v1 = StreetModelForTest.intersectionVertex("v1", new WgsCoordinate(c1));
+    StreetVertex v2 = StreetModelForTest.intersectionVertex("v2", new WgsCoordinate(c2));
 
     var link = StreetVehicleRentalLink.createStreetVehicleRentalLink(rentalVertex, v1);
 
@@ -153,8 +154,9 @@ public class StreetEdgeScooterTraversalTest {
     var rentalVertex = StreetModelForTest.rentalVertex(formFactor);
     var vehicleRentalEdge = VehicleRentalEdge.createVehicleRentalEdge(rentalVertex, formFactor);
 
-    StreetVertex v1 = StreetModelForTest.intersectionVertex("v1", c1.x, c1.y);
-    StreetVertex v2 = StreetModelForTest.intersectionVertex("v2", c2.x, c2.y);
+    // Note: this was assuming lon, lat order in the call
+    StreetVertex v1 = StreetModelForTest.intersectionVertex("v1", new WgsCoordinate(c1));
+    StreetVertex v2 = StreetModelForTest.intersectionVertex("v2", new WgsCoordinate(c2));
 
     var link = StreetVehicleRentalLink.createStreetVehicleRentalLink(rentalVertex, v1);
 

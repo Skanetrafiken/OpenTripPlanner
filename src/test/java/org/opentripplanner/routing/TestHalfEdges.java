@@ -20,6 +20,7 @@ import org.opentripplanner._support.time.ZoneIds;
 import org.opentripplanner.astar.model.GraphPath;
 import org.opentripplanner.astar.model.ShortestPathTree;
 import org.opentripplanner.framework.geometry.GeometryUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.graph_builder.module.TestStreetLinkerModule;
 import org.opentripplanner.model.GenericLocation;
@@ -71,10 +72,10 @@ public class TestHalfEdges {
     var stopModelBuilder = testModel.stopModelBuilder();
     var factory = new VertexFactory(graph);
     // a 0.1 degree x 0.1 degree square
-    tl = factory.intersection("tl", -74.01, 40.01);
-    tr = factory.intersection("tr", -74.0, 40.01);
-    bl = factory.intersection("bl", -74.01, 40.0);
-    br = factory.intersection("br", -74.00, 40.0);
+    tl = factory.intersection("tl", new WgsCoordinate(40.01, -74.01));
+    tr = factory.intersection("tr", new WgsCoordinate(40.01, -74.0));
+    bl = factory.intersection("bl", new WgsCoordinate(40.0, -74.01));
+    br = factory.intersection("br", new WgsCoordinate(40.0, -74.00));
 
     top =
       new StreetEdgeBuilder<>()

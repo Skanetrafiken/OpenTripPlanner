@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.framework.geometry.GeometryUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.street.model.StreetTraversalPermission;
 import org.opentripplanner.street.model.edge.StreetEdge;
@@ -37,9 +38,9 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testCalculateTurnAngle() {
     // Graph for a fictional grid city with turn restrictions
-    IntersectionVertex v1 = vertex("maple_1st", new Coordinate(2.0, 2.0), false, false);
-    IntersectionVertex v2 = vertex("maple_2nd", new Coordinate(2.0, 1.0), false, false);
-    IntersectionVertex v3 = vertex("maple_2nd", new Coordinate(1.5, 1.5), false, false);
+    IntersectionVertex v1 = vertex("maple_1st", new WgsCoordinate(2.0, 2.0), false, false);
+    IntersectionVertex v2 = vertex("maple_2nd", new WgsCoordinate(2.0, 1.0), false, false);
+    IntersectionVertex v3 = vertex("maple_2nd", new WgsCoordinate(1.5, 1.5), false, false);
 
     StreetEdge e1 = edge(v1, v2, 1.0, false);
 
@@ -52,7 +53,7 @@ public class SimpleIntersectionTraversalCalculatorTest {
     assertEquals(90, e1.getOutAngle());
 
     // 2 new ones
-    IntersectionVertex v4 = vertex("test2", new Coordinate(1.0, 1.0), false, false);
+    IntersectionVertex v4 = vertex("test2", new WgsCoordinate(1.0, 1.0), false, false);
 
     // Third edge
     StreetEdge e3 = edge(v2, v4, 1.0, false);
@@ -111,12 +112,12 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testBicycleTrafficLights() {
     // Graph with an intersection with traffic lights
-    IntersectionVertex v1 = vertex("maple_1st", new Coordinate(2.0, 2.0), false, false);
-    IntersectionVertex v2 = vertex("maple_2nd", new Coordinate(2.0, 1.0), false, true);
+    IntersectionVertex v1 = vertex("maple_1st", new WgsCoordinate(2.0, 2.0), false, false);
+    IntersectionVertex v2 = vertex("maple_2nd", new WgsCoordinate(2.0, 1.0), false, true);
 
     StreetEdge e1 = edge(v1, v2, 1.0, false);
 
-    IntersectionVertex v3 = vertex("test2", new Coordinate(1.0, 1.0), false, false);
+    IntersectionVertex v3 = vertex("test2", new WgsCoordinate(1.0, 1.0), false, false);
 
     StreetEdge e2 = edge(v2, v3, 1.0, false);
 
@@ -136,12 +137,12 @@ public class SimpleIntersectionTraversalCalculatorTest {
 
   @Test
   public void testWalk() {
-    IntersectionVertex v1 = vertex("maple_1st", new Coordinate(2.0, 2.0), false, false);
-    IntersectionVertex v2 = vertex("maple_2nd", new Coordinate(2.0, 1.0), false, false);
+    IntersectionVertex v1 = vertex("maple_1st", new WgsCoordinate(2.0, 2.0), false, false);
+    IntersectionVertex v2 = vertex("maple_2nd", new WgsCoordinate(2.0, 1.0), false, false);
 
     StreetEdge e1 = edge(v1, v2, 1.0, false);
 
-    IntersectionVertex v3 = vertex("test2", new Coordinate(1.0, 1.0), false, false);
+    IntersectionVertex v3 = vertex("test2", new WgsCoordinate(1.0, 1.0), false, false);
 
     StreetEdge e2 = edge(v2, v3, 1.0, false);
 
@@ -164,12 +165,12 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testWalkFreeFlowing() {
     // vertices have only one incoming/outgoing edge, so they are interpreted to be free flowing
-    IntersectionVertex v1 = vertex("maple_1st", new Coordinate(2.0, 2.0), false, false);
-    IntersectionVertex v2 = vertex("maple_2nd", new Coordinate(2.0, 1.0), false, false);
+    IntersectionVertex v1 = vertex("maple_1st", new WgsCoordinate(2.0, 2.0), false, false);
+    IntersectionVertex v2 = vertex("maple_2nd", new WgsCoordinate(2.0, 1.0), false, false);
 
     StreetEdge e1 = edge(v1, v2, 1.0, false);
 
-    IntersectionVertex v3 = vertex("test2", new Coordinate(1.0, 1.0), false, false);
+    IntersectionVertex v3 = vertex("test2", new WgsCoordinate(1.0, 1.0), false, false);
 
     StreetEdge e2 = edge(v2, v3, 1.0, false);
 
@@ -188,12 +189,12 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testWalkTrafficLights() {
     // Graph with an intersection with traffic lights
-    IntersectionVertex v1 = vertex("maple_1st", new Coordinate(2.0, 2.0), false, false);
-    IntersectionVertex v2 = vertex("maple_2nd", new Coordinate(2.0, 1.0), false, true);
+    IntersectionVertex v1 = vertex("maple_1st", new WgsCoordinate(2.0, 2.0), false, false);
+    IntersectionVertex v2 = vertex("maple_2nd", new WgsCoordinate(2.0, 1.0), false, true);
 
     StreetEdge e1 = edge(v1, v2, 1.0, false);
 
-    IntersectionVertex v3 = vertex("test2", new Coordinate(1.0, 1.0), false, false);
+    IntersectionVertex v3 = vertex("test2", new WgsCoordinate(1.0, 1.0), false, false);
 
     StreetEdge e2 = edge(v2, v3, 1.0, false);
 
@@ -214,9 +215,9 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testTurnDirectionChecking() {
     // 3 points on a roughly on line
-    Coordinate a = new Coordinate(-73.990989, 40.750167);
-    Coordinate b = new Coordinate(-73.988049, 40.749094);
-    Coordinate c = new Coordinate(-73.984981, 40.747761);
+    var a = new WgsCoordinate(-73.990989, 40.750167);
+    var b = new WgsCoordinate(-73.988049, 40.749094);
+    var c = new WgsCoordinate(-73.984981, 40.747761);
 
     // A vertex for each. No light.
     IntersectionVertex u = vertex("from_v", a, false, false);
@@ -236,16 +237,15 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testFreeFlowing() {
     // 3 points on a roughly on line
-    Coordinate a = new Coordinate(-73.990989, 40.750167);
-    Coordinate b = new Coordinate(-73.988049, 40.749094);
-    Coordinate c = new Coordinate(-73.984981, 40.747761);
+    var a = new WgsCoordinate(-73.990989, 40.750167);
+    var b = new WgsCoordinate(-73.988049, 40.749094);
+    var c = new WgsCoordinate(-73.984981, 40.747761);
 
     // A vertex for each. No light.
     IntersectionVertex u = vertex("from_v", a, false, false);
     SplitterVertex v = new SplitterVertex(
       "intersection",
-      b.getX(),
-      b.getY(),
+      b,
       new NonLocalizedString("intersection")
     );
     IntersectionVertex w = vertex("to_v", c, false, false);
@@ -274,9 +274,9 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testInferredFreeFlowing() {
     // 3 points on a roughly on line
-    Coordinate a = new Coordinate(-73.990989, 40.750167);
-    Coordinate b = new Coordinate(-73.988049, 40.749094);
-    Coordinate c = new Coordinate(-73.984981, 40.747761);
+    var a = new WgsCoordinate(-73.990989, 40.750167);
+    var b = new WgsCoordinate(-73.988049, 40.749094);
+    var c = new WgsCoordinate(-73.984981, 40.747761);
 
     // A vertex for each. No light.
     IntersectionVertex u = vertex("from_v", a, false, false);
@@ -307,9 +307,9 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testStraightNoLightInCar() {
     // 3 points on a roughly on line
-    Coordinate a = new Coordinate(-73.990989, 40.750167);
-    Coordinate b = new Coordinate(-73.988049, 40.749094);
-    Coordinate c = new Coordinate(-73.984981, 40.747761);
+    var a = new WgsCoordinate(-73.990989, 40.750167);
+    var b = new WgsCoordinate(-73.988049, 40.749094);
+    var c = new WgsCoordinate(-73.984981, 40.747761);
 
     // A vertex for each. No light.
     IntersectionVertex u = vertex("from_v", a, false, false);
@@ -343,9 +343,9 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testRightNoLightInCar() {
     // 3 points that form a right turn on the map
-    Coordinate a = new Coordinate(40.750167, -73.990989);
-    Coordinate b = new Coordinate(40.749094, -73.988049);
-    Coordinate c = new Coordinate(40.748509, -73.988693);
+    var a = new WgsCoordinate(40.750167, -73.990989);
+    var b = new WgsCoordinate(40.749094, -73.988049);
+    var c = new WgsCoordinate(40.748509, -73.988693);
 
     // A vertex for each. No light.
     IntersectionVertex u = vertex("from_v", a, false, false);
@@ -383,9 +383,9 @@ public class SimpleIntersectionTraversalCalculatorTest {
   @Test
   public void testLeftNoLightInCar() {
     // 3 points that form a right turn on the map
-    Coordinate a = new Coordinate(40.750167, -73.990989);
-    Coordinate b = new Coordinate(40.749094, -73.988049);
-    Coordinate c = new Coordinate(40.749760, -73.987749);
+    var a = new WgsCoordinate(40.750167, -73.990989);
+    var b = new WgsCoordinate(40.749094, -73.988049);
+    var c = new WgsCoordinate(40.749760, -73.987749);
 
     // A vertex for each. No light.
     IntersectionVertex u = vertex("from_v", a, false, false);
@@ -426,14 +426,16 @@ public class SimpleIntersectionTraversalCalculatorTest {
 
   private IntersectionVertex vertex(
     String label,
-    Coordinate coord,
+    WgsCoordinate coord,
     boolean hasHighwayLight,
     boolean hasCrossingLight
   ) {
+    // Note: this call had coordinates swapped. So in practice all usages of this method were using
+    // Coordinate(x, y) as x = lat, y = lon. I kept the same behaviour by simply switching from
+    // jts Coordinate(x, y) to WgsCoordinate(lat, lon)
     IntersectionVertex v = new LabelledIntersectionVertex(
       label,
-      coord.y,
-      coord.x,
+      coord,
       hasHighwayLight,
       hasCrossingLight
     );

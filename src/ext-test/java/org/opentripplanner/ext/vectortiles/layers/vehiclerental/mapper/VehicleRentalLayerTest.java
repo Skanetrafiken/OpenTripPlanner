@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.framework.i18n.TranslatedString;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleType;
@@ -27,8 +28,7 @@ public class VehicleRentalLayerTest {
     var mapper = new DigitransitRentalVehiclePropertyMapper();
     var vehicle = new VehicleRentalVehicle();
     vehicle.id = new FeedScopedId("A", "B");
-    vehicle.latitude = 1;
-    vehicle.longitude = 2;
+    vehicle.coordinate = new WgsCoordinate(1, 2);
     vehicle.name = new NonLocalizedString(NAME);
     vehicle.vehicleType = vehicleType(BICYCLE);
 
@@ -46,8 +46,7 @@ public class VehicleRentalLayerTest {
     var mapper = new DigitransitVehicleRentalStationPropertyMapper(new Locale("en-US"));
     var station = new VehicleRentalStation();
     station.id = new FeedScopedId("A", "B");
-    station.latitude = 1;
-    station.longitude = 2;
+    station.coordinate = new WgsCoordinate(1, 2);
     station.name = new NonLocalizedString(NAME);
     station.vehicleTypesAvailable = Map.of(vehicleType(BICYCLE), 5, vehicleType(SCOOTER), 10);
 
@@ -65,8 +64,7 @@ public class VehicleRentalLayerTest {
     var mapper = new DigitransitVehicleRentalStationPropertyMapper(new Locale("de"));
     var station = new VehicleRentalStation();
     station.id = new FeedScopedId("A", "B");
-    station.latitude = 1;
-    station.longitude = 2;
+    station.coordinate = new WgsCoordinate(1, 2);
     var germanName = "nameDE";
     station.name =
       TranslatedString.getI18NString(
@@ -92,8 +90,7 @@ public class VehicleRentalLayerTest {
     var mapper = new DigitransitRealtimeVehicleRentalStationPropertyMapper(new Locale("en-US"));
     var station = new VehicleRentalStation();
     station.id = new FeedScopedId("A", "B");
-    station.latitude = 1;
-    station.longitude = 2;
+    station.coordinate = new WgsCoordinate(1, 2);
     station.name = new NonLocalizedString(NAME);
     station.vehicleTypesAvailable = Map.of(vehicleType(BICYCLE), 5, vehicleType(SCOOTER), 10);
     station.isRenting = false;

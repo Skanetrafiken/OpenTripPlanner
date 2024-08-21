@@ -13,6 +13,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 import org.opentripplanner.framework.geometry.GeometryUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.framework.i18n.LocalizedString;
 import org.opentripplanner.routing.graph.Graph;
@@ -53,7 +54,12 @@ public class LinkStopToPlatformTest {
 
     for (int i = 0; i < platform.length; i++) {
       Coordinate c = platform[i];
-      var vertex = new LabelledIntersectionVertex(String.valueOf(i), c.x, c.y, false, false);
+      var vertex = new LabelledIntersectionVertex(
+        String.valueOf(i),
+        new WgsCoordinate(c),
+        false,
+        false
+      );
       graph.addVertex(vertex);
       vertices.add(vertex);
       closedGeom[i] = c;

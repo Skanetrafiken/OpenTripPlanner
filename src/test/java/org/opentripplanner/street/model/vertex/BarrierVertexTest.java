@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.framework.geometry.GeometryUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.openstreetmap.model.OSMNode;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.street.model.StreetTraversalPermission;
@@ -29,7 +30,7 @@ public class BarrierVertexTest {
     simpleBarrier.addTag("barrier", "bollard");
     assertTrue(simpleBarrier.isMotorVehicleBarrier());
     String label = "simpleBarrier";
-    BarrierVertex bv = new BarrierVertex(simpleBarrier.lon, simpleBarrier.lat, 0);
+    BarrierVertex bv = new BarrierVertex(simpleBarrier.getWgsCoordinate(), 0);
     bv.setBarrierPermissions(
       simpleBarrier.overridePermissions(BarrierVertex.defaultBarrierPermissions)
     );
@@ -94,7 +95,7 @@ public class BarrierVertexTest {
   @Test
   public void testStreetsWithBollard() {
     Graph graph = new Graph();
-    BarrierVertex bv = new BarrierVertex(2.0, 2.0, 0);
+    BarrierVertex bv = new BarrierVertex(new WgsCoordinate(2.0, 2.0), 0);
     bv.setBarrierPermissions(StreetTraversalPermission.PEDESTRIAN_AND_BICYCLE);
 
     StreetVertex endVertex = StreetModelForTest.intersectionVertex("end_vertex", 1.0, 2.0);
@@ -140,7 +141,7 @@ public class BarrierVertexTest {
     assertTrue(endVertex_to_bv_forward.canTraverse(TraverseMode.WALK));
 
     //tests bollard which allows only walking
-    BarrierVertex onlyWalkBollard = new BarrierVertex(1.5, 1, 0);
+    BarrierVertex onlyWalkBollard = new BarrierVertex(new WgsCoordinate(1, 1.5), 0);
     onlyWalkBollard.setBarrierPermissions(StreetTraversalPermission.PEDESTRIAN);
     StreetEdge edge = edge(onlyWalkBollard, endVertex, 100, false);
 

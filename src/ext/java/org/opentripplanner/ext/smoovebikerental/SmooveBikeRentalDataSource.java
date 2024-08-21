@@ -2,6 +2,7 @@ package org.opentripplanner.ext.smoovebikerental;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.framework.io.OtpHttpClient;
 import org.opentripplanner.framework.io.OtpHttpClientFactory;
@@ -93,8 +94,9 @@ public class SmooveBikeRentalDataSource
     station.name = new NonLocalizedString(nameParts[1]);
     String[] coordinates = node.path("coordinates").asText().split(",");
     try {
-      station.latitude = Double.parseDouble(coordinates[0].trim());
-      station.longitude = Double.parseDouble(coordinates[1].trim());
+      var latitude = Double.parseDouble(coordinates[0].trim());
+      var longitude = Double.parseDouble(coordinates[1].trim());
+      station.coordinate = new WgsCoordinate(latitude, longitude);
     } catch (NumberFormatException e) {
       // E.g. coordinates is empty
       LOG.warn("Error parsing bike rental station {}", station.id, e);

@@ -1,6 +1,7 @@
 package org.opentripplanner.street.model.vertex;
 
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.site.StationElement;
@@ -10,8 +11,8 @@ public abstract class StationElementVertex extends Vertex {
   private final FeedScopedId id;
   private final I18NString name;
 
-  protected StationElementVertex(FeedScopedId id, double x, double y, I18NString name) {
-    super(x, y);
+  protected StationElementVertex(FeedScopedId id, WgsCoordinate coordinate, I18NString name) {
+    super(coordinate);
     this.id = id;
     this.name = name;
   }

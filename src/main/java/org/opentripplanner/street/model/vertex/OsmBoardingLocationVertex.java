@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.framework.tostring.ToStringBuilder;
 
@@ -25,12 +26,11 @@ public class OsmBoardingLocationVertex extends LabelledIntersectionVertex {
 
   public OsmBoardingLocationVertex(
     String label,
-    double x,
-    double y,
+    WgsCoordinate coordinate,
     @Nullable I18NString name,
     Collection<String> references
   ) {
-    super(label, x, y, false, false);
+    super(label, coordinate, false, false);
     this.references = Set.copyOf(references);
     this.name = Objects.requireNonNullElse(name, NO_NAME);
   }

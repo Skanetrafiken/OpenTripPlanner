@@ -1,6 +1,7 @@
 package org.opentripplanner.service.vehiclerental.model;
 
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.street.model.RentalFormFactor;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
@@ -83,8 +84,7 @@ public class TestFreeFloatingRentalVehicleBuilder {
     var stationName = "free-floating-" + vehicleType.formFactor.name().toLowerCase();
     vehicle.id = new FeedScopedId(NETWORK_1, stationName);
     vehicle.name = new NonLocalizedString(stationName);
-    vehicle.latitude = latitude;
-    vehicle.longitude = longitude;
+    vehicle.coordinate = new WgsCoordinate(latitude, longitude);
     vehicle.vehicleType = vehicleType;
     vehicle.system = system;
     return vehicle;

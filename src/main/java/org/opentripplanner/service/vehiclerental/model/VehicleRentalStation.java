@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.locationtech.jts.geom.Geometry;
 import org.opentripplanner.framework.collection.SetUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.street.model.RentalFormFactor;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
@@ -23,8 +24,7 @@ public class VehicleRentalStation implements VehicleRentalPlace {
   public FeedScopedId id;
   public I18NString name;
   public String shortName;
-  public double longitude;
-  public double latitude;
+  public WgsCoordinate coordinate;
   public String address;
   public String crossStreet;
   public String regionId;
@@ -78,13 +78,18 @@ public class VehicleRentalStation implements VehicleRentalPlace {
   }
 
   @Override
+  public WgsCoordinate getCoordinate() {
+    return coordinate;
+  }
+
+  @Override
   public double getLongitude() {
-    return longitude;
+    return coordinate.longitude();
   }
 
   @Override
   public double getLatitude() {
-    return latitude;
+    return coordinate.latitude();
   }
 
   @Override
@@ -183,8 +188,8 @@ public class VehicleRentalStation implements VehicleRentalPlace {
       ROOT,
       "Vehicle rental station %s at %.6f, %.6f",
       name,
-      latitude,
-      longitude
+      coordinate.latitude(),
+      coordinate.longitude()
     );
   }
 

@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.locationtech.jts.geom.Coordinate;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.openstreetmap.model.OSMLevel;
 import org.opentripplanner.openstreetmap.model.OSMNode;
@@ -64,7 +65,7 @@ class VertexGenerator {
     long nid = node.getId();
     iv = intersectionNodes.get(nid);
     if (iv == null) {
-      Coordinate coordinate = node.getCoordinate();
+      WgsCoordinate coordinate = node.getWgsCoordinate();
       String highway = node.getTag("highway");
       if ("motorway_junction".equals(highway)) {
         String ref = node.getTag("ref");

@@ -233,8 +233,7 @@ public class BikeRentalTest extends GraphRoutingTest {
   public void testFloatingBike() {
     VehicleRentalPlace station = B1.getStation();
     VehicleRentalVehicle vehicle = new VehicleRentalVehicle();
-    vehicle.latitude = station.getLatitude();
-    vehicle.longitude = station.getLongitude();
+    vehicle.coordinate = station.getCoordinate();
     vehicle.id = station.getId();
     vehicle.name = station.getName();
     vehicle.vehicleType = RentalVehicleType.getDefaultType(station.getId().getFeedId());

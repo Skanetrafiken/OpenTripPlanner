@@ -1,6 +1,7 @@
 package org.opentripplanner.service.vehiclerental.model;
 
 import java.util.Set;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.routing.api.request.preference.VehicleRentalPreferences;
 import org.opentripplanner.street.model.RentalFormFactor;
@@ -27,6 +28,7 @@ public interface VehicleRentalPlace {
   double getLongitude();
 
   double getLatitude();
+  WgsCoordinate getCoordinate();
 
   /** How many vehicles are currently available for rental at the station */
   int getVehiclesAvailable();

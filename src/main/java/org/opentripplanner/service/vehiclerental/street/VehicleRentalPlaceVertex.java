@@ -16,7 +16,7 @@ public class VehicleRentalPlaceVertex extends Vertex {
   private VehicleRentalPlace station;
 
   public VehicleRentalPlaceVertex(VehicleRentalPlace station) {
-    super(station.getLongitude(), station.getLatitude());
+    super(station.getCoordinate());
     this.station = station;
   }
 

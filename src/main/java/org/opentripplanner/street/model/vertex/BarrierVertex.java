@@ -1,5 +1,6 @@
 package org.opentripplanner.street.model.vertex;
 
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.street.model.StreetTraversalPermission;
 import org.opentripplanner.street.model.edge.StreetEdge;
 
@@ -20,8 +21,8 @@ public class BarrierVertex extends OsmVertex {
     StreetTraversalPermission.ALL;
   private StreetTraversalPermission barrierPermissions;
 
-  public BarrierVertex(double x, double y, long nodeId) {
-    super(x, y, nodeId);
+  public BarrierVertex(WgsCoordinate coordinate, long nodeId) {
+    super(coordinate, nodeId);
     barrierPermissions = defaultBarrierPermissions;
   }
 

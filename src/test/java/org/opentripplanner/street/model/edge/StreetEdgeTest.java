@@ -17,6 +17,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequence;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.api.request.StreetMode;
 import org.opentripplanner.routing.core.VehicleRoutingOptimizeType;
 import org.opentripplanner.routing.util.ElevationUtils;
@@ -147,7 +148,12 @@ public class StreetEdgeTest {
    */
   @Test
   public void testTraverseModeSwitchBike() {
-    var vWithTrafficLight = new LabelledIntersectionVertex("maple_1st", 2.0, 2.0, false, true);
+    var vWithTrafficLight = new LabelledIntersectionVertex(
+      "maple_1st",
+      new WgsCoordinate(2.0, 2.0),
+      false,
+      true
+    );
     StreetEdge e0 = streetEdge(v0, vWithTrafficLight, 50.0, StreetTraversalPermission.PEDESTRIAN);
     StreetEdge e1 = streetEdge(
       vWithTrafficLight,
@@ -184,7 +190,12 @@ public class StreetEdgeTest {
    */
   @Test
   public void testTraverseModeSwitchWalk() {
-    var vWithTrafficLight = new LabelledIntersectionVertex("maple_1st", 2.0, 2.0, false, true);
+    var vWithTrafficLight = new LabelledIntersectionVertex(
+      "maple_1st",
+      new WgsCoordinate(2.0, 2.0),
+      false,
+      true
+    );
     StreetEdge e0 = streetEdge(
       v0,
       vWithTrafficLight,
@@ -312,8 +323,9 @@ public class StreetEdgeTest {
     Coordinate c1 = new Coordinate(-122.575033, 45.456773);
     Coordinate c2 = new Coordinate(-122.576668, 45.451426);
 
-    StreetVertex v1 = StreetModelForTest.intersectionVertex("v1", c1.x, c1.y);
-    StreetVertex v2 = StreetModelForTest.intersectionVertex("v2", c2.x, c2.y);
+    // Note: switched these to make
+    StreetVertex v1 = StreetModelForTest.intersectionVertex("v1", c1.y, c1.x);
+    StreetVertex v2 = StreetModelForTest.intersectionVertex("v2", c2.y, c2.x);
 
     GeometryFactory factory = new GeometryFactory();
     LineString geometry = factory.createLineString(new Coordinate[] { c1, c2 });

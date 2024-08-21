@@ -29,17 +29,27 @@ public class StreetModelForTest {
   public static StreetVertex V3 = intersectionVertex("V3", 2, 2);
   public static StreetVertex V4 = intersectionVertex("V4", 3, 3);
 
+  public static IntersectionVertex intersectionVertex(WgsCoordinate c) {
+    var label = "%s_%s".formatted(c.latitude(), c.longitude());
+    return intersectionVertex(label, c);
+  }
+
   public static IntersectionVertex intersectionVertex(Coordinate c) {
-    return intersectionVertex(c.y, c.x);
+    return intersectionVertex(new WgsCoordinate(c));
   }
 
   public static IntersectionVertex intersectionVertex(double lat, double lon) {
-    var label = "%s_%s".formatted(lat, lon);
-    return new LabelledIntersectionVertex(label, lon, lat, false, false);
+    return intersectionVertex(new WgsCoordinate(lat, lon));
+  }
+
+  public static IntersectionVertex intersectionVertex(String label, WgsCoordinate coordinate) {
+    return new LabelledIntersectionVertex(label, coordinate, false, false);
   }
 
   public static IntersectionVertex intersectionVertex(String label, double lat, double lon) {
-    return new LabelledIntersectionVertex(label, lon, lat, false, false);
+    // Note: changed order of lat and lon in this call, since it was previously switching lat for lon
+    // The usages of this method seems to sometimes give the coordinates in lat,lon and sometimes in lon,lat
+    return intersectionVertex(label, new WgsCoordinate(lat, lon));
   }
 
   @Nonnull
@@ -101,8 +111,8 @@ public class StreetModelForTest {
   public static VehicleRentalPlaceVertex rentalVertex(RentalFormFactor formFactor) {
     var rentalVehicleBuilder = TestFreeFloatingRentalVehicleBuilder
       .of()
-      .withLatitude(-122.575133)
-      .withLongitude(45.456773);
+      .withLongitude(-122.575133)
+      .withLatitude(45.456773);
     if (formFactor == RentalFormFactor.SCOOTER) {
       rentalVehicleBuilder.withVehicleScooter();
     } else if (formFactor == RentalFormFactor.BICYCLE) {

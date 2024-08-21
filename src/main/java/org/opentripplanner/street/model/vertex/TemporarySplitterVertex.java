@@ -1,5 +1,6 @@
 package org.opentripplanner.street.model.vertex;
 
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.street.model.edge.Edge;
 import org.opentripplanner.street.model.edge.StreetEdge;
 
@@ -15,12 +16,11 @@ public class TemporarySplitterVertex extends SplitterVertex implements Temporary
 
   public TemporarySplitterVertex(
     String label,
-    double x,
-    double y,
+    WgsCoordinate coordinate,
     StreetEdge streetEdge,
     boolean endVertex
   ) {
-    super(label, x, y, streetEdge.getName());
+    super(label, coordinate, streetEdge.getName());
     this.endVertex = endVertex;
     this.wheelchairAccessible = streetEdge.isWheelchairAccessible();
   }

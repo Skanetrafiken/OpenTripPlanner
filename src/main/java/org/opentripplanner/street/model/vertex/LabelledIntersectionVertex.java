@@ -1,6 +1,7 @@
 package org.opentripplanner.street.model.vertex;
 
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 
 /**
@@ -13,12 +14,11 @@ public class LabelledIntersectionVertex extends IntersectionVertex {
 
   public LabelledIntersectionVertex(
     @Nonnull String label,
-    double x,
-    double y,
+    WgsCoordinate coordinate,
     boolean hasHighwayTrafficLight,
     boolean hasCrossingTrafficLight
   ) {
-    super(x, y, hasHighwayTrafficLight, hasCrossingTrafficLight);
+    super(coordinate, hasHighwayTrafficLight, hasCrossingTrafficLight);
     this.label = label;
   }
 

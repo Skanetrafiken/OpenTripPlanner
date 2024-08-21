@@ -77,7 +77,7 @@ class OsmBoardingLocationsModuleTest {
       TransitStopVertex.of().withStop(floatingBusStop).withModes(Set.of(TransitMode.BUS))
     );
     var floatingBoardingLocation = factory.osmBoardingLocation(
-      floatingBusVertex.getCoordinate(),
+      floatingBusVertex.getWgsCoordinate(),
       "floating-bus-stop",
       Set.of(floatingBusVertex.getStop().getId().getId()),
       new NonLocalizedString("bus stop not connected to street network")

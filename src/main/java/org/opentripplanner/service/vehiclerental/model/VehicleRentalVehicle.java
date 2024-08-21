@@ -2,6 +2,7 @@ package org.opentripplanner.service.vehiclerental.model;
 
 import java.time.Instant;
 import java.util.Set;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.street.model.RentalFormFactor;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
@@ -13,8 +14,7 @@ public class VehicleRentalVehicle implements VehicleRentalPlace {
 
   public FeedScopedId id;
   public I18NString name;
-  public double longitude;
-  public double latitude;
+  public WgsCoordinate coordinate;
 
   public VehicleRentalSystem system;
   public RentalVehicleType vehicleType;
@@ -47,13 +47,18 @@ public class VehicleRentalVehicle implements VehicleRentalPlace {
   }
 
   @Override
+  public WgsCoordinate getCoordinate() {
+    return coordinate;
+  }
+
+  @Override
   public double getLongitude() {
-    return longitude;
+    return coordinate.longitude();
   }
 
   @Override
   public double getLatitude() {
-    return latitude;
+    return coordinate.latitude();
   }
 
   @Override

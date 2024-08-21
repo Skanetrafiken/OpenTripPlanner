@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.transit.model._data.TransitModelForTest;
 import org.opentripplanner.transit.model.site.AreaStop;
 
@@ -40,6 +41,6 @@ class OsmVertexTest {
 
   @Nonnull
   private static OsmVertex vertex() {
-    return new OsmVertex(1, 2, 1);
+    return new OsmVertex(new WgsCoordinate(2, 1), 1);
   }
 }

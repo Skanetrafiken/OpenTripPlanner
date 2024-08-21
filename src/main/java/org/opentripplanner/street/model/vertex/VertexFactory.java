@@ -3,7 +3,7 @@ package org.opentripplanner.street.model.vertex;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.locationtech.jts.geom.Coordinate;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.openstreetmap.model.OSMNode;
 import org.opentripplanner.routing.graph.Graph;
@@ -56,12 +56,11 @@ public class VertexFactory {
   }
 
   @Nonnull
-  public IntersectionVertex intersection(Coordinate edgeCoordinate) {
+  public IntersectionVertex intersection(WgsCoordinate edgeCoordinate) {
     return addToGraph(
       new LabelledIntersectionVertex(
         "area splitter at " + edgeCoordinate,
-        edgeCoordinate.x,
-        edgeCoordinate.y,
+        edgeCoordinate,
         false,
         false
       )
@@ -69,55 +68,48 @@ public class VertexFactory {
   }
 
   @Nonnull
-  public IntersectionVertex intersection(String label, double longitude, double latitude) {
-    return addToGraph(new LabelledIntersectionVertex(label, longitude, latitude, false, false));
+  public IntersectionVertex intersection(String label, WgsCoordinate coordinate) {
+    return addToGraph(new LabelledIntersectionVertex(label, coordinate, false, false));
   }
 
   @Nonnull
   public OsmBoardingLocationVertex osmBoardingLocation(
-    Coordinate coordinate,
+    WgsCoordinate coordinate,
     String label,
     Set<String> refs,
     @Nullable I18NString name
   ) {
-    return addToGraph(new OsmBoardingLocationVertex(label, coordinate.x, coordinate.y, name, refs));
+    return addToGraph(new OsmBoardingLocationVertex(label, coordinate, name, refs));
   }
 
   @Nonnull
   public SplitterVertex splitter(
     StreetEdge originalEdge,
-    double x,
-    double y,
+    WgsCoordinate coordinate,
     String uniqueSplitLabel
   ) {
-    return addToGraph(new SplitterVertex(uniqueSplitLabel, x, y, originalEdge.getName()));
+    return addToGraph(new SplitterVertex(uniqueSplitLabel, coordinate, originalEdge.getName()));
   }
 
   @Nonnull
-  public BarrierVertex barrier(long nid, Coordinate coordinate) {
-    return addToGraph(new BarrierVertex(coordinate.x, coordinate.y, nid));
+  public BarrierVertex barrier(long nid, WgsCoordinate coordinate) {
+    return addToGraph(new BarrierVertex(coordinate, nid));
   }
 
   @Nonnull
-  public ExitVertex exit(long nid, Coordinate coordinate, String exitName) {
-    return addToGraph(new ExitVertex(coordinate.x, coordinate.y, nid, exitName));
+  public ExitVertex exit(long nid, WgsCoordinate coordinate, String exitName) {
+    return addToGraph(new ExitVertex(coordinate, nid, exitName));
   }
 
   @Nonnull
   public OsmVertex osm(
-    Coordinate coordinate,
+    WgsCoordinate coordinate,
     OSMNode node,
     boolean highwayTrafficLight,
     boolean crossingTrafficLight
   ) {
     return addToGraph(
-      new OsmVertex(
-        coordinate.x,
-        coordinate.y,
-        node.getId(),
-        highwayTrafficLight,
-        crossingTrafficLight
-      )
+      new OsmVertex(coordinate, node.getId(), highwayTrafficLight, crossingTrafficLight)
     );
   }
 

@@ -1,5 +1,6 @@
 package org.opentripplanner.street.model.vertex;
 
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.lang.BitSetUtils;
 
 /**
@@ -18,17 +19,16 @@ public abstract class IntersectionVertex extends StreetVertex {
   private final short flags;
 
   protected IntersectionVertex(
-    double x,
-    double y,
+    WgsCoordinate coordinate,
     boolean hasHighwayTrafficLight,
     boolean hasCrossingTrafficLight
   ) {
-    super(x, y);
+    super(coordinate);
     flags = initFlags(hasHighwayTrafficLight, hasCrossingTrafficLight);
   }
 
-  protected IntersectionVertex(double x, double y) {
-    this(x, y, false, false);
+  protected IntersectionVertex(WgsCoordinate coordinate) {
+    this(coordinate, false, false);
   }
 
   /**

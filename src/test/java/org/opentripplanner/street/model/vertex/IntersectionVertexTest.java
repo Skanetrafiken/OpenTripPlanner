@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.framework.geometry.GeometryUtils;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.street.model.StreetTraversalPermission;
 import org.opentripplanner.street.model._data.StreetModelForTest;
 import org.opentripplanner.street.model.edge.StreetEdge;
@@ -66,7 +67,8 @@ public class IntersectionVertexTest {
     assertEquals(0, iv.getDegreeIn());
     assertEquals(0, iv.getDegreeOut());
 
-    iv = new LabelledIntersectionVertex("vertex", 1.0, 2.0, true, false);
+    // TODO: Should these coordinates be switched? Or the coords above
+    iv = new LabelledIntersectionVertex("vertex", new WgsCoordinate(1.0, 2.0), true, false);
     assertTrue(iv.hasDrivingTrafficLight());
     assertTrue(iv.hasCyclingTrafficLight());
     assertFalse(iv.hasWalkingTrafficLight());
@@ -88,7 +90,7 @@ public class IntersectionVertexTest {
     assertFalse(iv.hasDrivingTrafficLight());
     assertTrue(iv.inferredFreeFlowing());
 
-    iv = new LabelledIntersectionVertex("vertex", 1.0, 2.0, false, true);
+    iv = new LabelledIntersectionVertex("vertex", new WgsCoordinate(1.0, 2.0), false, true);
     iv.addIncoming(fromEdge);
     iv.addOutgoing(straightAheadEdge);
     assertTrue(iv.hasWalkingTrafficLight());

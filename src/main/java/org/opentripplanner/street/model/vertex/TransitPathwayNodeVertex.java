@@ -15,12 +15,7 @@ public class TransitPathwayNodeVertex extends StationElementVertex {
    * @param node The transit model pathway node reference.
    */
   public TransitPathwayNodeVertex(PathwayNode node) {
-    super(
-      node.getId(),
-      node.getCoordinate().longitude(),
-      node.getCoordinate().latitude(),
-      node.getName()
-    );
+    super(node.getId(), node.getCoordinate(), node.getName());
     this.node = node;
     this.wheelchairEntrance = node.getWheelchairAccessibility() != Accessibility.NOT_POSSIBLE;
   }

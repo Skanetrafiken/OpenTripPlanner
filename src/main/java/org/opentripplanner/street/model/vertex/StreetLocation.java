@@ -2,6 +2,7 @@ package org.opentripplanner.street.model.vertex;
 
 import javax.annotation.Nonnull;
 import org.locationtech.jts.geom.Coordinate;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 
 /**
@@ -19,7 +20,7 @@ public class StreetLocation extends StreetVertex {
   // maybe name should just be pulled from street being split
   public StreetLocation(String id, Coordinate nearestPoint, I18NString name) {
     // calling constructor with null graph means this vertex is temporary
-    super(nearestPoint.x, nearestPoint.y);
+    super(new WgsCoordinate(nearestPoint));
     this.label = VertexLabel.string(id);
     this.name = name;
   }

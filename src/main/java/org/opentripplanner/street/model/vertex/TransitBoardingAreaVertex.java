@@ -15,12 +15,7 @@ public class TransitBoardingAreaVertex extends StationElementVertex {
    * @param boardingArea The transit model boarding area reference.
    */
   public TransitBoardingAreaVertex(BoardingArea boardingArea) {
-    super(
-      boardingArea.getId(),
-      boardingArea.getCoordinate().longitude(),
-      boardingArea.getCoordinate().latitude(),
-      boardingArea.getName()
-    );
+    super(boardingArea.getId(), boardingArea.getCoordinate(), boardingArea.getName());
     this.boardingArea = boardingArea;
     this.wheelchairAccessible =
       boardingArea.getWheelchairAccessibility() != Accessibility.NOT_POSSIBLE;

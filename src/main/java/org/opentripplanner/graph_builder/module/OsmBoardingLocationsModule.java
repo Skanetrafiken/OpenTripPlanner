@@ -7,6 +7,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.LocalizedString;
 import org.opentripplanner.graph_builder.model.GraphBuilderModule;
 import org.opentripplanner.routing.graph.Graph;
@@ -169,7 +170,7 @@ public class OsmBoardingLocationsModule implements GraphBuilderModule {
         var label = "platform-centroid/%s".formatted(ts.getStop().getId().toString());
         var centroid = edgeList.getGeometry().getCentroid();
         var boardingLocation = vertexFactory.osmBoardingLocation(
-          new Coordinate(centroid.getX(), centroid.getY()),
+          new WgsCoordinate(centroid),
           label,
           edgeList.references,
           name

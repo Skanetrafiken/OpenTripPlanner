@@ -1,6 +1,7 @@
 package org.opentripplanner.street.model.vertex;
 
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 
 /**
@@ -13,19 +14,18 @@ public class OsmVertex extends IntersectionVertex {
   /** The OSM node ID from whence this came */
   public final long nodeId;
 
-  public OsmVertex(double x, double y, long nodeId) {
-    super(x, y);
+  public OsmVertex(WgsCoordinate coordinate, long nodeId) {
+    super(coordinate);
     this.nodeId = nodeId;
   }
 
   public OsmVertex(
-    double x,
-    double y,
+    WgsCoordinate coordinate,
     long nodeId,
     boolean hasHighwayTrafficLight,
     boolean hasCrossingTrafficLight
   ) {
-    super(x, y, hasHighwayTrafficLight, hasCrossingTrafficLight);
+    super(coordinate, hasHighwayTrafficLight, hasCrossingTrafficLight);
     this.nodeId = nodeId;
   }
 

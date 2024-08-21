@@ -3,6 +3,7 @@ package org.opentripplanner.service.vehiclerental.model;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.street.model.RentalFormFactor;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
@@ -132,8 +133,7 @@ public class TestVehicleRentalStationBuilder {
     var stationName = "FooStation";
     station.id = new FeedScopedId(NETWORK_1, stationName);
     station.name = new NonLocalizedString(stationName);
-    station.latitude = latitude;
-    station.longitude = longitude;
+    station.coordinate = new WgsCoordinate(latitude, longitude);
     station.vehiclesAvailable = vehicles;
     station.spacesAvailable = spaces;
 

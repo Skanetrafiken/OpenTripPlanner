@@ -1,5 +1,6 @@
 package org.opentripplanner.routing.vehicle_parking;
 
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.street.model.StreetTraversalPermission;
 import org.opentripplanner.street.model._data.StreetModelForTest;
@@ -26,8 +27,8 @@ public class VehicleParkingTestGraphData {
 
     var factory = new VertexFactory(graph);
 
-    A = factory.intersection("A", 0, 0);
-    B = factory.intersection("B", 0.01, 0);
+    A = factory.intersection("A", new WgsCoordinate(0, 0));
+    B = factory.intersection("B", new WgsCoordinate(0, 0.01));
 
     StreetModelForTest.streetEdge(A, B, StreetTraversalPermission.PEDESTRIAN);
   }

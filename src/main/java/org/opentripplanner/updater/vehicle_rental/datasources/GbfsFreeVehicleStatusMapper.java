@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.mobilitydata.gbfs.v2_3.free_bike_status.GBFSBike;
 import org.mobilitydata.gbfs.v2_3.free_bike_status.GBFSRentalUris;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleType;
 import org.opentripplanner.service.vehiclerental.model.VehicleRentalStationUris;
@@ -41,8 +42,7 @@ public class GbfsFreeVehicleStatusMapper {
       rentalVehicle.id = new FeedScopedId(system.systemId, vehicle.getBikeId());
       rentalVehicle.system = system;
       rentalVehicle.name = new NonLocalizedString(getName(vehicle));
-      rentalVehicle.longitude = vehicle.getLon();
-      rentalVehicle.latitude = vehicle.getLat();
+      rentalVehicle.coordinate = new WgsCoordinate(vehicle.getLat(), vehicle.getLon());
       rentalVehicle.vehicleType =
         vehicleTypes.getOrDefault(
           vehicle.getVehicleTypeId(),

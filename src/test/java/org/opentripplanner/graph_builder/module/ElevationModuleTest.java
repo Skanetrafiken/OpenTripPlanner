@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.graph_builder.module.ned.DegreeGridNEDTileSource;
 import org.opentripplanner.graph_builder.module.ned.ElevationModule;
 import org.opentripplanner.graph_builder.module.ned.NEDGridCoverageFactoryImpl;
@@ -36,8 +37,8 @@ public class ElevationModuleTest {
     // create a graph with a StreetWithElevationEdge
     var deduplicator = new Deduplicator();
     var graph = new Graph(deduplicator);
-    OsmVertex from = new OsmVertex(-122.6932051, 45.5122964, 40513757);
-    OsmVertex to = new OsmVertex(-122.6903532, 45.5115309, 1677595882);
+    OsmVertex from = new OsmVertex(new WgsCoordinate(45.5122964, -122.6932051), 40513757);
+    OsmVertex to = new OsmVertex(new WgsCoordinate(45.5115309, -122.6903532), 1677595882);
     LineString geometry = GeometryUtils.makeLineString(
       -122.6932051,
       45.5122964,

@@ -12,6 +12,7 @@ import org.opentripplanner.datastore.api.FileType;
 import org.opentripplanner.datastore.file.DirectoryDataSource;
 import org.opentripplanner.datastore.file.ZipFileDataSource;
 import org.opentripplanner.ext.fares.impl.DefaultFareServiceFactory;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.NonLocalizedString;
 import org.opentripplanner.graph_builder.ConfiguredDataSource;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
@@ -297,8 +298,9 @@ public class ConstantsForTests {
       while (reader.readRecord()) {
         VehicleRentalStation station = new VehicleRentalStation();
         station.id = new FeedScopedId(reader.get("network"), reader.get("osm_id"));
-        station.latitude = Double.parseDouble(reader.get("lat"));
-        station.longitude = Double.parseDouble(reader.get("lon"));
+        var latitude = Double.parseDouble(reader.get("lat"));
+        var longitude = Double.parseDouble(reader.get("lon"));
+        station.coordinate = new WgsCoordinate(latitude, longitude);
         station.name = new NonLocalizedString(reader.get("osm_id"));
         RentalVehicleType vehicleType = RentalVehicleType.getDefaultType(reader.get("network"));
         Map<RentalVehicleType, Integer> availability = Map.of(vehicleType, 2);

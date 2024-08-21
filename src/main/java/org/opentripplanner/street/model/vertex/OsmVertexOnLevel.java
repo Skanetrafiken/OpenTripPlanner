@@ -13,7 +13,7 @@ public class OsmVertexOnLevel extends OsmVertex {
   private final String level;
 
   public OsmVertexOnLevel(OSMNode node, String level) {
-    super(node.getCoordinate().x, node.getCoordinate().y, node.getId());
+    super(node.getWgsCoordinate(), node.getId());
     this.level = level;
   }
 

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.street.model.vertex.Vertex;
 import org.opentripplanner.street.model.vertex.VertexLabel;
@@ -15,7 +16,7 @@ class CalculateWorldEnvelopeModuleTest {
 
   private final TransitModelForTest testModel = TransitModelForTest.of();
 
-  private final List<V> vertexes = List.of(new V(10d, 12d), new V(11d, 13d), new V(14d, 15d));
+  private final List<V> vertexes = List.of(new V(12d, 10d), new V(13d, 11d), new V(15d, 14d));
 
   private final List<RegularStop> stops = List.of(
     testModel.stop("1").withCoordinate(20d, 22d).build(),
@@ -54,8 +55,8 @@ class CalculateWorldEnvelopeModuleTest {
 
   static class V extends Vertex {
 
-    protected V(double x, double y) {
-      super(x, y);
+    protected V(double lat, double lon) {
+      super(new WgsCoordinate(lat, lon));
     }
 
     @Override

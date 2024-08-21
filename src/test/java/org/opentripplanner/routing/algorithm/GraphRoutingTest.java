@@ -105,7 +105,7 @@ public abstract class GraphRoutingTest {
 
     // -- Street network
     public IntersectionVertex intersection(String label, double latitude, double longitude) {
-      return vertexFactory.intersection(label, longitude, latitude);
+      return vertexFactory.intersection(label, new WgsCoordinate(latitude, longitude));
     }
 
     public StreetEdgeBuilder<?> streetBuilder(
@@ -333,8 +333,7 @@ public abstract class GraphRoutingTest {
       var vehicleRentalStation = new VehicleRentalStation();
       vehicleRentalStation.id = new FeedScopedId(network, id);
       vehicleRentalStation.name = new NonLocalizedString(id);
-      vehicleRentalStation.longitude = longitude;
-      vehicleRentalStation.latitude = latitude;
+      vehicleRentalStation.coordinate = new WgsCoordinate(latitude, longitude);
       vehicleRentalStation.vehiclesAvailable = 2;
       vehicleRentalStation.spacesAvailable = 2;
       final RentalVehicleType vehicleType = RentalVehicleType.getDefaultType(network);

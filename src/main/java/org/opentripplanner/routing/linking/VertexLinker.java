@@ -18,6 +18,7 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import org.opentripplanner.framework.application.OTPFeature;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.routing.graph.index.EdgeSpatialIndex;
 import org.opentripplanner.street.model.edge.AreaEdge;
@@ -379,7 +380,7 @@ public class VertexLinker {
           if (vertex instanceof IntersectionVertex iv) {
             start = iv;
           } else {
-            start = splitVertex(aEdge, scope, direction, vertex.getLon(), vertex.getLat());
+            start = splitVertex(aEdge, scope, direction, vertex.getWgsCoordinate());
           }
           split = false;
         }
@@ -423,9 +424,9 @@ public class VertexLinker {
     LineString geometry = originalEdge.getGeometry();
 
     // create the geometries
-    Coordinate splitPoint = ll.getCoordinate(geometry);
+    var splitPoint = new WgsCoordinate(ll.getCoordinate(geometry));
 
-    SplitterVertex v = splitVertex(originalEdge, scope, direction, splitPoint.x, splitPoint.y);
+    SplitterVertex v = splitVertex(originalEdge, scope, direction, splitPoint);
 
     // Split the 'edge' at 'v' in 2 new edges and connect these 2 edges to the
     // existing vertices
@@ -460,8 +461,7 @@ public class VertexLinker {
     StreetEdge originalEdge,
     Scope scope,
     LinkingDirection direction,
-    double x,
-    double y
+    WgsCoordinate coordinate
   ) {
     SplitterVertex v;
     String uniqueSplitLabel = "split_" + graph.nextSplitNumber++;
@@ -469,15 +469,14 @@ public class VertexLinker {
     if (scope != Scope.PERMANENT) {
       TemporarySplitterVertex tsv = new TemporarySplitterVertex(
         uniqueSplitLabel,
-        x,
-        y,
+        coordinate,
         originalEdge,
         direction == LinkingDirection.OUTGOING
       );
       tsv.setWheelchairAccessible(originalEdge.isWheelchairAccessible());
       v = tsv;
     } else {
-      v = vertexFactory.splitter(originalEdge, x, y, uniqueSplitLabel);
+      v = vertexFactory.splitter(originalEdge, coordinate, uniqueSplitLabel);
     }
     v.addRentalRestriction(originalEdge.getFromVertex().rentalRestrictions());
     v.addRentalRestriction(originalEdge.getToVertex().rentalRestrictions());

@@ -1,11 +1,13 @@
 package org.opentripplanner.street.model.vertex;
 
+import org.opentripplanner.framework.geometry.WgsCoordinate;
+
 public class ExitVertex extends OsmVertex {
 
   private final String exitName;
 
-  public ExitVertex(double x, double y, long nodeId, String exitName) {
-    super(x, y, nodeId);
+  public ExitVertex(WgsCoordinate coordinate, long nodeId, String exitName) {
+    super(coordinate, nodeId);
     this.exitName = exitName;
   }
 

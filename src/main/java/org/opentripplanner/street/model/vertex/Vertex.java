@@ -29,8 +29,7 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   public static final I18NString NO_NAME = I18NString.of("(no name provided)");
   private static final Logger LOG = LoggerFactory.getLogger(Vertex.class);
 
-  private final double x;
-  private final double y;
+  private final WgsCoordinate coordinate;
 
   private transient Edge[] incoming = new Edge[0];
 
@@ -39,9 +38,8 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
 
   /* CONSTRUCTORS */
 
-  protected Vertex(double x, double y) {
-    this.x = x;
-    this.y = y;
+  protected Vertex(WgsCoordinate coordinate) {
+    this.coordinate = coordinate;
   }
 
   /* PUBLIC METHODS */
@@ -51,8 +49,8 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
     var sb = new StringBuilder();
     sb.append("{").append(this.getLabel());
     if (this.getCoordinate() != null) {
-      sb.append(" lat,lng=").append(this.getCoordinate().y);
-      sb.append(",").append(this.getCoordinate().x);
+      sb.append(" lat,lng=").append(this.coordinate.latitude());
+      sb.append(",").append(this.coordinate.longitude());
     }
     if (!rentalRestrictions.toList().isEmpty()) {
       sb.append(", traversalExtension=").append(rentalRestrictions);
@@ -126,12 +124,12 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
 
   /** Get the longitude of the vertex */
   public final double getLon() {
-    return x;
+    return coordinate.longitude();
   }
 
   /** Get the latitude of the vertex */
   public final double getLat() {
-    return y;
+    return coordinate.latitude();
   }
 
   /**
@@ -164,7 +162,11 @@ public abstract class Vertex implements AStarVertex<State, Edge, Vertex>, Serial
   }
 
   public Coordinate getCoordinate() {
-    return new Coordinate(getX(), getY());
+    return coordinate.asJtsCoordinate();
+  }
+
+  public WgsCoordinate getWgsCoordinate() {
+    return coordinate;
   }
 
   public List<StreetEdge> getIncomingStreetEdges() {

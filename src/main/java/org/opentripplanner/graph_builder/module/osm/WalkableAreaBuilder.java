@@ -23,6 +23,7 @@ import org.opentripplanner.astar.model.ShortestPathTree;
 import org.opentripplanner.astar.spi.SkipEdgeStrategy;
 import org.opentripplanner.framework.geometry.GeometryUtils;
 import org.opentripplanner.framework.geometry.SphericalDistanceLibrary;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.graph_builder.services.osm.EdgeNamer;
@@ -614,7 +615,7 @@ class WalkableAreaBuilder {
 
           IntersectionVertex newEndpoint = areaBoundaryVertexForCoordinate.get(edgeCoordinate);
           if (newEndpoint == null) {
-            newEndpoint = vertexFactory.intersection(edgeCoordinate);
+            newEndpoint = vertexFactory.intersection(new WgsCoordinate(edgeCoordinate));
             areaBoundaryVertexForCoordinate.put(edgeCoordinate, newEndpoint);
           }
           edges.addAll(createSegments(startEndpoint, newEndpoint, List.of(area), edgeList));

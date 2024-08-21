@@ -1,6 +1,7 @@
 package org.opentripplanner.street.model.vertex;
 
 import javax.annotation.Nonnull;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.framework.i18n.I18NString;
 
 /**
@@ -13,8 +14,8 @@ public class SplitterVertex extends IntersectionVertex {
   private final VertexLabel label;
   private final I18NString name;
 
-  public SplitterVertex(String label, double x, double y, I18NString name) {
-    super(x, y, false, false);
+  public SplitterVertex(String label, WgsCoordinate coordinate, I18NString name) {
+    super(coordinate, false, false);
     this.label = VertexLabel.string(label);
     this.name = name;
   }

@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.routing.api.request.StreetMode;
 import org.opentripplanner.service.vehiclerental.model.GeofencingZone;
 import org.opentripplanner.service.vehiclerental.model.RentalVehicleType;
@@ -206,8 +207,7 @@ class VehicleRentalEdgeTest {
     private static final VehicleRentalVehicle RENTAL_PLACE = new VehicleRentalVehicle();
 
     static {
-      RENTAL_PLACE.latitude = 1;
-      RENTAL_PLACE.longitude = 1;
+      RENTAL_PLACE.coordinate = new WgsCoordinate(1, 1);
       RENTAL_PLACE.id = new FeedScopedId(NETWORK, "123");
       RENTAL_PLACE.vehicleType =
         new RentalVehicleType(

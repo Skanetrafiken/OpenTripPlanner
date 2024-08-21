@@ -2,6 +2,7 @@ package org.opentripplanner.openstreetmap.model;
 
 import java.util.Set;
 import org.locationtech.jts.geom.Coordinate;
+import org.opentripplanner.framework.geometry.WgsCoordinate;
 import org.opentripplanner.street.model.StreetTraversalPermission;
 
 public class OSMNode extends OSMWithTags {
@@ -17,6 +18,10 @@ public class OSMNode extends OSMWithTags {
 
   public Coordinate getCoordinate() {
     return new Coordinate(this.lon, this.lat);
+  }
+
+  public WgsCoordinate getWgsCoordinate() {
+    return new WgsCoordinate(this.lat, this.lon);
   }
 
   /**
