@@ -9,6 +9,7 @@ import org.opentripplanner.model.Timetable;
 import org.opentripplanner.model.TimetableSnapshot;
 import org.opentripplanner.routing.algorithm.raptoradapter.transit.mappers.RealTimeRaptorTransitDataUpdater;
 import org.opentripplanner.routing.util.ConcurrentPublished;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.framework.Result;
 import org.opentripplanner.transit.model.network.TripPattern;
@@ -173,8 +174,8 @@ public final class TimetableSnapshotManager {
   /**
    * Clear all data of snapshot for the provided feed id
    */
-  public void clearBuffer(String feedId) {
-    buffer.clear(feedId);
+  public void clearBuffer(FeedId feedId) {
+    buffer.clear(feedId.getId());
   }
 
   /**

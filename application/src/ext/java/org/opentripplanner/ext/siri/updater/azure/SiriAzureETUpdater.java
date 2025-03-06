@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.updater.spi.ResultLogger;
 import org.opentripplanner.updater.spi.UpdateResult;
 import org.opentripplanner.updater.spi.WriteToGraphCallback;
@@ -23,7 +24,7 @@ public class SiriAzureETUpdater implements SiriAzureMessageHandler {
   private final SiriRealTimeTripUpdateAdapter adapter;
   private final Consumer<UpdateResult> recordMetrics;
   private final boolean fuzzyTripMatching;
-  private final String feedId;
+  private final FeedId feedId;
 
   private WriteToGraphCallback writeToGraphCallback;
 
@@ -34,7 +35,7 @@ public class SiriAzureETUpdater implements SiriAzureMessageHandler {
     this.adapter = adapter;
     this.recordMetrics = TripUpdateMetrics.streaming(config);
     this.fuzzyTripMatching = config.isFuzzyTripMatching();
-    this.feedId = Objects.requireNonNull(config.feedId(), "feedId must not be null");
+    this.feedId = FeedId.parse(Objects.requireNonNull(config.feedId(), "feedId must not be null"));
   }
 
   @Override

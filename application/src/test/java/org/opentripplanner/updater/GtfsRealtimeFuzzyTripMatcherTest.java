@@ -14,6 +14,7 @@ import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.model.calendar.CalendarServiceData;
 import org.opentripplanner.transit.model._data.TimetableRepositoryForTest;
 import org.opentripplanner.transit.model.framework.Deduplicator;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.network.Route;
 import org.opentripplanner.transit.model.network.TripPattern;
@@ -30,7 +31,7 @@ import org.opentripplanner.updater.trip.gtfs.GtfsRealtimeFuzzyTripMatcher;
 public class GtfsRealtimeFuzzyTripMatcherTest {
 
   private static final String ROUTE_ID = "r1";
-  private static final String FEED_ID = TimetableRepositoryForTest.FEED_ID;
+  private static final FeedId FEED_ID = FeedId.parse(TimetableRepositoryForTest.FEED_ID);
   private static final LocalDate SERVICE_DATE = LocalDate.of(2024, 11, 13);
   private static final String GTFS_SERVICE_DATE = SERVICE_DATE.toString().replaceAll("-", "");
   private static final int SERVICE_CODE = 555;

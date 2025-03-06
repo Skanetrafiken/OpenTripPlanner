@@ -22,6 +22,7 @@ import org.opentripplanner.routing.alertpatch.TimePeriod;
 import org.opentripplanner.routing.alertpatch.TransitAlert;
 import org.opentripplanner.routing.alertpatch.TransitAlertBuilder;
 import org.opentripplanner.routing.services.TransitAlertService;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.updater.trip.gtfs.GtfsRealtimeFuzzyTripMatcher;
 
@@ -33,7 +34,7 @@ import org.opentripplanner.updater.trip.gtfs.GtfsRealtimeFuzzyTripMatcher;
 public class AlertsUpdateHandler {
 
   private static final int MISSING_INT_FIELD_VALUE = -1;
-  private String feedId;
+  private FeedId feedId;
   private TransitAlertService transitAlertService;
 
   /** How long before the posted start of an event it should be displayed to users */
@@ -63,7 +64,9 @@ public class AlertsUpdateHandler {
   }
 
   public void setFeedId(String feedId) {
-    if (feedId != null) this.feedId = feedId.intern();
+    if (feedId != null) {
+      this.feedId = FeedId.parse(feedId.intern());
+    }
   }
 
   public void setTransitAlertService(TransitAlertService transitAlertService) {
@@ -80,7 +83,7 @@ public class AlertsUpdateHandler {
     GtfsRealtimeFuzzyTripMatcher fuzzyTripMatcher
   ) {
     TransitAlertBuilder alertBuilder = TransitAlert
-      .of(new FeedScopedId(feedId, id))
+      .of(feedId.scopedId(id))
       .withDescriptionText(deBuffer(alert.getDescriptionText()))
       .withHeaderText(deBuffer(alert.getHeaderText()))
       .withUrl(deBuffer(alert.getUrl()))
@@ -140,36 +143,30 @@ public class AlertsUpdateHandler {
       if (tripId != null) {
         if (stopId != null) {
           alertBuilder.addEntity(
-            new EntitySelector.StopAndTrip(
-              new FeedScopedId(feedId, stopId),
-              new FeedScopedId(feedId, tripId)
-            )
+            new EntitySelector.StopAndTrip(feedId.scopedId(stopId), feedId.scopedId(tripId))
           );
         } else {
-          alertBuilder.addEntity(new EntitySelector.Trip(new FeedScopedId(feedId, tripId)));
+          alertBuilder.addEntity(new EntitySelector.Trip(feedId.scopedId(tripId)));
         }
       } else if (routeId != null) {
         if (stopId != null) {
           alertBuilder.addEntity(
-            new EntitySelector.StopAndRoute(
-              new FeedScopedId(feedId, stopId),
-              new FeedScopedId(feedId, routeId)
-            )
+            new EntitySelector.StopAndRoute(feedId.scopedId(stopId), feedId.scopedId(routeId))
           );
         } else if (directionId != MISSING_INT_FIELD_VALUE) {
           alertBuilder.addEntity(
             new EntitySelector.DirectionAndRoute(
-              new FeedScopedId(feedId, routeId),
+              feedId.scopedId(routeId),
               directionMapper.map(directionId)
             )
           );
         } else {
-          alertBuilder.addEntity(new EntitySelector.Route(new FeedScopedId(feedId, routeId)));
+          alertBuilder.addEntity(new EntitySelector.Route(feedId.scopedId(routeId)));
         }
       } else if (stopId != null) {
-        alertBuilder.addEntity(new EntitySelector.Stop(new FeedScopedId(feedId, stopId)));
+        alertBuilder.addEntity(new EntitySelector.Stop(feedId.scopedId(stopId)));
       } else if (agencyId != null) {
-        FeedScopedId feedScopedAgencyId = new FeedScopedId(feedId, agencyId);
+        FeedScopedId feedScopedAgencyId = feedId.scopedId(agencyId);
         if (routeType != MISSING_INT_FIELD_VALUE) {
           alertBuilder.addEntity(
             new EntitySelector.RouteTypeAndAgency(feedScopedAgencyId, routeType)
@@ -178,7 +175,7 @@ public class AlertsUpdateHandler {
           alertBuilder.addEntity(new EntitySelector.Agency(feedScopedAgencyId));
         }
       } else if (routeType != MISSING_INT_FIELD_VALUE) {
-        alertBuilder.addEntity(new EntitySelector.RouteType(feedId, routeType));
+        alertBuilder.addEntity(new EntitySelector.RouteType(feedId.getId(), routeType));
       } else {
         String description = "Entity selector: " + informed;
         alertBuilder.addEntity(new EntitySelector.Unknown(description));

@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import org.opentripplanner.graph_builder.issue.api.DataImportIssueStore;
 import org.opentripplanner.gtfs.mapping.DirectionMapper;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.network.Route;
 import org.opentripplanner.transit.model.network.TripPattern;
@@ -34,10 +35,8 @@ public class GtfsRealtimeFuzzyTripMatcher {
     this.transitService = transitService;
   }
 
-  public TripDescriptor match(String feedId, TripDescriptor trip) {
-    if (
-      trip.hasTripId() && transitService.containsTrip(new FeedScopedId(feedId, trip.getTripId()))
-    ) {
+  public TripDescriptor match(FeedId feedId, TripDescriptor trip) {
+    if (trip.hasTripId() && transitService.containsTrip(feedId.scopedId(trip.getTripId()))) {
       // trip_id already exists
       return trip;
     }
@@ -49,7 +48,7 @@ public class GtfsRealtimeFuzzyTripMatcher {
       return trip;
     }
 
-    FeedScopedId routeId = new FeedScopedId(feedId, trip.getRouteId());
+    FeedScopedId routeId = feedId.scopedId(trip.getRouteId());
     int time = TimeUtils.time(trip.getStartTime());
     LocalDate date;
     try {

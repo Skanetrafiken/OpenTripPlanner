@@ -1,6 +1,7 @@
 package org.opentripplanner.updater;
 
 import org.opentripplanner.routing.graph.Graph;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.service.TransitService;
 import org.opentripplanner.updater.trip.gtfs.GtfsRealtimeFuzzyTripMatcher;
 import org.opentripplanner.updater.trip.siri.EntityResolver;
@@ -42,5 +43,5 @@ public interface RealTimeUpdateContext {
    * The entity resolver has access to all real-time updates applied so far,
    * including those not yet committed in a published snapshot.
    */
-  EntityResolver entityResolver(String feedId);
+  EntityResolver entityResolver(FeedId feedId);
 }

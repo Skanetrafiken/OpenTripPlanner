@@ -2,6 +2,7 @@ package org.opentripplanner.updater.trip.siri.updater;
 
 import java.util.List;
 import java.util.function.Consumer;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.updater.spi.PollingGraphUpdater;
 import org.opentripplanner.updater.spi.PollingGraphUpdaterParameters;
 import org.opentripplanner.updater.spi.ResultLogger;
@@ -28,7 +29,7 @@ public class SiriETUpdater extends PollingGraphUpdater {
   /**
    * Feed id that is used for the trip ids in the TripUpdates
    */
-  private final String feedId;
+  private final FeedId feedId;
 
   private final EstimatedTimetableHandler estimatedTimetableHandler;
 
@@ -41,7 +42,7 @@ public class SiriETUpdater extends PollingGraphUpdater {
     Consumer<UpdateResult> metricsConsumer
   ) {
     super(config);
-    this.feedId = config.feedId();
+    this.feedId = FeedId.parse(config.feedId());
 
     this.updateSource = source;
 

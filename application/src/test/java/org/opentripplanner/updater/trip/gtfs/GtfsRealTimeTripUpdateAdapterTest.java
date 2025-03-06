@@ -22,6 +22,7 @@ import org.opentripplanner.ConstantsForTests;
 import org.opentripplanner.TestOtpModel;
 import org.opentripplanner.model.Timetable;
 import org.opentripplanner.model.TimetableSnapshot;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.timetable.RealTimeState;
@@ -42,7 +43,7 @@ public class GtfsRealTimeTripUpdateAdapterTest {
 
   private final GtfsRealtimeFuzzyTripMatcher TRIP_MATCHER_NOOP = null;
 
-  private String feedId;
+  private FeedId feedId;
   private TimetableSnapshotManager snapshotManager;
 
   @BeforeEach
@@ -51,7 +52,7 @@ public class GtfsRealTimeTripUpdateAdapterTest {
     timetableRepository = model.timetableRepository();
     transitService = new DefaultTransitService(timetableRepository);
 
-    feedId = transitService.listFeedIds().stream().findFirst().get();
+    feedId = FeedId.parse(transitService.listFeedIds().stream().findFirst().get());
     snapshotManager =
       new TimetableSnapshotManager(null, TimetableSnapshotParameters.DEFAULT, () -> SERVICE_DATE);
   }
@@ -180,7 +181,7 @@ public class GtfsRealTimeTripUpdateAdapterTest {
 
     // Original trip pattern
     {
-      final FeedScopedId tripId = new FeedScopedId(feedId, modifiedTripId);
+      final FeedScopedId tripId = feedId.scopedId(modifiedTripId);
       final Trip trip = transitService.getTrip(tripId);
       final TripPattern originalTripPattern = transitService.findPattern(trip);
 
@@ -226,7 +227,7 @@ public class GtfsRealTimeTripUpdateAdapterTest {
     // New trip pattern
     {
       final TripPattern newTripPattern = snapshot.getNewTripPatternForModifiedTrip(
-        new FeedScopedId(feedId, modifiedTripId),
+        feedId.scopedId(modifiedTripId),
         SERVICE_DATE
       );
       assertNotNull(newTripPattern, "New trip pattern should be found");

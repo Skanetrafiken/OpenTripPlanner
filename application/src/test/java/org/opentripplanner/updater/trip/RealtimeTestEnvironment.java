@@ -11,6 +11,7 @@ import org.opentripplanner.DateTimeHelper;
 import org.opentripplanner.model.TimetableSnapshot;
 import org.opentripplanner.routing.graph.Graph;
 import org.opentripplanner.transit.model._data.TimetableRepositoryForTest;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.timetable.TripTimes;
@@ -76,8 +77,8 @@ public final class RealtimeTestEnvironment implements RealtimeTestConstants {
     return timetable.getTripTimes(trip);
   }
 
-  public String getFeedId() {
-    return TimetableRepositoryForTest.FEED_ID;
+  public FeedId getFeedId() {
+    return FeedId.parse(TimetableRepositoryForTest.FEED_ID);
   }
 
   private EstimatedTimetableHandler getEstimatedTimetableHandler(boolean fuzzyMatching) {

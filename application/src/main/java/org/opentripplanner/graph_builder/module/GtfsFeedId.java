@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.onebusaway.csv_entities.CsvInputSource;
+import org.opentripplanner.transit.model.framework.FeedId;
 
 /**
  * Represent a feed id in a GTFS feed.
@@ -34,6 +35,10 @@ public class GtfsFeedId {
 
   public String getId() {
     return id;
+  }
+
+  public FeedId getFeedId() {
+    return FeedId.parse(id);
   }
 
   public static class Builder {

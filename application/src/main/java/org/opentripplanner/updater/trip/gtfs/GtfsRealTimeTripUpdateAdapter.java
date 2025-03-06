@@ -45,6 +45,7 @@ import org.opentripplanner.model.Timetable;
 import org.opentripplanner.transit.model.basic.TransitMode;
 import org.opentripplanner.transit.model.framework.DataValidationException;
 import org.opentripplanner.transit.model.framework.Deduplicator;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.framework.Result;
 import org.opentripplanner.transit.model.network.Route;
@@ -139,7 +140,7 @@ public class GtfsRealTimeTripUpdateAdapter {
     BackwardsDelayPropagationType backwardsDelayPropagationType,
     UpdateIncrementality updateIncrementality,
     List<TripUpdate> updates,
-    String feedId
+    FeedId feedId
   ) {
     Map<ScheduleRelationship, Integer> failuresByRelationship = new HashMap<>();
     List<Result<UpdateSuccess, UpdateError>> results = new ArrayList<>();
@@ -170,7 +171,7 @@ public class GtfsRealTimeTripUpdateAdapter {
         continue;
       }
 
-      FeedScopedId tripId = new FeedScopedId(feedId, tripUpdate.getTrip().getTripId());
+      FeedScopedId tripId = feedId.scopedId(tripUpdate.getTrip().getTripId());
 
       LocalDate serviceDate;
       if (tripDescriptor.hasStartDate()) {
@@ -329,7 +330,7 @@ public class GtfsRealTimeTripUpdateAdapter {
   }
 
   private static void logUpdateResult(
-    String feedId,
+    FeedId feedId,
     Map<ScheduleRelationship, Integer> failuresByRelationship,
     UpdateResult updateResult
   ) {
@@ -1162,10 +1163,10 @@ public class GtfsRealTimeTripUpdateAdapter {
     String message,
     Object... params
   ) {
-    log(Level.DEBUG, id.getFeedId(), id.getId(), serviceDate, message, params);
+    log(Level.DEBUG, id.getFeed(), id.getId(), serviceDate, message, params);
   }
 
-  private static void debug(String feedId, String message, Object... params) {
+  private static void debug(FeedId feedId, String message, Object... params) {
     log(Level.DEBUG, feedId, null, null, message, params);
   }
 
@@ -1175,10 +1176,10 @@ public class GtfsRealTimeTripUpdateAdapter {
     String message,
     Object... params
   ) {
-    log(Level.TRACE, id.getFeedId(), id.getId(), serviceDate, message, params);
+    log(Level.TRACE, id.getFeed(), id.getId(), serviceDate, message, params);
   }
 
-  private static void info(String feedId, String message, Object... params) {
+  private static void info(FeedId feedId, String message, Object... params) {
     log(Level.INFO, feedId, null, null, message, params);
   }
 
@@ -1191,7 +1192,7 @@ public class GtfsRealTimeTripUpdateAdapter {
    */
   private static void log(
     Level logLevel,
-    String feedId,
+    FeedId feedId,
     @Nullable String tripId,
     @Nullable LocalDate serviceDate,
     String message,
@@ -1200,12 +1201,12 @@ public class GtfsRealTimeTripUpdateAdapter {
     if (LOG.isEnabledForLevel(logLevel)) {
       String m = tripId != null || serviceDate != null
         ? "[feedId: %s, tripId: %s, serviceDate: %s] %s".formatted(
-            feedId,
+            feedId.getId(),
             tripId,
             serviceDate,
             message
           )
-        : "[feedId: %s] %s".formatted(feedId, message);
+        : "[feedId: %s] %s".formatted(feedId.getId(), message);
       LOG.makeLoggingEventBuilder(logLevel).log(m, params);
     }
   }

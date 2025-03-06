@@ -3,6 +3,7 @@ package org.opentripplanner.updater.spi;
 import static net.logstash.logback.argument.StructuredArguments.keyValue;
 
 import java.util.stream.Collectors;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.utils.lang.DoubleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +16,12 @@ public class ResultLogger {
 
   private static final Logger LOG = LoggerFactory.getLogger(ResultLogger.class);
 
-  public static void logUpdateResult(String feedId, String type, UpdateResult updateResult) {
+  public static void logUpdateResult(FeedId feedId, String type, UpdateResult updateResult) {
     var totalUpdates = updateResult.successful() + updateResult.failed();
     if (totalUpdates > 0) {
       LOG.info(
         "[feedId={}, type={}] {} of {} update messages were applied successfully (success rate: {}%)",
-        feedId,
+        feedId.getId(),
         type,
         updateResult.successful(),
         totalUpdates,
@@ -33,7 +34,7 @@ public class ResultLogger {
     }
   }
 
-  public static void logUpdateResultErrors(String feedId, String type, UpdateResult updateResult) {
+  public static void logUpdateResultErrors(FeedId feedId, String type, UpdateResult updateResult) {
     if (updateResult.failed() == 0) {
       return;
     }
@@ -45,7 +46,7 @@ public class ResultLogger {
         var tripIds = value.stream().map(UpdateError::debugId).collect(Collectors.toSet());
         LOG.warn(
           "[{} {}] {} failures of {}: {}",
-          keyValue("feedId", feedId),
+          keyValue("feedId", feedId.getId()),
           keyValue("type", type),
           value.size(),
           keyValue("errorType", key),

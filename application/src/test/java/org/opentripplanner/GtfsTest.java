@@ -249,7 +249,7 @@ public abstract class GtfsTest {
         REQUIRED_NO_DATA,
         UpdateIncrementality.DIFFERENTIAL,
         updates,
-        feedId.getId()
+        feedId.getFeedId()
       );
       alertsUpdateHandler.update(feedMessage, null);
     } catch (FileNotFoundException exception) {}

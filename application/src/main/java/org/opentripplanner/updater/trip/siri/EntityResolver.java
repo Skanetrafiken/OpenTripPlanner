@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import javax.annotation.Nullable;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.network.Route;
 import org.opentripplanner.transit.model.organization.Operator;
@@ -30,15 +31,20 @@ public class EntityResolver {
 
   private final TransitService transitService;
 
-  private final String feedId;
+  private final FeedId feedId;
 
-  public EntityResolver(TransitService transitService, String feedId) {
+  public EntityResolver(TransitService transitService, FeedId feedId) {
     this.transitService = transitService;
     this.feedId = feedId;
   }
 
+  // This constructor will be removed
+  public EntityResolver(TransitService transitService, String feedId) {
+    this(transitService, FeedId.parse(feedId));
+  }
+
   public FeedScopedId resolveId(String entityId) {
-    return new FeedScopedId(feedId, entityId);
+    return feedId.scopedId(entityId);
   }
 
   /**

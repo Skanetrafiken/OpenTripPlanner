@@ -4,6 +4,7 @@ import com.google.transit.realtime.GtfsRealtime.TripUpdate;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.updater.GraphWriterRunnable;
 import org.opentripplanner.updater.RealTimeUpdateContext;
 import org.opentripplanner.updater.spi.UpdateResult;
@@ -24,7 +25,7 @@ public class TripUpdateGraphWriterRunnable implements GraphWriterRunnable {
 
   private final BackwardsDelayPropagationType backwardsDelayPropagationType;
 
-  private final String feedId;
+  private final FeedId feedId;
   private final Consumer<UpdateResult> sendMetrics;
   private final GtfsRealTimeTripUpdateAdapter adapter;
 
@@ -42,7 +43,7 @@ public class TripUpdateGraphWriterRunnable implements GraphWriterRunnable {
     this.backwardsDelayPropagationType = backwardsDelayPropagationType;
     this.updateIncrementality = updateIncrementality;
     this.updates = Objects.requireNonNull(updates);
-    this.feedId = Objects.requireNonNull(feedId);
+    this.feedId = FeedId.parse(Objects.requireNonNull(feedId));
     this.sendMetrics = sendMetrics;
   }
 

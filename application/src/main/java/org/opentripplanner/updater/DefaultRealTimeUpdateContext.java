@@ -2,6 +2,7 @@ package org.opentripplanner.updater;
 
 import org.opentripplanner.model.TimetableSnapshot;
 import org.opentripplanner.routing.graph.Graph;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.service.DefaultTransitService;
 import org.opentripplanner.transit.service.TimetableRepository;
 import org.opentripplanner.transit.service.TransitService;
@@ -55,7 +56,7 @@ public class DefaultRealTimeUpdateContext implements RealTimeUpdateContext {
   }
 
   @Override
-  public EntityResolver entityResolver(String feedId) {
+  public EntityResolver entityResolver(FeedId feedId) {
     return new EntityResolver(transitService, feedId);
   }
 }

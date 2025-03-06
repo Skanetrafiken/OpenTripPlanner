@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import org.opentripplanner.model.RealTimeTripUpdate;
 import org.opentripplanner.model.Timetable;
 import org.opentripplanner.transit.model.framework.DataValidationException;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.Result;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.timetable.RealTimeTripTimes;
@@ -85,7 +86,7 @@ public class SiriRealTimeTripUpdateAdapter {
   public UpdateResult applyEstimatedTimetable(
     @Nullable SiriFuzzyTripMatcher fuzzyTripMatcher,
     EntityResolver entityResolver,
-    String feedId,
+    FeedId feedId,
     UpdateIncrementality incrementality,
     List<EstimatedTimetableDeliveryStructure> updates
   ) {

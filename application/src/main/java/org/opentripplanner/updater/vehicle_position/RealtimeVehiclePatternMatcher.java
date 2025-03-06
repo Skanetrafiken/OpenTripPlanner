@@ -34,6 +34,7 @@ import org.opentripplanner.service.realtimevehicles.RealtimeVehicleRepository;
 import org.opentripplanner.service.realtimevehicles.model.RealtimeVehicle;
 import org.opentripplanner.service.realtimevehicles.model.RealtimeVehicle.StopStatus;
 import org.opentripplanner.standalone.config.routerconfig.updaters.VehiclePositionsUpdaterConfig;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.transit.model.framework.FeedScopedId;
 import org.opentripplanner.transit.model.framework.Result;
 import org.opentripplanner.transit.model.network.TripPattern;
@@ -59,7 +60,7 @@ public class RealtimeVehiclePatternMatcher {
 
   private static final Logger LOG = LoggerFactory.getLogger(RealtimeVehiclePatternMatcher.class);
 
-  private final String feedId;
+  private final FeedId feedId;
   private final RealtimeVehicleRepository repository;
   private final ZoneId timeZoneId;
 
@@ -81,7 +82,7 @@ public class RealtimeVehiclePatternMatcher {
     GtfsRealtimeFuzzyTripMatcher fuzzyTripMatcher,
     Set<VehiclePositionsUpdaterConfig.VehiclePositionFeature> vehiclePositionFeatures
   ) {
-    this.feedId = feedId;
+    this.feedId = FeedId.parse(feedId);
     this.getTripForId = getTripForId;
     this.getStaticPattern = getStaticPattern;
     this.getRealtimePattern = getRealtimePattern;
@@ -226,7 +227,7 @@ public class RealtimeVehiclePatternMatcher {
 
     if (vehiclePosition.hasVehicle()) {
       var vehicle = vehiclePosition.getVehicle();
-      var id = new FeedScopedId(feedId, vehicle.getId());
+      var id = feedId.scopedId(vehicle.getId());
       newVehicle
         .withVehicleId(id)
         .withLabel(Optional.ofNullable(vehicle.getLabel()).orElse(vehicle.getLicensePlate()));
@@ -326,7 +327,7 @@ public class RealtimeVehiclePatternMatcher {
   }
 
   private Result<PatternAndRealtimeVehicle, UpdateError> toRealtimeVehicle(
-    String feedId,
+    FeedId feedId,
     VehiclePosition vehiclePosition
   ) {
     if (!vehiclePosition.hasTrip()) {
@@ -347,7 +348,7 @@ public class RealtimeVehiclePatternMatcher {
       return Result.failure(UpdateError.noTripId(UpdateError.UpdateErrorType.NO_TRIP_ID));
     }
 
-    var scopedTripId = new FeedScopedId(feedId, tripId);
+    var scopedTripId = feedId.scopedId(tripId);
     var trip = getTripForId.apply(scopedTripId);
     if (trip == null) {
       LOG.debug(

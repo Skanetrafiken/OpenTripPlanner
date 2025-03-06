@@ -1,6 +1,7 @@
 package org.opentripplanner.updater.trip.siri.updater.google;
 
 import java.util.function.Consumer;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.updater.spi.GraphUpdater;
 import org.opentripplanner.updater.spi.UpdateResult;
 import org.opentripplanner.updater.spi.WriteToGraphCallback;
@@ -39,8 +40,10 @@ public class SiriETGooglePubsubUpdater implements GraphUpdater {
         config.topicName()
       );
 
+    // TODO: this might throw an error since config.feedId() is nullable
+    var feedId = FeedId.parse(config.feedId());
     estimatedTimetableHandler =
-      new EstimatedTimetableHandler(adapter, config.fuzzyTripMatching(), config.feedId());
+      new EstimatedTimetableHandler(adapter, config.fuzzyTripMatching(), feedId);
 
     updateResultConsumer = TripUpdateMetrics.streaming(config);
   }

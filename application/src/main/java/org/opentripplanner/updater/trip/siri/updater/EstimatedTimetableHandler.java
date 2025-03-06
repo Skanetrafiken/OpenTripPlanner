@@ -1,6 +1,7 @@
 package org.opentripplanner.updater.trip.siri.updater;
 
 import java.util.List;
+import org.opentripplanner.transit.model.framework.FeedId;
 import org.opentripplanner.updater.RealTimeUpdateContext;
 import org.opentripplanner.updater.spi.UpdateResult;
 import org.opentripplanner.updater.trip.UpdateIncrementality;
@@ -17,12 +18,12 @@ public class EstimatedTimetableHandler {
   /**
    * The ID for the static feed to which these real time updates are applied
    */
-  private final String feedId;
+  private final FeedId feedId;
 
   public EstimatedTimetableHandler(
     SiriRealTimeTripUpdateAdapter adapter,
     boolean fuzzyTripMatching,
-    String feedId
+    FeedId feedId
   ) {
     this.adapter = adapter;
     this.fuzzyTripMatching = fuzzyTripMatching;

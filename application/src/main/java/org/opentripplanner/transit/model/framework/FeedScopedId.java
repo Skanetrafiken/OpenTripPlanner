@@ -82,6 +82,10 @@ public final class FeedScopedId implements Serializable, Comparable<FeedScopedId
     return feedId + ID_SEPARATOR + id;
   }
 
+  public FeedId getFeed() {
+    return new FeedId(feedId);
+  }
+
   public String getFeedId() {
     return feedId;
   }
