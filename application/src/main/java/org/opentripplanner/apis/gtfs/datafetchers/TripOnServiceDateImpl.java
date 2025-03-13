@@ -27,7 +27,7 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
   public DataFetcher<TripTimeOnDate> end() {
     return environment -> {
       var arguments = getFromTripTimesArguments(environment);
-      if (arguments.timetable() == null) {
+      if (arguments == null) {
         return null;
       }
       return TripTimeOnDate.lastFromTripTimes(
@@ -43,7 +43,7 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
   public DataFetcher<TripTimeOnDate> start() {
     return environment -> {
       var arguments = getFromTripTimesArguments(environment);
-      if (arguments.timetable() == null) {
+      if (arguments == null) {
         return null;
       }
       return TripTimeOnDate.firstFromTripTimes(
@@ -59,7 +59,7 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
   public DataFetcher<Iterable<TripTimeOnDate>> stopCalls() {
     return environment -> {
       var arguments = getFromTripTimesArguments(environment);
-      if (arguments.timetable() == null) {
+      if (arguments == null) {
         return List.of();
       }
       return TripTimeOnDate.fromTripTimes(
@@ -104,6 +104,7 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
     return environment.getSource();
   }
 
+  @Nullable
   private FromTripTimesArguments getFromTripTimesArguments(DataFetchingEnvironment environment) {
     TransitService transitService = getTransitService(environment);
     Trip trip = getTrip(environment);
@@ -114,6 +115,9 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
       transitService.getTimeZone()
     ).toInstant();
     Timetable timetable = getTimetable(environment, trip, serviceDate);
+    if (timetable == null) {
+      return null;
+    }
     return new FromTripTimesArguments(trip, serviceDate, midnight, timetable);
   }
 
@@ -121,6 +125,6 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
     Trip trip,
     LocalDate serviceDate,
     Instant midnight,
-    @Nullable Timetable timetable
+    Timetable timetable
   ) {}
 }
