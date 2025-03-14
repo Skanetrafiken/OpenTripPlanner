@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.opentripplanner.framework.i18n.I18NString;
 import org.opentripplanner.transit.model.network.TripPattern;
@@ -105,36 +106,16 @@ public class TripTimeOnDate {
     return out;
   }
 
-  /**
-   * Get first stop TripTimeOnDate from Timetable.
-   */
-  public static TripTimeOnDate firstFromTripTimes(
-    Timetable table,
-    Trip trip,
+  // TODO: Deprecate the above method in favour of this
+  public static List<TripTimeOnDate> fromTripTimes(
+    TripTimes tripTimes,
+    TripPattern tripPattern,
     LocalDate serviceDate,
     Instant midnight
   ) {
-    TripTimes times = table.getTripTimes(trip);
-    return new TripTimeOnDate(times, 0, table.getPattern(), serviceDate, midnight);
-  }
-
-  /**
-   * Get last stop TripTimeOnDate from Timetable.
-   */
-  public static TripTimeOnDate lastFromTripTimes(
-    Timetable table,
-    Trip trip,
-    LocalDate serviceDate,
-    Instant midnight
-  ) {
-    TripTimes times = table.getTripTimes(trip);
-    return new TripTimeOnDate(
-      times,
-      times.getNumStops() - 1,
-      table.getPattern(),
-      serviceDate,
-      midnight
-    );
+    return IntStream.range(0, tripTimes.getNumStops())
+      .mapToObj(i -> new TripTimeOnDate(tripTimes, i, tripPattern, serviceDate, midnight))
+      .toList();
   }
 
   public static Comparator<TripTimeOnDate> compareByDeparture() {

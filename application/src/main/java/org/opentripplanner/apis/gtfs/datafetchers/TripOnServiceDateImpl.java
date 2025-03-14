@@ -4,7 +4,10 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.opentripplanner.apis.gtfs.GraphQLRequestContext;
 import org.opentripplanner.apis.gtfs.generated.GraphQLDataFetchers;
@@ -13,6 +16,7 @@ import org.opentripplanner.model.TripTimeOnDate;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.timetable.Trip;
 import org.opentripplanner.transit.model.timetable.TripOnServiceDate;
+import org.opentripplanner.transit.model.timetable.TripTimes;
 import org.opentripplanner.transit.service.TransitService;
 import org.opentripplanner.utils.time.ServiceDateUtils;
 
@@ -30,12 +34,8 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
       if (arguments == null) {
         return null;
       }
-      return TripTimeOnDate.lastFromTripTimes(
-        arguments.timetable(),
-        arguments.trip(),
-        arguments.serviceDate(),
-        arguments.midnight()
-      );
+      TripTimes times = arguments.timetable().getTripTimes(arguments.trip());
+      return tripTimeOnDate(arguments, times.getNumStops() - 1);
     };
   }
 
@@ -46,12 +46,7 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
       if (arguments == null) {
         return null;
       }
-      return TripTimeOnDate.firstFromTripTimes(
-        arguments.timetable(),
-        arguments.trip(),
-        arguments.serviceDate(),
-        arguments.midnight()
-      );
+      return tripTimeOnDate(arguments, 0);
     };
   }
 
@@ -62,13 +57,20 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
       if (arguments == null) {
         return List.of();
       }
-      return TripTimeOnDate.fromTripTimes(
-        arguments.timetable(),
-        arguments.trip(),
-        arguments.serviceDate(),
-        arguments.midnight()
-      );
+
+      // The timetable given should always contain the trip.
+      // if the trip doesn't run on the date, the scheduled timetable should be given.
+      TripTimes times = Objects.requireNonNull(arguments.timetable().getTripTimes(arguments.trip()));
+
+      return IntStream.range(0, times.getNumStops())
+        .mapToObj(i -> tripTimeOnDate(arguments, i))
+        .toList();
     };
+  }
+
+  private TripTimeOnDate tripTimeOnDate(FromTripTimesArguments arguments, int stopIndex) {
+    TripTimes times = arguments.timetable().getTripTimes(arguments.trip());
+    return new TripTimeOnDate(times, stopIndex, arguments.timetable().getPattern(), arguments.serviceDate(), arguments.midnight());
   }
 
   @Override
