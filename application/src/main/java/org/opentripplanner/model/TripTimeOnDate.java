@@ -66,8 +66,10 @@ public class TripTimeOnDate {
    * Must pass in both Timetable and Trip, because TripTimes do not have a reference to
    * StopPatterns.
    *
+   * @deprecated This will be removed after the rest-api has been removed
    * @return null if the trip does not exist in the timetable
    */
+  @Deprecated
   @Nullable
   public static List<TripTimeOnDate> fromTripTimes(Timetable table, Trip trip) {
     TripTimes times = table.getTripTimes(trip);
@@ -77,6 +79,17 @@ public class TripTimeOnDate {
     List<TripTimeOnDate> out = new ArrayList<>();
     for (int i = 0; i < times.getNumStops(); ++i) {
       out.add(new TripTimeOnDate(times, i, table.getPattern()));
+    }
+    return out;
+  }
+
+  /**
+   * Returns a list of TripTimeOnDate without service date, one for each stop in the tripTimes
+   */
+  public static List<TripTimeOnDate> fromTripTimes(TripPattern tripPattern, TripTimes tripTimes) {
+    List<TripTimeOnDate> out = new ArrayList<>();
+    for (int i = 0; i < tripTimes.getNumStops(); ++i) {
+      out.add(new TripTimeOnDate(tripTimes, i, tripPattern));
     }
     return out;
   }

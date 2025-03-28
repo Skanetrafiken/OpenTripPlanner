@@ -114,10 +114,12 @@ public class DefaultTransitService implements TransitEditorService {
 
   @Override
   public Optional<List<TripTimeOnDate>> getScheduledTripTimes(Trip trip) {
-    TripPattern tripPattern = findPattern(trip);
-    return Optional.ofNullable(
-      TripTimeOnDate.fromTripTimes(tripPattern.getScheduledTimetable(), trip)
-    );
+    var tripPattern = findPattern(trip);
+    var tripTimes = tripPattern.getScheduledTimetable().getTripTimes(trip);
+    if (tripTimes == null) {
+      return Optional.empty();
+    }
+    return Optional.of(TripTimeOnDate.fromTripTimes(tripPattern, tripTimes));
   }
 
   @Override
