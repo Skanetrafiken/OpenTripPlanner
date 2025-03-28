@@ -82,31 +82,8 @@ public class TripTimeOnDate {
   }
 
   /**
-   * Must pass in both Timetable and Trip, because TripTimes do not have a reference to
-   * StopPatterns.
-   * <br>
-   * The timetable given must correspond to the service day so that it must contain the trip.
-   *
-   * @param table the timetable for the service day
-   * @param serviceDate service day to set
+   * Returns a list of TripTimeOnDate, one for each stop in the tripTimes
    */
-  public static List<TripTimeOnDate> fromTripTimes(
-    Timetable table,
-    Trip trip,
-    LocalDate serviceDate,
-    Instant midnight
-  ) {
-    // The timetable given should always contain the trip.
-    // if the trip doesn't run on the date, the scheduled timetable should be given.
-    TripTimes times = Objects.requireNonNull(table.getTripTimes(trip));
-    List<TripTimeOnDate> out = new ArrayList<>();
-    for (int i = 0; i < times.getNumStops(); ++i) {
-      out.add(new TripTimeOnDate(times, i, table.getPattern(), serviceDate, midnight));
-    }
-    return out;
-  }
-
-  // TODO: Deprecate the above method in favour of this
   public static List<TripTimeOnDate> fromTripTimes(
     TripTimes tripTimes,
     TripPattern tripPattern,

@@ -138,7 +138,7 @@ public class DefaultTransitService implements TransitEditorService {
         serviceDate,
         this.getTimeZone()
       ).toInstant();
-      return Optional.of(TripTimeOnDate.fromTripTimes(timetable, trip, serviceDate, midnight));
+      return Optional.of(TripTimeOnDate.fromTripTimes(times, pattern, serviceDate, midnight));
     }
   }
 
