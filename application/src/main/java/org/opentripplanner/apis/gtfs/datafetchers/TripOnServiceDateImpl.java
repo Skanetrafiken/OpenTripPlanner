@@ -4,14 +4,12 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import org.opentripplanner.apis.gtfs.GraphQLRequestContext;
 import org.opentripplanner.apis.gtfs.generated.GraphQLDataFetchers;
-import org.opentripplanner.model.Timetable;
 import org.opentripplanner.model.TripTimeOnDate;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.timetable.Trip;
@@ -34,8 +32,7 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
       if (arguments == null) {
         return null;
       }
-      TripTimes times = arguments.timetable().getTripTimes(arguments.trip());
-      return tripTimeOnDate(arguments, times.getNumStops() - 1);
+      return tripTimeOnDate(arguments, arguments.tripTimes().getNumStops() - 1);
     };
   }
 
@@ -58,40 +55,25 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
         return List.of();
       }
 
-      // The timetable given should always contain the trip.
-      // if the trip doesn't run on the date, the scheduled timetable should be given.
-      TripTimes times = Objects.requireNonNull(arguments.timetable().getTripTimes(arguments.trip()));
-
-      return IntStream.range(0, times.getNumStops())
+      return IntStream.range(0, arguments.tripTimes().getNumStops())
         .mapToObj(i -> tripTimeOnDate(arguments, i))
         .toList();
     };
   }
 
   private TripTimeOnDate tripTimeOnDate(FromTripTimesArguments arguments, int stopIndex) {
-    TripTimes times = arguments.timetable().getTripTimes(arguments.trip());
-    return new TripTimeOnDate(times, stopIndex, arguments.timetable().getPattern(), arguments.serviceDate(), arguments.midnight());
+    return new TripTimeOnDate(
+      arguments.tripTimes(),
+      stopIndex,
+      arguments.tripPattern(),
+      arguments.serviceDate(),
+      arguments.midnight()
+    );
   }
 
   @Override
   public DataFetcher<Trip> trip() {
     return this::getTrip;
-  }
-
-  @Nullable
-  private Timetable getTimetable(
-    DataFetchingEnvironment environment,
-    Trip trip,
-    LocalDate serviceDate
-  ) {
-    TransitService transitService = getTransitService(environment);
-    TripPattern tripPattern = transitService.findPattern(trip, serviceDate);
-    // no matching pattern found
-    if (tripPattern == null) {
-      return null;
-    }
-
-    return transitService.findTimetable(tripPattern, serviceDate);
   }
 
   private TransitService getTransitService(DataFetchingEnvironment environment) {
@@ -116,17 +98,28 @@ public class TripOnServiceDateImpl implements GraphQLDataFetchers.GraphQLTripOnS
       serviceDate,
       transitService.getTimeZone()
     ).toInstant();
-    Timetable timetable = getTimetable(environment, trip, serviceDate);
+
+    TripPattern tripPattern = transitService.findPattern(trip, serviceDate);
+    // no matching pattern found
+    if (tripPattern == null) {
+      return null;
+    }
+    var timetable = transitService.findTimetable(tripPattern, serviceDate);
     if (timetable == null) {
       return null;
     }
-    return new FromTripTimesArguments(trip, serviceDate, midnight, timetable);
+
+    // The timetable given should always contain the trip.
+    // if the trip doesn't run on the date, the scheduled timetable should be given.
+    var tripTimes = Objects.requireNonNull(timetable.getTripTimes(trip));
+
+    return new FromTripTimesArguments(tripPattern, tripTimes, serviceDate, midnight);
   }
 
   private record FromTripTimesArguments(
-    Trip trip,
+    TripPattern tripPattern,
+    TripTimes tripTimes,
     LocalDate serviceDate,
-    Instant midnight,
-    Timetable timetable
+    Instant midnight
   ) {}
 }
