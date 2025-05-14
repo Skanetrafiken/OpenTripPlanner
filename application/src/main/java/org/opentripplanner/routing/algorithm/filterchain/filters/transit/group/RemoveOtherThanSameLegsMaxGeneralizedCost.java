@@ -59,8 +59,12 @@ public class RemoveOtherThanSameLegsMaxGeneralizedCost implements RemoveItinerar
       })
       .get();
 
+    if (commonTrips.isEmpty()) {
+      return List.of();
+    }
+
     // Find the lowest cost of the common legs
-    OptionalInt commonCost = itineraries
+    OptionalInt commonLegsCost = itineraries
       .stream()
       .mapToInt(itinerary ->
         itinerary
@@ -73,20 +77,21 @@ public class RemoveOtherThanSameLegsMaxGeneralizedCost implements RemoveItinerar
       )
       .min();
 
-    if (commonCost.isEmpty()) {
-      return List.of();
-    }
-
     // Find the lowest cost for any itinerary
+    // We sum the leg costs instead of getting the cost from the itinerary. This is because the leg
+    // costs are not guaranteed to be accurate and it is possible that the sum of the leg costs are
+    // higher than the itinerary cost.
     int minimumCost = itineraries
       .stream()
-      .mapToInt(it -> it.generalizedCostIncludingPenalty().toSeconds())
+      .mapToInt(it -> it.legs().stream().mapToInt(Leg::getGeneralizedCost).sum())
       .min()
       .orElseThrow();
 
+    int otherLegsCost = minimumCost - commonLegsCost.getAsInt();
+
     // Calculate the maximum limit allowed for itinerary cost
     Cost maxLimit = Cost.costOfSeconds(
-      ((minimumCost - commonCost.getAsInt()) * maxCostOtherLegsFactor) + commonCost.getAsInt()
+      (otherLegsCost * maxCostOtherLegsFactor) + commonLegsCost.getAsInt()
     );
 
     return itineraries
