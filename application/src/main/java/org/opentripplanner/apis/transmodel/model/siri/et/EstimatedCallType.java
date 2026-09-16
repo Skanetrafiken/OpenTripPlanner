@@ -162,8 +162,31 @@ public class EstimatedCallType {
           GraphQLFieldDefinition.newFieldDefinition()
             .name("realtime")
             .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
+            .deprecate(
+              "This field is ambiguous, use the more specific realtime fields (updated, timesUpdated) instead."
+            )
             .description("Whether this call has been updated with real time information.")
             .dataFetcher(env -> ((TripTimeOnDate) env.getSource()).isRealtime())
+            .build()
+        )
+        .field(
+          GraphQLFieldDefinition.newFieldDefinition()
+            .name("updated")
+            .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
+            .description("Whether this call has been updated with any real time information.")
+            .dataFetcher(env -> ((TripTimeOnDate) env.getSource()).isRealtime())
+            .build()
+        )
+        .field(
+          GraphQLFieldDefinition.newFieldDefinition()
+            .name("timesUpdated")
+            .type(new GraphQLNonNull(Scalars.GraphQLBoolean))
+            .description(
+              "Whether the times in this call has been updated with real time information. When this " +
+                "is true the value in the expectedArrivalTime and expectedDepartureTime are actual " +
+                "time predictions."
+            )
+            .dataFetcher(env -> ((TripTimeOnDate) env.getSource()).isTimesModified())
             .build()
         )
         .field(

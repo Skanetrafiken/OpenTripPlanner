@@ -302,6 +302,10 @@ public class TripTimeOnDate {
     return tripTimes.hasAnyUpdates() && !isNoDataStop();
   }
 
+  public boolean isTimesModified() {
+    return tripTimes.isTimesModified();
+  }
+
   public boolean isCancelledStop() {
     return (
       tripTimes.isCanceledStop(stopPosition) ||
