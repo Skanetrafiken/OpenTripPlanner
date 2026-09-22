@@ -1,5 +1,7 @@
 package org.opentripplanner.apis.transmodel.model.siri.et;
 
+import static org.opentripplanner.model.PickDrop.COORDINATE_WITH_DRIVER;
+
 import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
@@ -9,6 +11,13 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeReference;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.ToIntFunction;
+import javax.annotation.Nullable;
 import org.opentripplanner.apis.transmodel.mapping.OccupancyStatusMapper;
 import org.opentripplanner.apis.transmodel.mapping.RealtimeStateMapper;
 import org.opentripplanner.apis.transmodel.model.EnumTypes;
@@ -16,7 +25,6 @@ import org.opentripplanner.apis.transmodel.model.TransmodelRealTimeState;
 import org.opentripplanner.apis.transmodel.model.framework.TransmodelDirectives;
 import org.opentripplanner.apis.transmodel.model.framework.TransmodelScalars;
 import org.opentripplanner.apis.transmodel.model.timetable.EmpiricalDelayType;
-import org.opentripplanner.apis.transmodel.model.timetable.TransmodelRealTimeTripStateModel;
 import org.opentripplanner.apis.transmodel.support.GqlUtil;
 import org.opentripplanner.core.model.id.FeedScopedId;
 import org.opentripplanner.core.model.time.TimePeriod;
@@ -27,16 +35,6 @@ import org.opentripplanner.routing.services.TransitAlertService;
 import org.opentripplanner.transit.model.site.StopLocation;
 import org.opentripplanner.transit.model.timetable.Trip;
 import org.opentripplanner.transit.model.timetable.TripIdAndServiceDate;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.ToIntFunction;
-
-import static org.opentripplanner.model.PickDrop.COORDINATE_WITH_DRIVER;
 
 public class EstimatedCallType {
 
