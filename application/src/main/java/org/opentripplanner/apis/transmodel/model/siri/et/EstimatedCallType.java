@@ -173,7 +173,7 @@ public class EstimatedCallType {
           GraphQLFieldDefinition.newFieldDefinition()
             .name("realTimeJourneyState")
             .description("The real-time state of the dated service journey this call belongs to.")
-            .type(realTimeJourneyStateType)
+            .type(new GraphQLNonNull(realTimeJourneyStateType))
             .dataFetcher(env -> {
               var realtimeState = ((TripTimeOnDate) env.getSource()).realtimeTripState();
 
