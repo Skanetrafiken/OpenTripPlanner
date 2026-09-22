@@ -10,8 +10,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
-import java.util.List;
-import java.util.Optional;
 import org.opentripplanner.api.model.transit.FeedScopedIdMapper;
 import org.opentripplanner.apis.support.InvalidInputException;
 import org.opentripplanner.apis.transmodel.model.EnumTypes;
@@ -22,6 +20,9 @@ import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.site.StopLocation;
 import org.opentripplanner.transit.model.timetable.TripOnServiceDate;
 import org.opentripplanner.transit.service.TransitService;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * A DatedServiceJourney GraphQL Type for use in endpoints fetching DatedServiceJourney data
@@ -210,13 +211,7 @@ public class DatedServiceJourneyType {
                     "Trip has been deleted. this should not be exposed to the API and is probably a bug"
                   );
                 }
-                return new TransmodelRealTimeTripStateModel(
-                  tripTimes.isAdded(),
-                  tripTimes.isCanceled(),
-                  tripTimes.isTimesModified(),
-                  tripTimes.isTripPatternModified(),
-                  tripTimes.hasAnyUpdates()
-                );
+                return TransmodelRealTimeTripStateModel.of(tripTimes.realtimeTripState());
               })
               .orElse(null);
           })
