@@ -14,6 +14,7 @@ import org.opentripplanner.transit.model.network.ReplacedByRelation;
 import org.opentripplanner.transit.model.network.TripPattern;
 import org.opentripplanner.transit.model.site.StopLocation;
 import org.opentripplanner.transit.model.timetable.OccupancyStatus;
+import org.opentripplanner.transit.model.timetable.RealTimeTripState;
 import org.opentripplanner.transit.model.timetable.StopTimeKey;
 import org.opentripplanner.transit.model.timetable.Timetable;
 import org.opentripplanner.transit.model.timetable.Trip;
@@ -302,8 +303,8 @@ public class TripTimeOnDate {
     return tripTimes.hasAnyUpdates() && !isNoDataStop();
   }
 
-  public boolean isTimesModified() {
-    return tripTimes.isTimesModified();
+  public RealTimeTripState realtimeTripState() {
+    return tripTimes.realtimeTripState();
   }
 
   public boolean isCancelledStop() {

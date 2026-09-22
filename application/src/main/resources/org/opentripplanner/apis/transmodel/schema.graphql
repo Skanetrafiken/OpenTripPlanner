@@ -271,6 +271,8 @@ type EstimatedCall {
   "Whether the updated estimates are expected to be inaccurate."
   predictionInaccurate: Boolean!
   quay: Quay!
+  "The real-time state of the dated service journey this call belongs to."
+  realTimeJourneyState: RealTimeJourneyState
   "Whether this call has been updated with real time information."
   realtime: Boolean! @deprecated(reason : "This field is ambiguous, use the more specific realtime fields (updated, timesUpdated) instead.")
   realtimeState: RealtimeState! @deprecated(reason : "Use realTimeJourneyState on datedServiceJourney for the journey's real-time state, or the individual boolean fields (cancellation, predictionInaccurate, extraCall) for the quay's state.")
@@ -284,12 +286,8 @@ type EstimatedCall {
   "Get all relevant situations for this EstimatedCall."
   situations: [PtSituationElement!]! @timingData
   stopPositionInPattern: Int!
-  "Whether the times in this call has been updated with real time information. When this is true the value in the expectedArrivalTime and expectedDepartureTime are actual time predictions."
-  timesUpdated: Boolean!
   "Whether this is a timing point or not. Boarding and alighting is not allowed at timing points."
   timingPoint: Boolean!
-  "Whether this call has been updated with any real time information."
-  updated: Boolean!
 }
 
 "Additional (optional) grouping of lines for particular purposes such as e.g. fare harmonisation or public presentation."
